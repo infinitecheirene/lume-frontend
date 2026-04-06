@@ -37,14 +37,14 @@ export default function Header() {
         <Link href="/" className="flex items-center gap-3">
           <Image
             src={logo}
-            alt="Crescent Coffee Logo"
+            alt="Lumè Bean and Bar Logo"
             width={40}
             height={40}
             className="rounded-full object-cover"
             priority
           />
           <span className="text-xl font-semibold text-[#d4a24c]">
-            Crescent
+            Lumè Bean and Bar
           </span>
         </Link>
 
