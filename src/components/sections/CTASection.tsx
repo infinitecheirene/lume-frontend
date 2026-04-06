@@ -25,7 +25,7 @@ export default function CTASection() {
           </h2>
 
           <p className="text-white/60 text-lg leading-relaxed mb-10">
-            Whether it's a quiet morning espresso or an evening of craft cocktails with friends,
+            Whether it &apos;s a quiet morning espresso or an evening of craft cocktails with friends,
             reserve your spot and let us take care of the rest.
           </p>
 
