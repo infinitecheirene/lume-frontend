@@ -11,15 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Trash2, Edit2, Plus, X, Search, Underline } from "lucide-react"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 interface BlogPost {
   id: number
@@ -48,9 +40,8 @@ export default function BlogPostsAdmin() {
     return () => window.removeEventListener("resize", checkDesktop)
   }, [])
 
-  const filteredPosts = posts.filter(a =>
-    a.title.toLowerCase().includes(search.toLowerCase()) ||
-    a.content.toLowerCase().includes(search.toLowerCase())
+  const filteredPosts = posts.filter(
+    (a) => a.title.toLowerCase().includes(search.toLowerCase()) || a.content.toLowerCase().includes(search.toLowerCase()),
   )
 
   const [formData, setFormData] = useState({
@@ -129,6 +120,24 @@ export default function BlogPostsAdmin() {
     fetchPosts()
   }
 
+  const getImageUrl = (imagePath?: string): string => {
+    if (!imagePath) {
+      return "/placeholder.jpg"
+    }
+
+    // Absolute URL already
+    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+      return imagePath
+    }
+
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+
+    // Remove leading slash to avoid double slash
+    const normalizedPath = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath
+
+    return `${API_BASE_URL}/${normalizedPath}`
+  }
+
   if (loading) {
     return (
       <SidebarProvider defaultOpen={!isDesktop}>
@@ -186,9 +195,7 @@ export default function BlogPostsAdmin() {
 
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>
-                          {editingId ? "Edit Post" : "Create Post"}
-                        </DialogTitle>
+                        <DialogTitle>{editingId ? "Edit Post" : "Create Post"}</DialogTitle>
                       </DialogHeader>
                       <form onSubmit={handleSubmit} className="space-y-4">
                         <Input
@@ -217,16 +224,10 @@ export default function BlogPostsAdmin() {
                           rows={6}
                           required
                         />
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) =>
-                            setFormData({ ...formData, image: e.target.files?.[0] || null })
-                          }
-                        />
+                        <Input type="file" accept="image/*" onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] || null })} />
                       </form>
                       <DialogFooter>
-                        <Button type="submit">
+                        <Button type="button" onClick={handleSubmit}>
                           {editingId ? "Update Post" : "Create Post"}
                         </Button>
                       </DialogFooter>
@@ -251,21 +252,32 @@ export default function BlogPostsAdmin() {
               {/* Posts List */}
               <div className="space-y-4 grid grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
                 {posts.map((post) => (
-                  <Card key={post.id}>
-                    <CardContent className="flex-1 justify-between items-center p-4">
-                      <div className="flex justify-end gap-2 mb-3">
-                        <Button size="sm" variant="outline" onClick={() => handleEdit(post)}>
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="destructive" onClick={() => handleDelete(post.id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                  <Card key={post.id} className="overflow-hidden gap-0 p-0">
+                    <Image
+                      src={getImageUrl(post.image_url) || "/placeholder.png"}
+                      alt={post.title}
+                      width={400}
+                      height={200}
+                      className="w-full h-48 object-cover"
+                    />
+                    <CardContent className="p-4 flex flex-col gap-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-lg font-bold">{post.title}</h3>
+                          <p className="text-sm text-gray-500">
+                            Author: <u>{post.author}</u>
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" onClick={() => handleEdit(post)}>
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="destructive" onClick={() => handleDelete(post.id)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-lg font-bold">{post.title}</h3>
-                        <p className="text-sm text-gray-500">Author: <u>{post.author}</u></p>
-                        <p className="text-md my-4 h-full">{post.excerpt}</p>
-                      </div>
+                      <p className="text-md text-gray-700">{post.excerpt}</p>
                     </CardContent>
                   </Card>
                 ))}
