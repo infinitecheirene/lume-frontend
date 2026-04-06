@@ -5,8 +5,8 @@ import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
 
 const playfair = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
+    subsets: ["latin"],
+    weight: ["400", "600", "700"],
 })
 
 const highlights = [
@@ -22,12 +22,6 @@ const highlights = [
         link: "/reserve",
         cta: "Book Now",
     },
-    {
-        title: "Order Ahead",
-        desc: "Skip the wait — order online and pick up fresh.",
-        link: "/order",
-        cta: "Order Now",
-    },
 ]
 
 export default function HeroSection() {
@@ -35,24 +29,22 @@ export default function HeroSection() {
         <section className="py-24 bg-[#0b1d26]">
             <div className="container mx-auto px-4">
 
+                {/* Heading */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    viewport={{ once: true }}
                     className="text-center mb-16"
                 >
-                    <p className="text-[#d4a24c] tracking-[0.3em] uppercase text-sm mb-3">
+                    <p className="tracking-[0.3em] uppercase text-sm mb-3 text-[#d4a24c]">
                         What We Offer
                     </p>
 
-                    <h2 className={`${playfair.className} text-white text-4xl md:text-5xl font-bold`}>
-                        The Lumè Bean and Bar{" "}
-                        <span className="text-[#d4a24c] italic">Experience</span>
+                    <h2 className={`${playfair.className} text-4xl md:text-5xl font-bold`}>
+                        The Lumè Bean and Bar <span className="text-[#d4a24c] italic">Experience</span>
                     </h2>
                 </motion.div>
 
-                <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
                     {highlights.map((item, i) => (
                         <motion.div
                             key={item.title}
@@ -62,7 +54,7 @@ export default function HeroSection() {
                             viewport={{ once: true }}
                             className="bg-white/5 backdrop-blur rounded-2xl p-8 border border-yellow-500/20 text-center flex flex-col hover:shadow-lg hover:shadow-yellow-500/10 transition"
                         >
-                            <h3 className="text-white text-2xl font-semibold mb-3">
+                            <h3 className={`${playfair.className} text-white text-2xl font-semibold mb-3`}>
                                 {item.title}
                             </h3>
 

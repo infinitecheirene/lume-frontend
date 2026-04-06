@@ -7,6 +7,7 @@ import { menuItems, categories, type Category } from "@/data/menuData"
 import { toast } from "@/hooks/use-toast"
 import { useCartStore } from "@/store/cartStore";
 
+
 const playfair = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
@@ -89,7 +90,7 @@ export default function MenuPage() {
 
                 {/* Price */}
                 <div className="text-[#d4a24c] font-semibold text-lg whitespace-nowrap">
-                  ${item.price}
+                  ₱{item.price}
                 </div>
 
                 <button
