@@ -7,6 +7,12 @@ import { motion, AnimatePresence } from "framer-motion"
 import { usePathname } from "next/navigation"
 import logo from "@/assets/logo.jpg"
 import { Menu, X } from "lucide-react"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -43,7 +49,7 @@ export default function Header() {
             className="rounded-full object-cover"
             priority
           />
-          <span className="text-xl font-semibold text-[#d4a24c]">
+          <span className={`${playfair.className} text-xl font-semibold text-[#d4a24c]`}>
             Lumè Bean and Bar
           </span>
         </Link>

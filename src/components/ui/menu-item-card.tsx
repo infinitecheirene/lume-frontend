@@ -62,7 +62,7 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
       <div className="relative">
         <Badge
           onPointerDown={(e) => e.stopPropagation()}
-          className="absolute top-2 left-2 z-20 bg-red-900 text-red-200 border border-red-700 text-xs sm:text-sm pointer-events-auto"
+          className="absolute top-2 left-2 z-20 bg-[#d4a24c] text-black border border-[#b8860b] text-xs sm:text-sm pointer-events-auto"
         >
           {item.category}
         </Badge>
@@ -70,10 +70,10 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
 
       <DialogTrigger asChild>
         <div
-          className="group cursor-pointer bg-gradient-to-br from-black via-red-950/20 to-black
-          border border-red-800/50 rounded-xl overflow-hidden
-          transition-all duration-300 hover:border-red-600/80 hover:-translate-y-1
-          shadow-lg hover:shadow-red-900/40 flex flex-col min-h-[280px] md:min-h-[420px]"
+          className="group cursor-pointer bg-gradient-to-br from-black via-[#d4a24c]/10 to-black
+          border border-[#d4a24c]/30 rounded-xl overflow-hidden
+          transition-all duration-300 hover:border-[#d4a24c]/60 hover:-translate-y-1
+          shadow-lg hover:shadow-[#d4a24c]/20 flex flex-col min-h-[280px] md:min-h-[420px]"
         >
           {/* Image */}
           <div className="relative w-full aspect-[4/3] overflow-hidden bg-black">
@@ -105,7 +105,7 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
             </div>
 
             <div className="flex items-center justify-between mt-4">
-              <span className="text-xl font-bold text-red-300">₱{formatPrice(item.price)}</span>
+              <span className="text-xl font-bold text-[#d4a24c]">₱{formatPrice(item.price)}</span>
 
               <Button
                 onClick={(e) => {
@@ -113,7 +113,7 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
                   handleAddToCart()
                 }}
                 size="icon"
-                className="bg-red-600 hover:bg-red-700 border border-red-700"
+                className="bg-[#d4a24c] hover:bg-[#b8860b] border border-[#b8860b] text-black"
               >
                 <ShoppingCart className="w-4 h-4" />
               </Button>
@@ -123,7 +123,7 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
       </DialogTrigger>
 
       {/* Modal Dialog */}
-      <DialogContent className="max-w-[95vw] sm:max-w-xs md:max-w-xl lg:max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-[#1a1a1a] to-[#2d0011] border border-red-800/50 p-4 sm:p-6 bg-black/80 backdrop-blur-xs animate-in fade-in duration-300">
+      <DialogContent className="max-w-[95vw] sm:max-w-xs md:max-w-xl lg:max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-[#0b1d26] to-[#1a1a1a] border border-[#d4a24c]/30 p-4 sm:p-6 bg-black/80 backdrop-blur-xs animate-in fade-in duration-300">
         <DialogHeader className="relative pr-8 mb-4">
           <DialogTitle className="text-start text-xl sm:text-2xl md:text-3xl font-bold text-white">{item.name}</DialogTitle>
           <DialogClose asChild>
@@ -136,7 +136,7 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
         <div className="flex flex-col md:flex-row gap-4 md:gap-6 lg:gap-8">
           {/* Image */}
           <div className="w-full md:w-2/5 flex-shrink-0">
-            <div className="relative items-center w-full aspect-square rounded-xl overflow-hidden border-2 border-red-600/50 shadow-lg bg-black">
+            <div className="relative items-center w-full aspect-square rounded-xl overflow-hidden border-2 border-[#d4a24c]/50 shadow-lg bg-black">
               <Image
                 src={getImageUrl(item.image) || "/placeholder.svg"}
                 alt={item.name}
@@ -180,13 +180,13 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
               <div className="flex justify-between items-end gap-3">
                 <div>
                   <p className="text-xs sm:text-sm text-gray-400 mb-1">Price</p>
-                  <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-red-400">
+                  <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#d4a24c]">
                     ₱{formatPrice(item.price)}
                   </span>
                 </div>
                 <Button
                   onClick={handleAddToCart}
-                  className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 sm:py-4 md:py-4 text-sm md:text-lg border border-red-700 transition-all duration-300 hover:scale-[1.02]"
+                  className="bg-[#d4a24c] hover:bg-[#b8860b] text-black font-bold py-3 sm:py-4 md:py-4 text-sm md:text-lg border border-[#b8860b] transition-all duration-300 hover:scale-[1.02]"
                 >
                   <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                   Add to Cart
