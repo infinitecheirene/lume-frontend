@@ -10,15 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Megaphone, Plus, Edit, Trash2, Calendar, Eye, EyeOff, Loader2, MoreHorizontal } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +23,17 @@ import { Switch } from "@/components/ui/switch"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Search, CheckCircle, XCircle } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 interface Announcement {
   id: number
@@ -64,12 +67,11 @@ export default function AdminAnnouncementsPage() {
     return () => window.removeEventListener("resize", checkDesktop)
   }, [])
 
-  const activeCount = announcements.filter(a => a.is_active).length
-  const inactiveCount = announcements.filter(a => !a.is_active).length
+  const activeCount = announcements.filter((a) => a.is_active).length
+  const inactiveCount = announcements.filter((a) => !a.is_active).length
 
-  const filteredAnnouncements = announcements.filter(a =>
-    a.title.toLowerCase().includes(search.toLowerCase()) ||
-    a.content.toLowerCase().includes(search.toLowerCase())
+  const filteredAnnouncements = announcements.filter(
+    (a) => a.title.toLowerCase().includes(search.toLowerCase()) || a.content.toLowerCase().includes(search.toLowerCase()),
   )
 
   useEffect(() => {
@@ -181,9 +183,7 @@ export default function AdminAnnouncementsPage() {
       }
 
       const updatedAnnouncement = await response.json()
-      setAnnouncements(
-        announcements.map((a) => (a.id === editingAnnouncement.id ? updatedAnnouncement : a))
-      )
+      setAnnouncements(announcements.map((a) => (a.id === editingAnnouncement.id ? updatedAnnouncement : a)))
       setIsDialogOpen(false)
       setEditingAnnouncement(null)
       setFormData({ title: "", content: "", isActive: true })
@@ -204,8 +204,6 @@ export default function AdminAnnouncementsPage() {
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this announcement?")) return
-
     try {
       const response = await fetch(`/api/announcements/${id}`, {
         method: "DELETE",
@@ -247,9 +245,7 @@ export default function AdminAnnouncementsPage() {
       }
 
       const updatedAnnouncement = await response.json()
-      setAnnouncements(
-        announcements.map((a) => (a.id === announcement.id ? updatedAnnouncement : a))
-      )
+      setAnnouncements(announcements.map((a) => (a.id === announcement.id ? updatedAnnouncement : a)))
       toast({
         title: "Success",
         description: `Announcement ${!announcement.is_active ? "activated" : "deactivated"}`,
@@ -272,13 +268,7 @@ export default function AdminAnnouncementsPage() {
           {isDesktop && (
             <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-white px-4 shadow-sm">
               <SidebarTrigger className="-ml-1" />
-              <Image
-                src="/logoippon.png"
-                alt="Ipponyari Logo"
-                width={40}
-                height={40}
-                className="object-contain"
-              />
+              <Image src="/logoippon.png" alt="Ipponyari Logo" width={40} height={40} className="object-contain" />
               <h1 className="text-lg font-bold text-gray-900">Ipponyari Japanese Restaurant</h1>
             </div>
           )}
@@ -310,13 +300,9 @@ export default function AdminAnnouncementsPage() {
 
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>
-                          {editingAnnouncement ? "Edit Announcement" : "Create New Announcement"}
-                        </DialogTitle>
+                        <DialogTitle>{editingAnnouncement ? "Edit Announcement" : "Create New Announcement"}</DialogTitle>
                         <DialogDescription>
-                          {editingAnnouncement
-                            ? "Update your announcement details"
-                            : "Create a new announcement for your customers"}
+                          {editingAnnouncement ? "Update your announcement details" : "Create a new announcement for your customers"}
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4 py-4">
@@ -344,9 +330,7 @@ export default function AdminAnnouncementsPage() {
                           <Switch
                             id="isActive"
                             checked={formData.isActive}
-                            onCheckedChange={(checked) =>
-                              setFormData({ ...formData, isActive: checked })
-                            }
+                            onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
                           />
                         </div>
                       </div>
@@ -422,9 +406,7 @@ export default function AdminAnnouncementsPage() {
                   <CardContent className="text-center py-12">
                     <Megaphone className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600">No announcements yet</p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Create your first announcement to get started
-                    </p>
+                    <p className="text-sm text-gray-500 mt-1">Create your first announcement to get started</p>
                   </CardContent>
                 </Card>
               ) : (
@@ -434,9 +416,7 @@ export default function AdminAnnouncementsPage() {
                       <CardHeader>
                         <div className="flex items-start justify-between">
                           <div className="flex-1 space-y-3">
-                            <Badge variant={announcement.is_active ? "default" : "secondary"}>
-                              {announcement.is_active ? "Active" : "Inactive"}
-                            </Badge>
+                            <Badge variant={announcement.is_active ? "default" : "secondary"}>{announcement.is_active ? "Active" : "Inactive"}</Badge>
                             <div className="flex items-center gap-2 mb-2">
                               <CardTitle className="text-lg font-bold">{announcement.title}</CardTitle>
                             </div>
@@ -457,53 +437,63 @@ export default function AdminAnnouncementsPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                               <DropdownMenuItem>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => toggleActive(announcement)}
-                                >
+                                <Button variant="ghost" size="sm" onClick={() => toggleActive(announcement)}>
                                   {announcement.is_active ? (
                                     <span className="flex items-center gap-3">
-                                      <Eye className="w-4 h-4" />
-                                      Active
+                                      <EyeOff className="w-4 h-4" />
+                                      Deactivate
                                     </span>
                                   ) : (
                                     <span className="flex items-center gap-3">
-                                      <EyeOff className="w-4 h-4" />
-                                      Inactive
+                                      <Eye className="w-4 h-4" />
+                                      Activate
                                     </span>
                                   )}
                                 </Button>
                               </DropdownMenuItem>
                               <DropdownMenuItem>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleEdit(announcement)}
-                                >
+                                <Button variant="ghost" size="sm" onClick={() => handleEdit(announcement)}>
                                   <span className="flex items-center gap-3">
                                     <Edit className="w-4 h-4" /> Edit
                                   </span>
                                 </Button>
                               </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDelete(announcement.id)}
-                                  className="text-red-600 hover:text-red-700"
-                                >
-                                  <span className="flex items-center gap-3">
-                                    <Trash2 className="w-4 h-4" /> Delete
-                                  </span>
-                                </Button>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                                      <span className="flex items-center gap-3">
+                                        <Trash2 className="w-4 h-4" /> Delete
+                                      </span>
+                                    </Button>
+                                  </AlertDialogTrigger>
+
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Delete Announcement?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Are you sure you want to delete this announcement? This action cannot be undone.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handleDelete(announcement.id)} className="bg-red-600 hover:bg-red-700">
+                                        Yes, Delete
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-gray-700">{announcement.content.substring(0, 100)}{announcement.content.length > 100 ? '...' : ''}</p>
+                        <p className="text-gray-700">
+                          {announcement.content.substring(0, 100)}
+                          {announcement.content.length > 100 ? "..." : ""}
+                        </p>
                       </CardContent>
                     </Card>
                   </div>
