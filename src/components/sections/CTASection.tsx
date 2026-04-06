@@ -11,7 +11,7 @@ const playfair = Playfair_Display({
 
 export default function CTASection() {
   return (
-    <section className="py-24 bg-[#0b1d26]">
+    <section className="py-24 bg-[#0b1d26] border-t border-yellow-500/10 ">
       <div className="container mx-auto px-4">
 
         <motion.div

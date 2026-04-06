@@ -3,6 +3,7 @@ import HeroSection from "@/components/sections/Hero"
 import OfferSection from "@/components/sections/OfferSection"
 import CTASection from "@/components/sections/CTASection"
 import FeaturedMenu from "@/components/sections/FeaturedMenu"
+import TestimonialsSection from "@/components/sections/testimonials"
 
 export default function Home() {
   return (
@@ -10,6 +11,7 @@ export default function Home() {
       <HeroSection />
       <OfferSection />
       <FeaturedMenu />
+      <TestimonialsSection />
       <CTASection />
     </div>
   )

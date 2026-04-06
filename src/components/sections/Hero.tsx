@@ -87,7 +87,7 @@ export default function HeroSection() {
             </Button>
           </Link>
 
-          <Link href="/reserve">
+          <Link href="/reservations">
             <Button
               variant="outline"
               className="rounded-full px-12 py-6 border border-[#d4a24c]/60 text-white hover:bg-white/10 bg-transparent transition"

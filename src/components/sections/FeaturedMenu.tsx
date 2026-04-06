@@ -1,20 +1,19 @@
 "use client"
 
-import { useState } from "react"
 import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
-import { menuItems, categories, type Category } from "@/data/menuData"
+import { menuItems } from "@/data/menuData"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 })
 
-export default function MenuPage() {
-  const [active, setActive] = useState<Category>("coffee")
+export default function BestSellerPage() {
 
-  const filteredProducts = menuItems.filter(
-    (item) => item.category?.toLowerCase() === active
+  // BEST SELLER FILTER
+  const bestSellers = menuItems.filter(
+    (item) => item.isBestSeller === true
   )
 
   return (
@@ -28,57 +27,46 @@ export default function MenuPage() {
           className="text-center mb-16"
         >
           <p className="tracking-[0.3em] uppercase text-sm mb-3 text-[#d4a24c]">
-            Our Offerings
+            Customer Favorites
           </p>
+
           <h2 className={`${playfair.className} text-4xl md:text-5xl font-bold`}>
-            The <span className="text-[#d4a24c] italic">Menu</span>
+            Best <span className="text-[#d4a24c] italic">Sellers</span>
           </h2>
         </motion.div>
 
-        {/* Tabs */}
-        <div className="flex justify-center gap-3 mb-16">
-          {categories.map((cat) => (
-            <button
-              key={cat.key}
-              onClick={() => setActive(cat.key)}
-              className={`px-6 py-2.5 rounded-full text-sm transition ${
-                active === cat.key
-                  ? "bg-[#d4a24c] text-black font-semibold"
-                  : "bg-[#132e3b] text-white/70 hover:bg-[#193847] hover:text-white"
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Menu List */}
+        {/* Grid */}
         <motion.div
-          key={active}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="grid md:grid-cols-2 gap-x-16"
         >
-          {filteredProducts.map((item, i) => (
+          {bestSellers.map((item, i) => (
             <div
               key={item.id ?? i}
-              className="py-6 border-b border-white/10"
+              className="py-6 border-b border-white/10 hover:bg-white/5 transition px-2 rounded-lg"
             >
               <div className="flex justify-between items-start gap-6">
-                
-                {/* Left content */}
+
+                {/* Left */}
                 <div>
                   <h3 className={`${playfair.className} text-lg md:text-xl font-semibold`}>
                     {item.name}
                   </h3>
+
                   <p className="text-sm text-white/60 mt-1">
                     {item.description}
                   </p>
+
+                  {/* BEST SELLER BADGE */}
+                  <span className="inline-block mt-2 text-xs px-3 py-1 rounded-full bg-[#d4a24c]/20 text-[#d4a24c]">
+                    Best Seller
+                  </span>
                 </div>
 
                 {/* Price */}
                 <div className="text-[#d4a24c] font-semibold text-lg whitespace-nowrap">
-                  ${item.price}
+                  ₱{item.price}
                 </div>
 
               </div>
@@ -87,11 +75,12 @@ export default function MenuPage() {
         </motion.div>
 
         {/* Empty state */}
-        {filteredProducts.length === 0 && (
+        {bestSellers.length === 0 && (
           <div className="text-center py-12 text-white/70">
-            No items available in this category yet.
+            No best sellers available yet.
           </div>
         )}
+
       </div>
     </section>
   )

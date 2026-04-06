@@ -89,7 +89,7 @@ export default function MenuPage() {
 
                 {/* Price */}
                 <div className="text-[#d4a24c] font-semibold text-lg whitespace-nowrap">
-                  ${item.price}
+                  ₱{item.price}
                 </div>
 
                 <button

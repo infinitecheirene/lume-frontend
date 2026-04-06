@@ -307,7 +307,7 @@ export default function ProfilePage() {
         </div>
 
         {/* User Profile Card */}
-        <Card className="mb-8 overflow-hidden border-white/30 shadow-2xl bg-gradient-to-r from-[#6B0000] to-[#4B0000]/70 backdrop-blur-sm">
+        <Card className="mb-8 overflow-hidden bg-[#0c222b] rounded-2xl p-8 border border-[#a47015]/60 text-center hover:border-[#d4a24c]/40 transition shadow-[0_0_20px_rgba(212,162,76,0.35)]">
           {/* Header */}
           <div className="flex items-center gap-4 px-5">
             <div className="h-16 w-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
@@ -320,7 +320,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Contact info */}
-          <div className="p-8 bg-[#4B0000]/50 backdrop-blur-sm grid md:grid-cols-2 gap-8">
+          <div className="p-8 grid md:grid-cols-2 gap-8">
             <div>
               <div className="flex items-center gap-2 text-sm text-white/70 uppercase tracking-wide mb-2">
                 <Mail className="h-4 w-4" />
@@ -342,8 +342,8 @@ export default function ProfilePage() {
         <div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-[#ff6b6b] flex items-center justify-center flex-shrink-0">
-                <MapPin className="h-6 w-6 text-white" />
+              <div className="h-12 w-12 rounded-full bg-[#d4a24c] flex items-center justify-center flex-shrink-0">
+                <MapPin className="h-6 w-6 text-[#0c222b] " />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white">Delivery Addresses</h2>
@@ -357,7 +357,7 @@ export default function ProfilePage() {
                   setEditingData(undefined)
                   setIsModalOpen(true)
                 }}
-                className="bg-white hover:bg-white/90 text-[#8B0000] shadow-md w-full sm:w-auto font-bold"
+                className="bg-white hover:bg-white/90 text-[#0c222b] shadow-md w-full sm:w-auto font-bold"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add New Address
@@ -371,7 +371,7 @@ export default function ProfilePage() {
               <p className="text-white/70">Loading addresses...</p>
             </div>
           ) : addresses.length === 0 ? (
-            <Card className="p-12 text-center border-2 border-dashed border-white/30 bg-[#4B0000]/70 backdrop-blur-sm">
+            <Card className="p-12 text-center border-2 border-dashed border-white/30 bg-[#0c222b] /70 backdrop-blur-sm">
               <MapPin className="h-12 w-12 text-white/50 mx-auto mb-4" />
               <p className="text-white text-lg font-medium">No addresses yet</p>
               <p className="text-white/70 text-sm mt-1">Add your first delivery address to get started</p>
@@ -382,8 +382,8 @@ export default function ProfilePage() {
                 <Card
                   key={address.id}
                   className={`overflow-hidden transition-all ${address.is_default
-                      ? "ring-2 ring-[#ff6b6b] shadow-2xl bg-[#4B0000]/90 backdrop-blur-sm border-white/50"
-                      : "border-white/30 shadow-xl hover:shadow-2xl bg-[#4B0000]/70 backdrop-blur-sm"
+                      ? "ring-2 ring-[#ff6b6b] shadow-2xl bg-[#0c222b] /90 backdrop-blur-sm border-white/50"
+                      : "border-white/30 shadow-xl hover:shadow-2xl bg-[#0c222b] /70 backdrop-blur-sm"
                     }`}
                 >
                   {/* Address Content */}

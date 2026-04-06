@@ -147,7 +147,7 @@ export default function CustomerServiceChatbot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-0 right-0 md:bottom-6 md:right-6 w-full md:w-[420px] h-[85vh] md:h-[700px] max-h-[700px] shadow-2xl z-50 flex flex-col border-[#d4a24c]/20 rounded-t-2xl md:rounded-2xl overflow-hidden p-0 bg-white">
+        <Card className="fixed bottom-0 right-0 md:bottom-6 md:right-6 w-full md:w-[500px] h-[85vh] md:h-[600px] max-h-[700px] shadow-2xl z-50 flex flex-col border-[#d4a24c]/20 rounded-t-2xl md:rounded-2xl overflow-hidden p-0 bg-white">
           {/* Header - Crimson gradient */}
           <CardHeader className="bg-gradient-to-r from-[#d4a24c] to-[#8b4513] text-white flex flex-row items-center justify-between p-4 flex-shrink-0">
             <div className="flex items-center gap-3">
