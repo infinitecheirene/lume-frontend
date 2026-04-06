@@ -10,20 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  MoreHorizontal,
-  Eye,
-  Plus,
-  Search,
-  Loader2,
-  ArrowUpDown,
-  Edit,
-  Trash2,
-  Upload,
-  Flame,
-  Leaf,
-  Star,
-} from "lucide-react"
+import { MoreHorizontal, Eye, Plus, Search, Loader2, ArrowUpDown, Edit, Trash2, Upload, Flame, Leaf, Star } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,15 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import {
   AlertDialog,
@@ -84,18 +63,7 @@ interface Product {
   updated_at: string
 }
 
-const categories = [
-  "Appetizers",
-  "Main Course",
-  "Desserts",
-  "Beverages",
-  "Korean BBQ",
-  "Noodles",
-  "Rice Dishes",
-  "Soups",
-  "Sashimi",
-  "Add-ons",
-]
+const categories = ["Appetizers", "Main Course", "Desserts", "Beverages", "Korean BBQ", "Noodles", "Rice Dishes", "Soups", "Sashimi", "Add-ons"]
 
 const getImageUrl = (imagePath: string): string => {
   if (!imagePath) {
@@ -318,13 +286,7 @@ export default function ProductsAdminPage() {
           aria-label="Select all"
         />
       ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
+      cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />,
       enableSorting: false,
       enableHiding: false,
     },
@@ -336,28 +298,40 @@ export default function ProductsAdminPage() {
           {Object.keys(rowSelection).length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
+                <Button variant="destructive" size="sm" className="flex items-center gap-2">
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete {Object.keys(rowSelection).length} product(s).
-                  </AlertDialogDescription>
+                  <AlertDialogDescription>This will permanently delete {Object.keys(rowSelection).length} product(s).</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="flex flex-col sm:flex-row gap-2">
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={async () => {
-                      const idsToDelete = Object.keys(rowSelection).map(Number);
-                      await Promise.all(idsToDelete.map((id) => handleDelete(id)));
-                      setRowSelection({});
+                      // Map table row IDs to actual product IDs
+                      const idsToDelete = Object.keys(rowSelection).map((rowId) => {
+                        const row = table.getRow(rowId)
+                        return row.original.id // this is the real product ID
+                      })
+
+                      try {
+                        await Promise.all(idsToDelete.map((id) => handleDelete(id)))
+                        toast({
+                          title: "Success",
+                          description: `${idsToDelete.length} product(s) deleted successfully!`,
+                        })
+                      } catch (error: any) {
+                        toast({
+                          variant: "destructive",
+                          title: "Error",
+                          description: error.message || "Error deleting products",
+                        })
+                      } finally {
+                        setRowSelection({}) // reset selection after deletion
+                      }
                     }}
                   >
                     Delete
@@ -395,12 +369,19 @@ export default function ProductsAdminPage() {
     {
       accessorKey: "category",
       header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="p-0 h-auto font-normal hidden sm:flex">
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="p-0 h-auto font-normal hidden sm:flex"
+        >
           Category <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) =>
-        <Badge variant="outline" className="text-xs hidden sm:inline-flex">{row.original.category}</Badge>,
+      cell: ({ row }) => (
+        <Badge variant="outline" className="text-xs hidden sm:inline-flex">
+          {row.original.category}
+        </Badge>
+      ),
     },
     {
       accessorKey: "price",
@@ -414,7 +395,11 @@ export default function ProductsAdminPage() {
     {
       accessorKey: "created_at",
       header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="p-0 h-auto font-normal hidden lg:flex">
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="p-0 h-auto font-normal hidden lg:flex"
+        >
           Created <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
@@ -426,11 +411,7 @@ export default function ProductsAdminPage() {
     },
     {
       accessorKey: "actions",
-      header: ({ column }) => (
-        <div className="p-0 h-auto font-normal hidden lg:flex">
-          Actions
-        </div>
-      ),
+      header: ({ column }) => <div className="p-0 h-auto font-normal hidden lg:flex">Actions</div>,
       id: "view",
       enableHiding: false,
       cell: ({ row }) => {
@@ -450,7 +431,13 @@ export default function ProductsAdminPage() {
                   <div className="space-y-6">
                     <div className="flex justify-center mb-6">
                       <div className="w-32 h-32 rounded-lg overflow-hidden border-2 border-gray-200">
-                        <Image src={getImageUrl(selectedProduct.image)} alt={selectedProduct.name} width={128} height={128} className="object-cover w-full h-full" />
+                        <Image
+                          src={getImageUrl(selectedProduct.image)}
+                          alt={selectedProduct.name}
+                          width={128}
+                          height={128}
+                          className="object-cover w-full h-full"
+                        />
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -461,30 +448,13 @@ export default function ProductsAdminPage() {
                         </div>
                         <div>
                           <Label className="text-sm text-gray-500">Category</Label>
-                          <Badge variant="outline" className="text-sm">{selectedProduct.category}</Badge>
+                          <Badge variant="outline" className="text-sm">
+                            {selectedProduct.category}
+                          </Badge>
                         </div>
                         <div>
                           <Label className="text-sm text-gray-500">Price</Label>
                           <p className="text-xl font-bold text-green-600">₱{formatPrice(selectedProduct.price)}</p>
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        <Label className="text-sm text-gray-500">Properties</Label>
-                        <div className="flex gap-2 flex-wrap mt-1">
-                          {selectedProduct.is_featured && <Badge variant="secondary" className="text-xs bg-yellow-100 text-yellow-800"><Star className="w-3 h-3 mr-1" /> Featured</Badge>}
-                          {selectedProduct.is_spicy && <Badge variant="destructive" className="text-xs"><Flame className="w-3 h-3 mr-1" /> Spicy</Badge>}
-                          {selectedProduct.is_vegetarian && <Badge variant="secondary" className="text-xs bg-green-100 text-green-800"><Leaf className="w-3 h-3 mr-1" /> Vegetarian</Badge>}
-                          {!selectedProduct.is_featured && !selectedProduct.is_spicy && !selectedProduct.is_vegetarian && (
-                            <span className="text-sm text-gray-500">None</span>
-                          )}
-                        </div>
-                        <div>
-                          <Label className="text-sm text-gray-500">Created On</Label>
-                          <p className="text-sm">{new Date(selectedProduct.created_at).toLocaleDateString("en-US", { month: "long", day: "2-digit", year: "numeric" })}</p>
-                        </div>
-                        <div>
-                          <Label className="text-sm text-gray-500">Last Updated</Label>
-                          <p className="text-sm">{new Date(selectedProduct.updated_at).toLocaleDateString("en-US", { month: "long", day: "2-digit", year: "numeric" })}</p>
                         </div>
                       </div>
                     </div>
@@ -511,7 +481,8 @@ export default function ProductsAdminPage() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="h-4 w-4" /></Button>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
@@ -528,9 +499,7 @@ export default function ProductsAdminPage() {
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action will permanently delete &apos;{product.name}&apos;.
-                      </AlertDialogDescription>
+                      <AlertDialogDescription>This action will permanently delete &apos;{product.name}&apos;.</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -605,14 +574,8 @@ export default function ProductsAdminPage() {
           {isDesktop && (
             <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-white px-4 shadow-sm">
               <SidebarTrigger className="-ml-1" />
-              <Image
-                src="/logoippon.png"
-                alt="Ipponyari Logo"
-                width={40}
-                height={40}
-                className="object-contain"
-              />
-              <h1 className="text-lg font-bold text-gray-900">Ipponyari Japanese Restaurant</h1>
+              <Image src="/logo.jpg" alt="Lume Logo" width={40} height={40} className="object-contain" />
+              <h1 className="text-lg font-bold text-gray-900">Lume Bean and Bar</h1>
             </div>
           )}
 
@@ -645,9 +608,7 @@ export default function ProductsAdminPage() {
                         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto mx-4 bg-gradient-to-br from-red-50 to-red-50">
                           <DialogHeader className="bg-gradient-to-r from-red-500 to-red-500 text-white p-6 -m-6 mb-4 rounded-t-lg">
                             <DialogTitle className="text-xl font-bold">Add New Product</DialogTitle>
-                            <DialogDescription className="text-red-100">
-                              Fill in the details for your new menu item.
-                            </DialogDescription>
+                            <DialogDescription className="text-red-100">Fill in the details for your new menu item.</DialogDescription>
                           </DialogHeader>
                           <form onSubmit={handleCreateSubmit} className="space-y-6 py-4">
                             <div className="grid grid-cols-1 gap-4">
@@ -708,11 +669,7 @@ export default function ProductsAdminPage() {
                                   <Label htmlFor="category" className="text-gray-700 font-medium">
                                     Category
                                   </Label>
-                                  <Select
-                                    value={newFormData.category}
-                                    onValueChange={handleCategoryChange}
-                                    disabled={isCreating}
-                                  >
+                                  <Select value={newFormData.category} onValueChange={handleCategoryChange} disabled={isCreating}>
                                     <SelectTrigger className="mt-1 border-red-200 focus:border-red-400 focus:ring-red-400">
                                       <SelectValue placeholder="Select category" />
                                     </SelectTrigger>
@@ -765,56 +722,6 @@ export default function ProductsAdminPage() {
                                     </div>
                                   </div>
                                 )}
-                              </div>
-
-                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div className="flex items-center space-x-2 p-3 border-2 border-red-200 rounded-lg bg-white/50 hover:bg-white/70 transition-colors">
-                                  <Switch
-                                    id="is_featured"
-                                    checked={newFormData.is_featured}
-                                    onCheckedChange={(checked) => handleSwitchChange("is_featured", checked)}
-                                    disabled={isCreating}
-                                  />
-                                  <Label
-                                    htmlFor="is_featured"
-                                    className="flex items-center gap-2 cursor-pointer text-gray-700 font-medium"
-                                  >
-                                    <Star className="w-4 h-4 text-yellow-500" />
-                                    Featured
-                                  </Label>
-                                </div>
-
-                                <div className="flex items-center space-x-2 p-3 border-2 border-red-200 rounded-lg bg-white/50 hover:bg-white/70 transition-colors">
-                                  <Switch
-                                    id="is_spicy"
-                                    checked={newFormData.is_spicy}
-                                    onCheckedChange={(checked) => handleSwitchChange("is_spicy", checked)}
-                                    disabled={isCreating}
-                                  />
-                                  <Label
-                                    htmlFor="is_spicy"
-                                    className="flex items-center gap-2 cursor-pointer text-gray-700 font-medium"
-                                  >
-                                    <Flame className="w-4 h-4 text-red-500" />
-                                    Spicy
-                                  </Label>
-                                </div>
-
-                                <div className="flex items-center space-x-2 p-3 border-2 border-red-200 rounded-lg bg-white/50 hover:bg-white/70 transition-colors">
-                                  <Switch
-                                    id="is_vegetarian"
-                                    checked={newFormData.is_vegetarian}
-                                    onCheckedChange={(checked) => handleSwitchChange("is_vegetarian", checked)}
-                                    disabled={isCreating}
-                                  />
-                                  <Label
-                                    htmlFor="is_vegetarian"
-                                    className="flex items-center gap-2 cursor-pointer text-gray-700 font-medium"
-                                  >
-                                    <Leaf className="w-4 h-4 text-green-500" />
-                                    Vegetarian
-                                  </Label>
-                                </div>
                               </div>
                             </div>
 
@@ -903,10 +810,7 @@ export default function ProductsAdminPage() {
                             <tr className="border-b border-red-200">
                               {table.getHeaderGroups().map((headerGroup) =>
                                 headerGroup.headers.map((header) => (
-                                  <th
-                                    key={header.id}
-                                    className="text-left p-3 sm:p-4 text-sm font-semibold text-gray-700 tracking-wide"
-                                  >
+                                  <th key={header.id} className="text-left p-3 sm:p-4 text-sm font-semibold text-gray-700 tracking-wide">
                                     {header.isPlaceholder ? null : (
                                       <div className="flex items-center gap-2">
                                         {typeof header.column.columnDef.header === "function"
@@ -967,7 +871,7 @@ export default function ProductsAdminPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
                             className="border-red-300 text-red-600 hover:bg-red-50 disabled:opacity-50"
                           >
@@ -976,7 +880,7 @@ export default function ProductsAdminPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages}
                             className="border-red-300 text-red-600 hover:bg-red-50 disabled:opacity-50"
                           >

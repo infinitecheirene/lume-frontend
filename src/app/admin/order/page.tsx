@@ -54,16 +54,7 @@ import {
 } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import Image from "next/image"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -97,20 +88,6 @@ interface OrderItem {
   }
 }
 
-interface OrderItemsResponse {
-  success: boolean
-  message: string
-  data: {
-    items: OrderItem[]
-    pagination: {
-      current_page: number
-      last_page: number
-      per_page: number
-      total: number
-    }
-  }
-}
-
 interface Order {
   id: number
   order_number: string
@@ -121,13 +98,13 @@ interface Order {
   delivery_city: string
   delivery_zip_code: string
   payment_method: string
-  order_status: number | string
+  order_status: string
   subtotal: number
   delivery_fee: number
   total_amount: number
   notes?: string
   receipt_file?: string
-  items: OrderItem[]
+  order_items: OrderItem[]
   created_at: string
   updated_at: string
 }
@@ -379,8 +356,7 @@ export default function OrdersAdminPage() {
       toast({
         variant: "destructive",
         title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to load orders. Please check your authentication.",
+        description: error instanceof Error ? error.message : "Failed to load orders. Please check your authentication.",
       })
 
       setOrders([])
@@ -396,58 +372,58 @@ export default function OrdersAdminPage() {
   }
 
   // Fetch order items
-  const fetchOrderItems = async (orderId: number) => {
-    try {
-      setItemsLoading(true) // ✅ DO NOT use page-level loading
+  // const fetchOrderItems = async (orderId: number) => {
+  //   try {
+  //     setItemsLoading(true) // ✅ DO NOT use page-level loading
 
-      const token = localStorage.getItem("auth_token")
-      if (!token) {
-        toast({
-          variant: "destructive",
-          title: "Authentication Required",
-          description: "Please log in.",
-        })
-        return
-      }
+  //     const token = localStorage.getItem("auth_token")
+  //     if (!token) {
+  //       toast({
+  //         variant: "destructive",
+  //         title: "Authentication Required",
+  //         description: "Please log in.",
+  //       })
+  //       return
+  //     }
 
-      const response = await fetch(`/api/orders/${orderId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-          "X-Admin-Request": "true",
-        },
-        cache: "no-store",
-      })
+  //     const response = await fetch(`/api/orders/${orderId}`, {
+  //       method: "GET",
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         Accept: "application/json",
+  //         "X-Admin-Request": "true",
+  //       },
+  //       cache: "no-store",
+  //     })
 
-      if (!response.ok) {
-        const text = await response.text()
-        throw new Error(`HTTP ${response.status}: ${text}`)
-      }
+  //     if (!response.ok) {
+  //       const text = await response.text()
+  //       throw new Error(`HTTP ${response.status}: ${text}`)
+  //     }
 
-      const result = await response.json()
+  //     const result = await response.json()
 
-      console.log("Order items response:", result) // 🔍 keep for now
+  //     console.log("Order items response:", result) // 🔍 keep for now
 
-      setOrderItems(
-        result?.data?.items ??
-        result?.data?.data?.items ??
-        []
-      )
-    } catch (error) {
-      console.error("Failed to fetch order items:", error)
+  //     setOrderItems(
+  //       result?.data?.items ??
+  //       result?.data?.data?.items ??
+  //       []
+  //     )
+  //   } catch (error) {
+  //     console.error("Failed to fetch order items:", error)
 
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load order items.",
-      })
+  //     toast({
+  //       variant: "destructive",
+  //       title: "Error",
+  //       description: "Failed to load order items.",
+  //     })
 
-      setOrderItems([])
-    } finally {
-      setItemsLoading(false)
-    }
-  }
+  //     setOrderItems([])
+  //   } finally {
+  //     setItemsLoading(false)
+  //   }
+  // }
 
   useEffect(() => {
     // Calculate counts whenever orders change
@@ -468,12 +444,6 @@ export default function OrdersAdminPage() {
     setStatusCounts(counts)
   }, [orders])
 
-  useEffect(() => {
-    if (selectedOrder?.id) {
-      fetchOrderItems(selectedOrder.id)
-    }
-  }, [selectedOrder])
-
   const filteredOrders = orders.filter((t) => {
     const searchTerm = globalFilter.toLowerCase()
 
@@ -486,13 +456,9 @@ export default function OrdersAdminPage() {
       t.customer_email.toLowerCase().includes(searchTerm) ||
       t.customer_phone.toLowerCase().includes(searchTerm)
 
-    const matchesStatus =
-      statusFilter === "all" ||
-      t.order_status?.toString() === statusFilter
+    const matchesStatus = statusFilter === "all" || t.order_status?.toString() === statusFilter
 
-    const matchesPayment =
-      paymentMethodFilter === "all" ||
-      t.payment_method === paymentMethodFilter
+    const matchesPayment = paymentMethodFilter === "all" || t.payment_method === paymentMethodFilter
 
     return matchesSearch && matchesStatus && matchesPayment
   })
@@ -523,29 +489,52 @@ export default function OrdersAdminPage() {
   }, [globalFilter])
 
   const [deletingId, setDeletingId] = useState<number | null>(null)
-  
-  const handleDelete = async (id: number) => {
-    setDeletingId(id)
+
+  const handleBulkDelete = async () => {
+    // `table` is your table instance
+    const selectedOrderIds = table.getSelectedRowModel().rows.map((row) => row.original.id) // <- `original` has your actual order object
+
+    if (selectedOrderIds.length === 0) return
+
+    // Call your bulk delete
+    await handleDelete(selectedOrderIds)
+
+    // Clear selection
+    table.resetRowSelection()
+  }
+
+  const handleDelete = async (ids: number | number[]) => {
+    const deletingIds = Array.isArray(ids) ? ids : [ids]
+    setDeletingId(deletingIds) // can handle multiple IDs if needed
+
     try {
-      const response = await fetch(`/api/orders/${id}`, {
+      const response = await fetch(`/api/orders`, {
         method: "DELETE",
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ids: deletingIds }),
       })
+
       const result = await response.json()
+
       if (!response.ok) {
-        throw new Error(result.message || "Failed to delete order.")
+        throw new Error(result.message || "Failed to delete order(s).")
       }
+
       toast({
         title: "Success",
-        description: "Order deleted successfully!",
+        description: deletingIds.length > 1 ? `${deletingIds.length} orders deleted successfully!` : "Order deleted successfully!",
       })
+
       fetchOrders()
     } catch (error: any) {
-      console.error("Error deleting order:", error)
+      console.error("Error deleting order(s):", error)
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "There was an error deleting the order.",
+        description: error.message || "There was an error deleting the order(s).",
       })
     } finally {
       setDeletingId(null)
@@ -564,13 +553,7 @@ export default function OrdersAdminPage() {
           aria-label="Select all"
         />
       ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
+      cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />,
       enableSorting: false,
       enableHiding: false,
     },
@@ -582,32 +565,23 @@ export default function OrdersAdminPage() {
           {Object.keys(rowSelection).length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
+                <Button variant="destructive" size="sm" className="flex items-center gap-2">
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </AlertDialogTrigger>
+
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will permanently delete {Object.keys(rowSelection).length} product(s).
+                    This will permanently delete {Object.keys(rowSelection).length} order
+                    {Object.keys(rowSelection).length > 1 ? "s" : ""}.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
+
                 <AlertDialogFooter className="flex flex-col sm:flex-row gap-2">
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={async () => {
-                      const idsToDelete = Object.keys(rowSelection).map(Number);
-                      await Promise.all(idsToDelete.map((id) => handleDelete(id)));
-                      setRowSelection({});
-                    }}
-                  >
-                    Delete
-                  </AlertDialogAction>
+                  <AlertDialogAction onClick={handleBulkDelete}>Delete</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -647,11 +621,7 @@ export default function OrdersAdminPage() {
     {
       accessorKey: "order_number",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="p-0 h-auto font-normal"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="p-0 h-auto font-normal">
           Order #
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
@@ -694,11 +664,7 @@ export default function OrdersAdminPage() {
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => (
-        <div className="hidden lg:block">
-          {getStatusBadge(row.original.order_status)}
-        </div>
-      ),
+      cell: ({ row }) => <div className="hidden lg:block">{getStatusBadge(row.original.order_status)}</div>,
     },
     {
       accessorKey: "payment_method",
@@ -722,17 +688,11 @@ export default function OrdersAdminPage() {
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => (
-        <div className="font-semibold">₱{(row.original.total_amount ?? 0).toFixed(2)}</div>
-      ),
+      cell: ({ row }) => <div className="font-semibold">₱{(row.original.total_amount ?? 0).toFixed(2)}</div>,
     },
     {
       accessorKey: "action2",
-      header: ({ column }) => (
-        <Button variant="ghost">
-          Actions
-        </Button>
-      ),
+      header: ({ column }) => <Button variant="ghost">Actions</Button>,
       cell: ({ row }) => {
         const order = row.original
         return (
@@ -744,28 +704,28 @@ export default function OrdersAdminPage() {
                   size="sm"
                   onClick={() => {
                     setSelectedOrder(order)
-                    fetchOrderItems(order.id) // ✅ THIS
+                    setOrderItems(order.order_items)
                   }}
-                  className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-2"
+                  className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-3 sm:py-1"
                 >
                   <Eye className="h-4 w-4" />
                 </Button>
-
               </DialogTrigger>
 
-              <DialogContent className="w-full sm:max-w-4xl p-0 overflow-hidden">
+              <DialogContent className="w-full sm:max-w-5xl p-0 overflow-hidden rounded-lg shadow-lg">
                 {selectedOrder && (
                   <>
+                    {/* HEADER */}
                     <div className="sticky top-0 z-10 bg-white border-b px-6 py-4">
                       <DialogHeader>
-                        <DialogTitle className="flex items-center justify-between">
-                          <span>Order #{selectedOrder.order_number}</span>
-                          <div className="flex items-center gap-2">
+                        <DialogTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <span className="text-xl font-bold text-gray-900">Order #{selectedOrder.order_number}</span>
+                          <div className="flex flex-wrap items-center gap-2">
                             {getStatusBadge(selectedOrder.order_status)}
                             {getPaymentMethodBadge(selectedOrder.payment_method)}
                           </div>
                         </DialogTitle>
-                        <DialogDescription className="text-sm">
+                        <DialogDescription className="text-sm text-gray-500 mt-1">
                           Placed on{" "}
                           {new Date(selectedOrder.created_at).toLocaleDateString("en-US", {
                             month: "long",
@@ -776,189 +736,129 @@ export default function OrdersAdminPage() {
                           })}
                         </DialogDescription>
                         <DialogClose asChild>
-                          <button
-                            className="absolute right-0 top-0 rounded-md p-2 text-gray-500"
-                            aria-label="Close"
-                          >
+                          <button className="absolute right-2 top-2 rounded-md p-2 text-gray-400 hover:text-gray-600 transition" aria-label="Close">
                             <X className="h-5 w-5" />
                           </button>
                         </DialogClose>
                       </DialogHeader>
                     </div>
 
-                    <div className="px-6 py-6 space-y-8 max-h-[80vh] overflow-y-auto">
+                    {/* BODY */}
+                    <div className="px-6 py-6 space-y-10 max-h-[80vh] overflow-y-auto">
                       {/* CUSTOMER & DELIVERY */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <Card className="shadow-sm">
                           <CardHeader>
-                            <h3 className="font-bold flex items-center gap-2">
-                              Customer Information
-                            </h3>
+                            <h3 className="text-lg font-semibold flex items-center gap-2">Customer Information</h3>
                           </CardHeader>
-                          <CardContent className="space-y-2">
-                            <p className="text-md flex items-center gap-2"><User className="w-5 h-5" />
-                              <span className="font-semibold">{selectedOrder.customer_name}</span>
+                          <CardContent className="space-y-3">
+                            <p className="flex items-center gap-2 text-sm sm:text-base">
+                              <User className="w-5 h-5 text-gray-500" />
+                              <span className="font-medium">{selectedOrder.customer_name}</span>
                             </p>
-                            <p className="text-md flex items-center gap-2"><Mail className="w-5 h-5" />
-                              <span className="font-semibold">{selectedOrder.customer_email}</span>
+                            <p className="flex items-center gap-2 text-sm sm:text-base">
+                              <Mail className="w-5 h-5 text-gray-500" />
+                              <span className="font-medium">{selectedOrder.customer_email}</span>
                             </p>
-                            <p className="text-md flex items-center gap-2"><Phone className="w-5 h-5" />
-                              <span className="font-semibold">{selectedOrder.customer_phone}</span>
+                            <p className="flex items-center gap-2 text-sm sm:text-base">
+                              <Phone className="w-5 h-5 text-gray-500" />
+                              <span className="font-medium">{selectedOrder.customer_phone}</span>
                             </p>
                           </CardContent>
                         </Card>
 
                         <Card className="shadow-sm">
                           <CardHeader>
-                            <h3 className="font-bold flex items-center gap-2">
-                              Delivery Address
-                            </h3>
+                            <h3 className="text-lg font-semibold flex items-center gap-2">Delivery Address</h3>
                           </CardHeader>
-                          <CardContent className="text-sm space-y-1">
-                            <p className="text-md flex items-center gap-2"><MapPin className="w-5 h-5" />
-                              <span className="font-semibold">{selectedOrder.delivery_address}</span>
+                          <CardContent className="space-y-3 text-sm sm:text-base">
+                            <p className="flex items-center gap-2">
+                              <MapPin className="w-5 h-5 text-gray-500" />
+                              <span className="font-medium">{selectedOrder.delivery_address}</span>
                             </p>
-                            <p className="text-md flex flex-col gap-1">
-                              <div>City: <span className="font-semibold">{selectedOrder.delivery_city}</span></div>
-                              <div>Zip Code: <span className="font-semibold">{selectedOrder.delivery_zip_code}</span></div>
-                            </p>
+                            <div className="space-y-1">
+                              <p>
+                                City: <span className="font-medium">{selectedOrder.delivery_city}</span>
+                              </p>
+                              <p>
+                                Zip Code: <span className="font-medium">{selectedOrder.delivery_zip_code}</span>
+                              </p>
+                            </div>
                           </CardContent>
                         </Card>
                       </div>
 
                       {/* ORDER ITEMS */}
-                      {itemsLoading ? (
-                        <div className="py-12 text-center">
-                          <Loader2 className="mx-auto h-6 w-6 animate-spin text-orange-500" />
-                          <p className="text-sm text-gray-500 mt-2">Loading items...</p>
-                        </div>
-                      ) : (
-                        <div>
-                          <div className="flex justify-between">
-                            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                              <Package className="w-5 h-5" />
-                              {orderItems.length} Items
-                            </h3>
-
-                            <div>
-                              <p className="text-sm text-gray-500">Subtotal</p>
-                              <p className="font-semibold">
-                                ₱{(selectedOrder.subtotal ?? 0).toFixed(2)}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-500">Delivery Fee</p>
-                              <p className="font-semibold">
-                                ₱{(selectedOrder.delivery_fee ?? 0).toFixed(2)}
-                              </p>
-                            </div>
-                            <div className="text-right sm:text-left">
-                              <p className="text-sm text-gray-500">Total</p>
-                              <p className="text-2xl font-bold text-green-600">
-                                ₱{(selectedOrder.total_amount ?? 0).toFixed(2)}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="divide-y rounded-lg border">
-                            {orderItems.length === 0 ? (
-                              <Card>
-                                <CardContent className="text-center py-12">
-                                  <div className="bg-gradient-to-r from-orange-100 to-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Package className="w-8 h-8 text-orange-500" />
-                                  </div>
-                                  <p className="text-lg font-medium text-gray-700">No order items found</p>
-                                  <p className="text-sm mt-1 text-gray-500">Your order items will appear here</p>
-                                </CardContent>
-                              </Card>
-                            ) : (
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {orderItems.map((item) => (
-                                  <Card key={item.id} className="p-3 overflow-hidden hover:shadow-lg transition-shadow">
-                                    <CardHeader className="p-0">
-                                      <div className="relative h-48 w-full">
-                                        <Image
-                                          src={getImageUrl(item.image_url)}
-                                          alt={item.name}
-                                          fill
-                                          className="object-cover border rounded-lg"
-                                        />
-                                      </div>
-                                    </CardHeader>
-                                    <CardContent className="p-4 space-y-2">
-                                      <div>
-                                        <h3 className="font-semibold text-lg">{item.name}</h3>
-                                        <p className="text-xs text-gray-500 line-clamp-2">{item.description}</p>
-                                      </div>
-
-                                      <div className="flex flex-wrap gap-2">
-                                        <Badge variant="outline">{item.category}</Badge>
-                                        {item.is_spicy && <Badge variant="destructive">Spicy</Badge>}
-                                        {item.is_vegetarian && (
-                                          <Badge className="bg-green-100 text-green-700">Vegetarian</Badge>
-                                        )}
-                                      </div>
-
-                                      <div className="flex items-center justify-between pt-2 border-t">
-                                        <div>
-                                          <p className="text-sm text-gray-600">Price</p>
-                                          <p className="font-semibold">₱{item.price.toFixed(2)}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-sm text-gray-600">Quantity</p>
-                                          <p className="font-semibold">{item.quantity}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-sm text-gray-600">Subtotal</p>
-                                          <p className="font-semibold text-green-600">₱{item.subtotal.toFixed(2)}</p>
-                                        </div>
-                                      </div>
-
-                                      <div className="pt-2 border-t">
-                                        <p className="text-xs text-gray-500">
-                                          Order #{item.order.order_number}
-                                        </p>
-                                        <p className="text-xs text-gray-500">
-                                          {new Date(item.created_at).toLocaleDateString("en-US", {
-                                            month: "short",
-                                            day: "numeric",
-                                            year: "numeric",
-                                          })}
-                                        </p>
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* NOTES */}
-                      {selectedOrder.notes && (
-                        <div>
-                          <h3 className="font-semibold text-lg mb-2">
-                            Special Notes
+                      <div>
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+                          <h3 className="text-lg font-semibold flex items-center gap-2 text-black">
+                            <Package className="w-5 h-5 text-gray-600" />
+                            {selectedOrder.order_items.length} Items
                           </h3>
-                          <div className="bg-gray-50 rounded-lg p-4 text-sm whitespace-pre-wrap">
-                            {selectedOrder.notes}
+                          <div className="flex flex-wrap gap-6">
+                            <div className="text-right sm:text-left">
+                              <p className="text-xs text-gray-500">Total</p>
+                              <p className="text-2xl font-bold text-green-600">₱{(selectedOrder.total_amount ?? 0).toFixed(2)}</p>
+                            </div>
                           </div>
                         </div>
-                      )}
+
+                        <div>
+                          {selectedOrder.order_items.length === 0 ? (
+                            <Card>
+                              <CardContent className="text-center py-12">
+                                <div className="bg-gradient-to-r from-orange-100 to-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                  <Package className="w-8 h-8 text-orange-500" />
+                                </div>
+                                <p className="text-lg font-medium text-gray-700">No order items found</p>
+                                <p className="text-sm mt-1 text-gray-500">Your order items will appear here</p>
+                              </CardContent>
+                            </Card>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                              {selectedOrder.order_items.map((item) => (
+                                <Card key={item.id} className="p-3 overflow-hidden hover:shadow-md transition-shadow rounded-lg">
+                                  <CardHeader className="p-0">
+                                    <div className="relative h-48 w-full">
+                                      <Image src={getImageUrl(item.image_url)} alt={item.name} fill className="object-cover border rounded-lg" />
+                                    </div>
+                                  </CardHeader>
+                                  <CardContent className="p-4 space-y-3">
+                                    <div>
+                                      <h3 className="font-semibold text-base sm:text-lg">{item.name}</h3>
+                                      <p className="text-xs text-gray-500 line-clamp-2">{item.description}</p>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                      <Badge variant="outline">{item.category}</Badge>
+                                      {item.is_spicy && <Badge variant="destructive">Spicy</Badge>}
+                                      {item.is_vegetarian && <Badge className="bg-green-100 text-green-700">Vegetarian</Badge>}
+                                    </div>
+                                    <div className="flex items-center justify-between pt-3 border-t text-sm">
+                                      <div>
+                                        <p className="text-gray-500">Price</p>
+                                        <p className="font-medium">₱{item.price.toFixed(2)}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-gray-500">Quantity</p>
+                                        <p className="font-medium">{item.quantity}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-gray-500">Subtotal</p>
+                                        <p className="font-semibold text-green-600">₱{item.subtotal.toFixed(2)}</p>
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </>
                 )}
               </DialogContent>
             </Dialog>
-
-            <div className="border-l-2 pl-4">
-              <button
-                onClick={() => router.push(`/admin/order/${order.id}/edit`)}
-                className="text-red-600"
-              >
-                <Bolt className="h-4 w-4" />
-              </button>
-            </div>
           </div>
         )
       },
@@ -1008,14 +908,8 @@ export default function OrdersAdminPage() {
           {isDesktop && (
             <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-white px-4 shadow-sm">
               <SidebarTrigger className="-ml-1" />
-              <Image
-                src="/logoippon.png"
-                alt="Ipponyari Logo"
-                width={40}
-                height={40}
-                className="object-contain"
-              />
-              <h1 className="text-lg font-bold text-gray-900">Ipponyari Japanese Restaurant</h1>
+              <Image src="/logo.jpg" alt="Lume Logo" width={40} height={40} className="object-contain" />
+              <h1 className="text-lg font-bold text-gray-900">Lume Bean and Bar</h1>
             </div>
           )}
 
@@ -1053,9 +947,7 @@ export default function OrdersAdminPage() {
                           <div className="flex h-10 w-10 items-center justify-center rounded-md border border-red-100 text-gray-700">
                             {statusInfo?.icon && <statusInfo.icon className="h-6 w-6 text-red-900" />}
                           </div>
-                          <p className="text-lg font-bold uppercase tracking-wider text-red-900">
-                            {statusInfo?.label || status}
-                          </p>
+                          <p className="text-lg font-bold uppercase tracking-wider text-red-900">{statusInfo?.label || status}</p>
                         </div>
 
                         <div className="mt-4 flex items-center justify-center gap-2">
@@ -1129,10 +1021,7 @@ export default function OrdersAdminPage() {
                             <tr className="border-b border-orange-200">
                               {table.getHeaderGroups().map((headerGroup) =>
                                 headerGroup.headers.map((header) => (
-                                  <th
-                                    key={header.id}
-                                    className="text-left p-2 sm:p-3 text-xs sm:text-sm font-semibold text-gray-700"
-                                  >
+                                  <th key={header.id} className="text-left p-2 sm:p-3 text-xs sm:text-sm font-semibold text-gray-700">
                                     {header.isPlaceholder ? null : (
                                       <div>
                                         {typeof header.column.columnDef.header === "function"
@@ -1170,24 +1059,16 @@ export default function OrdersAdminPage() {
                           <Package className="w-8 h-8 text-orange-500" />
                         </div>
                         <p className="text-lg font-medium text-gray-700">No orders found</p>
-                        {globalFilter && (
-                          <p className="text-sm mt-1 text-gray-500">Try adjusting your search terms or filters</p>
-                        )}
+                        {globalFilter && <p className="text-sm mt-1 text-gray-500">Try adjusting your search terms or filters</p>}
                       </div>
                     )}
                     {/* Pagination */}
                     <div className="flex items-center justify-between mt-6 pt-4 border-t">
                       <div className="text-sm text-gray-600">
-                        Showing {startIdx + 1} to {Math.min(endIdx, filteredOrders.length)} of{" "}
-                        {filteredOrders.length} results
+                        Showing {startIdx + 1} to {Math.min(endIdx, filteredOrders.length)} of {filteredOrders.length} results
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handlePreviousPage}
-                          disabled={currentPage === 1}
-                        >
+                        <Button variant="outline" size="sm" onClick={handlePreviousPage} disabled={currentPage === 1}>
                           <ChevronLeft className="w-4 h-4" />
                         </Button>
                         <div className="flex items-center gap-2">
@@ -1203,12 +1084,7 @@ export default function OrdersAdminPage() {
                             </Button>
                           ))}
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleNextPage}
-                          disabled={currentPage === totalPages}
-                        >
+                        <Button variant="outline" size="sm" onClick={handleNextPage} disabled={currentPage === totalPages}>
                           <ChevronRight className="w-4 h-4" />
                         </Button>
                       </div>

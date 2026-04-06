@@ -1,31 +1,30 @@
 import { NextResponse, NextRequest } from "next/server"
 
-const LARAVEL_API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+const LARAVEL_API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+
+function getAuthToken(request: NextRequest): string | null {
+  const authHeader = request.headers.get("authorization")
+  const cookieToken = request.cookies.get("auth_token")?.value
+  return authHeader?.replace("Bearer ", "") || cookieToken || null
+}
 
 /* ==============================
    GET /api/orders/[id]
    ============================== */
-export async function GET(
-  request: Request,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params // ✅ MUST await params
 
     const authHeader = request.headers.get("authorization")
 
-    const response = await fetch(
-      `${LARAVEL_API_BASE}/api/orders/${id}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: authHeader ?? "",
-          Accept: "application/json",
-        },
-        cache: "no-store",
-      }
-    )
+    const response = await fetch(`${LARAVEL_API_BASE}/api/orders/${id}`, {
+      method: "GET",
+      headers: {
+        Authorization: authHeader ?? "",
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    })
 
     const laravel = await response.json()
 
@@ -36,99 +35,85 @@ export async function GET(
           items: laravel.data?.items ?? [],
         },
       },
-      { status: response.status }
+      { status: response.status },
     )
   } catch (error) {
     console.error("Order items fetch error:", error)
 
-    return NextResponse.json(
-      { success: false, message: "Failed to fetch order items" },
-      { status: 500 }
-    )
+    return NextResponse.json({ success: false, message: "Failed to fetch order items" }, { status: 500 })
   }
 }
 
 /* ==============================
    PATCH /api/orders/[id]
    ============================== */
-export async function PATCH(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
+    console.log("PATCH /api/orders/[id] called") // Log entry point
+
     const { id } = await context.params // ✅ MUST await params
+    console.log("Order ID:", id)
 
     const authToken = request.headers.get("Authorization")
     if (!authToken) {
-      return NextResponse.json(
-        { success: false, message: "Authorization token required" },
-        { status: 401 }
-      )
+      console.warn("Authorization missing")
+      return NextResponse.json({ success: false, message: "Authorization token required" }, { status: 401 })
     }
+    console.log("Authorization token present")
 
     let body: { order_status?: string }
     try {
       body = await request.json()
-    } catch {
-      return NextResponse.json(
-        { success: false, message: "Invalid JSON in request body" },
-        { status: 400 }
-      )
+      console.log("Request body parsed:", body)
+    } catch (err) {
+      console.error("Failed to parse JSON body:", err)
+      return NextResponse.json({ success: false, message: "Invalid JSON in request body" }, { status: 400 })
     }
 
-    const validStatuses = [
-      "pending",
-      "confirmed",
-      "preparing",
-      "ready",
-      "out_for_delivery",
-      "delivered",
-      "cancelled",
-    ]
+    const validStatuses = ["pending", "confirmed", "preparing", "ready", "out_for_delivery", "delivered", "cancelled"]
 
     if (!body.order_status) {
-      return NextResponse.json(
-        { success: false, message: "Order status is required" },
-        { status: 400 }
-      )
+      console.warn("Order status missing in body")
+      return NextResponse.json({ success: false, message: "Order status is required" }, { status: 400 })
     }
 
     if (!validStatuses.includes(body.order_status)) {
-      return NextResponse.json(
-        { success: false, message: "Invalid status value" },
-        { status: 400 }
-      )
+      console.warn("Invalid order status:", body.order_status)
+      return NextResponse.json({ success: false, message: "Invalid status value" }, { status: 400 })
     }
 
     console.log("Updating order:", id, "→", body.order_status)
 
-    const response = await fetch(
-      `${LARAVEL_API_BASE}/api/orders/${id}`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: authToken,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          "X-Admin-Request": "true",
-        },
-        body: JSON.stringify({
-          order_status: body.order_status, // ✅ FIXED
-        }),
-      }
-    )
+    const response = await fetch(`${LARAVEL_API_BASE}/api/orders/${id}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: authToken,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "X-Admin-Request": "true",
+      },
+      body: JSON.stringify({
+        order_status: body.order_status, // ✅ FIXED
+      }),
+    })
+
+    console.log("Laravel API responded with status:", response.status)
 
     const text = await response.text()
-    const data = text ? JSON.parse(text) : {}
+    let data: any
+    try {
+      data = text ? JSON.parse(text) : {}
+      console.log("Response body parsed:", data)
+    } catch (err) {
+      console.error("Failed to parse response JSON:", err, "Raw response:", text)
+      data = { raw: text }
+    }
 
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
     console.error("PATCH /api/orders/[id] error:", error)
 
-    return NextResponse.json(
-      { success: false, message: "Internal server error" },
-      { status: 500 }
-    )
+    return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 })
   }
 }
 
@@ -178,9 +163,6 @@ export async function DELETE(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   return PATCH(request, context)
 }
