@@ -2,6 +2,12 @@
 
 import Link from "next/link"
 import { motion } from "framer-motion"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 const highlights = [
     {
@@ -40,8 +46,8 @@ export default function HeroSection() {
                         What We Offer
                     </p>
 
-                    <h2 className="text-white text-4xl md:text-5xl font-bold">
-                        The Crescent{" "}
+                    <h2 className={`${playfair.className} text-white text-4xl md:text-5xl font-bold`}>
+                        The Lumè Bean and Bar{" "}
                         <span className="text-yellow-500 italic">Experience</span>
                     </h2>
                 </motion.div>

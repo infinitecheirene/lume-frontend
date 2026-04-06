@@ -14,7 +14,7 @@ const Footer = () => {
   return (
     <footer className="relative bg-[#0b1d26] border-t border-yellow-500/10 overflow-hidden">
 
-      <div className="relative container mx-auto px-4 py-20">
+      <div className="relative container mx-auto px-4 pt-20">
 
         {/* Top Grid */}
         <div className="grid md:grid-cols-4 gap-12 mb-16 px-12">
@@ -107,21 +107,14 @@ const Footer = () => {
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-yellow-500/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/50">
+        <div className="border-t border-yellow-500/10 pt-6 flex flex-col justify-center items-center gap-4 text-sm text-white/50">
           <p>
             © {new Date().getFullYear()} Lumè Bean & Bar. All rights reserved.
           </p>
-
-          <div className="flex gap-6">
-            <Link href="#" className="hover:text-yellow-500 transition">
-              Privacy Policy
-            </Link>
-            <Link href="#" className="hover:text-yellow-500 transition">
-              Terms of Service
-            </Link>
-          </div>
+          <p>
+            Powered by Infinitech Advertising Corporation
+          </p>
         </div>
-
       </div>
     </footer>
   )

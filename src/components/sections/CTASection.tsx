@@ -2,6 +2,12 @@
 
 import Link from "next/link"
 import { motion } from "framer-motion"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 export default function CTASection() {
   return (
@@ -19,7 +25,7 @@ export default function CTASection() {
             Reserve a Table
           </p>
 
-          <h2 className="text-white text-4xl md:text-5xl font-bold mb-6">
+          <h2 className={`${playfair.className} text-white text-4xl md:text-5xl font-bold mb-6`}>
             Your Table{" "}
             <span className="text-yellow-500 italic">Awaits</span>
           </h2>

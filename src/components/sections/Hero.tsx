@@ -5,27 +5,41 @@ import Image from "next/image"
 import { motion } from "framer-motion"
 import heroImage from "@/assets/hero-coffee.jpg"
 import { Button } from "@/components/ui/button"
+import { Playfair_Display } from "next/font/google"
+import { Great_Vibes } from "next/font/google"
+
+const greatVibes = Great_Vibes({
+  subsets: ["latin"],
+  weight: "400",
+})
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 export default function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      
-      {/* Background image */}
-      <Image
-        src={heroImage}
-        alt="Coffee shop interior"
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover scale-105 brightness-[0.55]"
-      />
 
-      {/* Gradient overlay (LEFT → RIGHT) */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#0b1d26]/80 via-[#0b1d26]/50 to-transparent" />
+      {/* Background image */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src={heroImage}
+          alt="Coffee shop interior"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover scale-105 brightness-[0.55]"
+        />
+      </div>
+
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 z-10 bg-gradient-to-r from-[#0b1d26]/80 via-[#0b1d26]/50 to-transparent" />
 
       {/* Content */}
-      <div className="relative z-10 container text-center px-4">
-        
+      <div className="relative z-20 container mx-auto text-center px-4">
+
         {/* Top label */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -36,12 +50,11 @@ export default function HeroSection() {
           COFFEE · KITCHEN · BAR
         </motion.p>
 
-        {/* Heading */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.8 }}
-          className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 text-white"
+          className={`${playfair.className} text-5xl md:text-6xl lg:text-8xl font-bold leading-tight mb-6 text-white`}
         >
           Where Every Cup
           <br />
@@ -68,13 +81,13 @@ export default function HeroSection() {
           transition={{ delay: 0.8 }}
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
-          <Link href="#menu">
-            <Button className="rounded-full px-12 py-6 bg-[#d4a24c] hover:bg-[#c0903a] text-black font-semibold hover:brightness-110 transition">
+          <Link href="/menu">
+            <Button className="rounded-full px-12 py-6 bg-[#d4a24c] hover:bg-[#c0903a] text-black font-semibold transition">
               Explore Menu
             </Button>
           </Link>
 
-          <Link href="#reserve">
+          <Link href="/reserve">
             <Button
               variant="outline"
               className="rounded-full px-12 py-6 border border-[#d4a24c]/60 text-white hover:bg-white/10 bg-transparent transition"
@@ -89,7 +102,7 @@ export default function HeroSection() {
       <motion.div
         animate={{ y: [0, 10, 0] }}
         transition={{ repeat: Infinity, duration: 2 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
       >
         <div className="w-5 h-8 rounded-full border-2 border-white/30 flex justify-center pt-1.5">
           <div className="w-1 h-2 rounded-full bg-[#d4a24c]" />

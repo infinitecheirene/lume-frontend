@@ -15,34 +15,34 @@ type Message = {
 
 const FAQ_DATA = [
   {
-    question: "What type of restaurant is Ipponyari?",
+    question: "What type of establishment is Lumè Bean and Bar?",
     answer:
-      "Ipponyari is an authentic Japanese restaurant specializing in premium Japanese cuisine including sushi, sashimi, ramen, and traditional dishes. Our name means 'one spear' in Japanese, symbolizing our singular focus on culinary excellence.",
+      "Lumè Bean and Bar is a premium coffee shop and bar specializing in artisan coffee, craft cocktails, and a curated selection of pastries and light bites. Our name reflects our commitment to quality beans and exceptional beverages.",
   },
   {
     question: "What are your operating hours?",
     answer:
-      "Our operating hours are Monday to Thursday from 11:00 AM to 10:00 PM, Friday to Sunday from 11:00 AM to 11:00 PM, and on holidays from 11:00 AM to 11:00 PM. We're located in Tokyo, Japan.",
+      "Our operating hours are Monday to Friday from 7:00 AM to 12:00 AM, Saturday from 8:00 AM to 1:00 AM, and Sunday from 8:00 AM to 11:00 PM.",
   },
   {
     question: "Do you offer vegetarian or vegan options?",
     answer:
-      "Yes! We offer vegetarian and vegan options including vegetable tempura, edamame, vegetable sushi rolls, and traditional Japanese vegetable dishes like yasai itame.",
+      "Yes! We offer vegetarian and vegan options including plant-based pastries, dairy-free lattes, vegetable-based light bites, and various coffee alternatives.",
   },
   {
-    question: "What makes Ipponyari special?",
+    question: "What makes Lumè Bean and Bar special?",
     answer:
-      "Ipponyari stands out with our commitment to authentic Japanese flavors, premium ingredients sourced directly from Japan, and our master chefs trained in traditional Japanese culinary arts. Our name 'one spear' reflects our singular dedication to perfection.",
+      "Lumè Bean and Bar stands out with our commitment to artisan coffee roasting, premium ingredients, and a cozy atmosphere perfect for any time of day. Whether you're starting your morning or enjoying an evening cocktail, we provide an exceptional experience.",
   },
   {
     question: "Do you take reservations?",
     answer:
-      "Yes, we accept reservations! You can book a table through our website or contact us directly. We recommend reservations for weekend dining and special occasions.",
+      "Yes, we accept reservations! You can book a table through our website or contact us directly. We recommend reservations for evening dining and special occasions.",
   },
   {
-    question: "What are your signature dishes?",
+    question: "What are your signature items?",
     answer:
-      "Our signature dishes include our premium omakase selection, fresh sashimi platters, hand-rolled sushi, authentic tonkotsu ramen, and our chef's special kaiseki course. Each dish is crafted with precision and the finest ingredients.",
+      "Our signature items include our house-roasted coffee blends, craft cocktails, artisanal pastries, and specialty lattes. Each drink is crafted with precision and the finest ingredients.",
   },
 ]
 
@@ -56,7 +56,7 @@ export default function CustomerServiceChatbot() {
   useEffect(() => {
     if (isOpen && messages.length === 0 && !isChatEnded) {
       setTimeout(() => {
-        addBotMessage("Hello! Welcome to Ipponyari Japanese Restaurant! Please select a question below to get started.")
+        addBotMessage("Hello! Welcome to Lumè Bean and Bar! Please select a question below to get started.")
       }, 500)
     }
   }, [isOpen])
@@ -97,7 +97,7 @@ export default function CustomerServiceChatbot() {
     setIsTyping(true)
     setTimeout(() => {
       addBotMessage(
-        "Thank you for chatting with Ipponyari! This conversation has ended. If you have more questions, please start a new chat. We hope to serve you soon!",
+        "Thank you for chatting with Lumè Bean and Bar! This conversation has ended. If you have more questions, please start a new chat. We hope to serve you soon!",
       )
       setIsTyping(false)
       setIsChatEnded(true)
@@ -109,7 +109,7 @@ export default function CustomerServiceChatbot() {
     setIsChatEnded(false)
     setTimeout(() => {
       addBotMessage(
-        "Hello! Welcome back to Ipponyari Japanese Restaurant! Please select a question below to get started.",
+        "Hello! Welcome back to Lumè Bean and Bar! Please select a question below to get started.",
       )
     }, 500)
   }
@@ -138,7 +138,7 @@ export default function CustomerServiceChatbot() {
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-xl bg-gradient-to-r from-[#dc143c] to-[#7f0020] hover:from-[#e8324f] hover:to-[#a00028] z-50 transition-all duration-300 hover:scale-110"
+          className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-xl bg-gradient-to-r from-[#d4a24c] to-[#8b4513] hover:from-[#e0b060] hover:to-[#a0522d] z-50 transition-all duration-300 hover:scale-110"
           size="icon"
         >
           <MessageCircle className="h-7 w-7 text-white" />
@@ -147,9 +147,9 @@ export default function CustomerServiceChatbot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-0 right-0 md:bottom-6 md:right-6 w-full md:w-[420px] h-[85vh] md:h-[700px] max-h-[700px] shadow-2xl z-50 flex flex-col border-[#dc143c]/20 rounded-t-2xl md:rounded-2xl overflow-hidden p-0 bg-white">
+        <Card className="fixed bottom-0 right-0 md:bottom-6 md:right-6 w-full md:w-[420px] h-[85vh] md:h-[700px] max-h-[700px] shadow-2xl z-50 flex flex-col border-[#d4a24c]/20 rounded-t-2xl md:rounded-2xl overflow-hidden p-0 bg-white">
           {/* Header - Crimson gradient */}
-          <CardHeader className="bg-gradient-to-r from-[#dc143c] to-[#7f0020] text-white flex flex-row items-center justify-between p-4 flex-shrink-0">
+          <CardHeader className="bg-gradient-to-r from-[#d4a24c] to-[#8b4513] text-white flex flex-row items-center justify-between p-4 flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="h-11 w-11 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
                 <MessageCircle className="h-6 w-6" />
@@ -158,7 +158,7 @@ export default function CustomerServiceChatbot() {
                 <CardTitle className="text-lg font-semibold">Customer Service</CardTitle>
                 <p className="text-xs text-white/90 flex items-center gap-1">
                   <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-                  Ipponyari Japanese Restaurant
+                  Lumè Bean and Bar
                 </p>
               </div>
             </div>
@@ -185,7 +185,7 @@ export default function CustomerServiceChatbot() {
                       <div
                         className={`max-w-[85%] rounded-2xl px-4 py-2.5 shadow-sm ${
                           message.sender === "user"
-                            ? "bg-gradient-to-r from-[#dc143c] to-[#7f0020] text-white rounded-tr-sm"
+                            ? "bg-gradient-to-r from-[#d4a24c] to-[#8b4513] text-white rounded-tr-sm"
                             : "bg-white text-gray-800 border border-gray-200 rounded-tl-sm"
                         }`}
                       >
@@ -206,15 +206,15 @@ export default function CustomerServiceChatbot() {
                       <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm border border-gray-200">
                         <div className="flex gap-1">
                           <div
-                            className="w-2 h-2 bg-[#dc143c] rounded-full animate-bounce"
+                            className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce"
                             style={{ animationDelay: "0ms" }}
                           ></div>
                           <div
-                            className="w-2 h-2 bg-[#dc143c] rounded-full animate-bounce"
+                            className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce"
                             style={{ animationDelay: "150ms" }}
                           ></div>
                           <div
-                            className="w-2 h-2 bg-[#dc143c] rounded-full animate-bounce"
+                            className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce"
                             style={{ animationDelay: "300ms" }}
                           ></div>
                         </div>
@@ -236,7 +236,7 @@ export default function CustomerServiceChatbot() {
                         key={index}
                         onClick={() => handleFAQClick(faq.question, faq.answer)}
                         disabled={isTyping}
-                        className="text-[11px] px-3 py-1.5 rounded-full border-2 border-[#dc143c]/30 text-[#dc143c] hover:bg-[#dc143c] hover:text-white hover:border-[#dc143c] bg-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium whitespace-normal text-left leading-snug"
+                        className="text-[11px] px-3 py-1.5 rounded-full border-2 border-[#d4a24c]/30 text-[#d4a24c] hover:bg-[#d4a24c] hover:text-white hover:border-[#d4a24c] bg-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium whitespace-normal text-left leading-snug"
                       >
                         {faq.question}
                       </button>
@@ -252,7 +252,7 @@ export default function CustomerServiceChatbot() {
                 <Button
                   onClick={handleEndChat}
                   variant="outline"
-                  className="w-full text-sm border-2 border-[#dc143c]/30 text-[#dc143c] hover:bg-[#dc143c] hover:text-white hover:border-[#dc143c] bg-white font-medium rounded-xl h-10 transition-all duration-200"
+                  className="w-full text-sm border-2 border-[#d4a24c]/30 text-[#d4a24c] hover:bg-[#d4a24c] hover:text-white hover:border-[#d4a24c] bg-white font-medium rounded-xl h-10 transition-all duration-200"
                   disabled={isTyping}
                 >
                   End Chat
@@ -262,7 +262,7 @@ export default function CustomerServiceChatbot() {
                   <p className="text-sm text-gray-500 mb-3 font-medium">Chat has ended</p>
                   <Button
                     onClick={handleNewChat}
-                    className="w-full bg-gradient-to-r from-[#dc143c] to-[#7f0020] hover:from-[#e8324f] hover:to-[#a00028] text-white font-medium rounded-xl h-10 shadow-md"
+                    className="w-full bg-gradient-to-r from-[#d4a24c] to-[#8b4513] hover:from-[#e0b060] hover:to-[#a0522d] text-white font-medium rounded-xl h-10 shadow-md"
                   >
                     <RotateCcw className="h-4 w-4 mr-2" />
                     Start New Chat

@@ -92,7 +92,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
-      <body>
+      <body className="bg-[#0b1d26] text-white font-sans antialiased">
         <ServiceWorkerProvider />
         <ClientLayout>{children}</ClientLayout>
       </body>

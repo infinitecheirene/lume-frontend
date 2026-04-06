@@ -6,11 +6,11 @@ import FeaturedMenu from "@/components/sections/FeaturedMenu"
 
 export default function Home() {
   return (
-    <>
+    <div className="min-h-screen">
       <HeroSection />
       <OfferSection />
       <FeaturedMenu />
       <CTASection />
-    </>
+    </div>
   )
 }
