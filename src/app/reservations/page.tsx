@@ -13,6 +13,13 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react"
+import { motion } from "framer-motion";
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 export default function ReservationsPage() {
   const [step, setStep] = useState(1)
@@ -390,7 +397,7 @@ export default function ReservationsPage() {
             <p className="text-sm text-white/80 mb-1">View your reservation</p>
             <button
               onClick={() => (window.location.href = "/orders")}
-              className="text-white font-semibold hover:text-[#ff6b6b] underline bg-transparent border-none cursor-pointer transition-colors"
+              className="text-white font-semibold hover:text-[#d4a24c]  underline bg-transparent border-none cursor-pointer transition-colors"
             >
               Go to My Reservations
             </button>
@@ -421,13 +428,13 @@ export default function ReservationsPage() {
         {/* Header */}
         <div className="text-center mb-12 animate-in fade-in slide-in-from-top duration-700">
           <h1 className="text-5xl md:text-6xl font-black mb-2 text-white drop-shadow-2xl">
-            Your Table <span className="text-[#ff6b6b]">Awaits</span>
+            Your Table <span className="text-[#d4a24c] ">Awaits</span>
           </h1>
           <p className="text-lg text-white/80">An elevated Japanese dining experience begins with your reservation</p>
 
           {user && (
             <div className="mt-4 inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full shadow-lg">
-              <User className="w-4 h-4 text-[#ff6b6b]" />
+              <User className="w-4 h-4 text-[#d4a24c] " />
               <span className="text-sm text-white">
                 Reserving as <span className="font-semibold">{user.name}</span>
               </span>
@@ -503,7 +510,7 @@ export default function ReservationsPage() {
                   <div className="relative">
                     <label className="block text-sm font-semibold text-white mb-3">Date *</label>
                     <div className="relative">
-                      <Calendar className="absolute left-4 top-3.5 w-5 h-5 text-[#ff6b6b] pointer-events-none" />
+                      <Calendar className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c]  pointer-events-none" />
                       <input
                         type="date"
                         name="date"
@@ -519,7 +526,7 @@ export default function ReservationsPage() {
                   <div className="relative">
                     <label className="block text-sm font-semibold text-white mb-3">Time *</label>
                     <div className="relative">
-                      <Clock className="absolute left-4 top-3.5 w-5 h-5 text-[#ff6b6b] pointer-events-none" />
+                      <Clock className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c]  pointer-events-none" />
                       <input
                         type="time"
                         name="time"
@@ -536,7 +543,7 @@ export default function ReservationsPage() {
                     <div className="relative">
                       <label className="block text-sm font-semibold text-white mb-3">Number of Guests *</label>
                       <div className="relative">
-                        <Users className="absolute left-4 top-3.5 w-5 h-5 text-[#ff6b6b] pointer-events-none" />
+                        <Users className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c]  pointer-events-none" />
                         <input
                           type="number"
                           name="guests"
@@ -560,7 +567,7 @@ export default function ReservationsPage() {
                     <div className="relative">
                       <label className="block text-sm font-semibold text-white mb-3">Dining Preference *</label>
                       <div className="relative">
-                        <Users className="absolute left-4 top-3.5 w-5 h-5 text-[#ff6b6b] pointer-events-none" />
+                        <Users className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c]  pointer-events-none" />
                         <select
                           name="dining_preference"
                           value={formData.dining_preference}
@@ -601,7 +608,7 @@ export default function ReservationsPage() {
                   <div className="relative">
                     <label className="block text-sm font-semibold text-white mb-3">Full Name *</label>
                     <div className="relative">
-                      <User className="absolute left-4 top-3.5 w-5 h-5 text-[#ff6b6b] pointer-events-none" />
+                      <User className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c]  pointer-events-none" />
                       <input
                         type="text"
                         name="name"
@@ -617,7 +624,7 @@ export default function ReservationsPage() {
                   <div className="relative">
                     <label className="block text-sm font-semibold text-white mb-3">Email Address *</label>
                     <div className="relative">
-                      <Mail className="absolute left-4 top-3.5 w-5 h-5 text-[#ff6b6b] pointer-events-none" />
+                      <Mail className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c]  pointer-events-none" />
                       <input
                         type="email"
                         name="email"
@@ -639,8 +646,8 @@ export default function ReservationsPage() {
                     {user?.email && <p className="text-xs text-white/50 mt-1">Using your account email</p>}
                     {emailError && !user?.email && (
                       <div className="mt-2 p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl flex items-start gap-2">
-                        <AlertCircle className="w-4 h-4 text-[#ff6b6b] shrink-0 mt-0.5" />
-                        <p className="text-[#ff6b6b] text-sm font-medium">{emailError}</p>
+                        <AlertCircle className="w-4 h-4 text-[#d4a24c]  shrink-0 mt-0.5" />
+                        <p className="text-[#d4a24c]  text-sm font-medium">{emailError}</p>
                       </div>
                     )}
                   </div>
@@ -648,7 +655,7 @@ export default function ReservationsPage() {
                   <div className="relative">
                     <label className="block text-sm font-semibold text-white mb-3">Phone Number *</label>
                     <div className="relative">
-                      <Phone className="absolute left-4 top-3.5 w-5 h-5 text-[#ff6b6b] pointer-events-none" />
+                      <Phone className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c]  pointer-events-none" />
                       <input
                         type="tel"
                         name="phone"
@@ -660,13 +667,13 @@ export default function ReservationsPage() {
                           }`}
                       />
                     </div>
-                    {phoneError && <p className="mt-2 text-sm text-[#ff6b6b]">{phoneError}</p>}
+                    {phoneError && <p className="mt-2 text-sm text-[#d4a24c] ">{phoneError}</p>}
                   </div>
 
                   <div className="relative">
                     <label className="block text-sm font-semibold text-white mb-3">Special Request (Accessibility, Dietary, Celebrations)</label>
                     <div className="relative">
-                      <MessageSquare className="absolute left-4 top-3.5 w-5 h-5 text-[#ff6b6b] pointer-events-none" />
+                      <MessageSquare className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c]  pointer-events-none" />
                       <input
                         type="text"
                         name="special_requests"
@@ -693,7 +700,7 @@ export default function ReservationsPage() {
                   <div className="relative">
                     <label className="block text-sm font-semibold text-white mb-3">Occasion Type *</label>
                     <div className="relative">
-                      <Calendar className="absolute left-4 top-3.5 w-5 h-5 text-[#ff6b6b] pointer-events-none" />
+                      <Calendar className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c]  pointer-events-none" />
                       <select
                         name="occasion_type"
                         value={formData.occasion_type || ""}
@@ -720,7 +727,7 @@ export default function ReservationsPage() {
                   <div className="relative">
                     <label className="block text-sm font-semibold text-white mb-3">Special Instructions</label>
                     <div className="relative">
-                      <MessageSquare className="absolute left-4 top-3.5 w-5 h-5 text-[#ff6b6b] pointer-events-none" />
+                      <MessageSquare className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c]  pointer-events-none" />
                       <input
                         type="text"
                         name="occasion_instructions"

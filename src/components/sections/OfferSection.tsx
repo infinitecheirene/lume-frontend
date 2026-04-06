@@ -42,13 +42,13 @@ export default function HeroSection() {
                     viewport={{ once: true }}
                     className="text-center mb-16"
                 >
-                    <p className="text-yellow-500 tracking-[0.3em] uppercase text-sm mb-3">
+                    <p className="text-[#d4a24c] tracking-[0.3em] uppercase text-sm mb-3">
                         What We Offer
                     </p>
 
                     <h2 className={`${playfair.className} text-white text-4xl md:text-5xl font-bold`}>
                         The Lumè Bean and Bar{" "}
-                        <span className="text-yellow-500 italic">Experience</span>
+                        <span className="text-[#d4a24c] italic">Experience</span>
                     </h2>
                 </motion.div>
 
@@ -72,7 +72,7 @@ export default function HeroSection() {
 
                             <Link
                                 href={item.link}
-                                className="inline-block rounded-full border border-yellow-500 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-yellow-500 hover:text-black"
+                                className="inline-block rounded-full border border-[#d4a24c] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#d4a24c] hover:text-black"
                             >
                                 {item.cta}
                             </Link>

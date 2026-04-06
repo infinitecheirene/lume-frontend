@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
       zip_code: body.zip_code?.trim() || '',
       password: body.password,
       password_confirmation: body.password_confirmation,
+      role: 'customer',
       verification_token: verificationToken,
       verification_token_expiry: verificationTokenExpiry.toISOString(),
       email_verified: false,

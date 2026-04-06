@@ -29,7 +29,7 @@ const Footer = () => {
                 height={42}
                 className="rounded-full object-cover"
               />
-              <span className="text-xl font-semibold text-yellow-500">
+              <span className="text-xl font-semibold text-[#d4a24c]">
                 Lumè Bean & Bar
               </span>
             </Link>

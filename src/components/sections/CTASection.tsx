@@ -21,13 +21,13 @@ export default function CTASection() {
           viewport={{ once: true }}
           className="max-w-3xl mx-auto text-center"
         >
-          <p className="text-yellow-500 tracking-[0.3em] uppercase text-sm mb-3">
+          <p className="text-[#d4a24c] tracking-[0.3em] uppercase text-sm mb-3">
             Reserve a Table
           </p>
 
           <h2 className={`${playfair.className} text-white text-4xl md:text-5xl font-bold mb-6`}>
             Your Table{" "}
-            <span className="text-yellow-500 italic">Awaits</span>
+            <span className="text-[#d4a24c] italic">Awaits</span>
           </h2>
 
           <p className="text-white/60 text-lg leading-relaxed mb-10">
@@ -37,7 +37,7 @@ export default function CTASection() {
 
           <Link
             href="/reserve"
-            className="inline-block rounded-full bg-yellow-500 px-10 py-4 font-semibold text-black hover:brightness-110 transition text-lg"
+            className="inline-block rounded-full bg-[#d4a24c] px-10 py-4 font-semibold text-black hover:brightness-110 transition text-lg"
           >
             Book Your Table
           </Link>

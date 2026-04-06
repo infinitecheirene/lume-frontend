@@ -19,6 +19,7 @@ const navLinks = [
   { label: "Menu", href: "/menu" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
+  { label: "Log In", href: "/login" },
 ]
 
 export default function Header() {
@@ -72,7 +73,7 @@ export default function Header() {
 
           {/* CTA */}
           <Link
-            href="/reserve"
+            href="/reservations"
             className="rounded-full bg-[#d4a24c] px-5 py-2 text-sm font-semibold text-black hover:brightness-110 transition"
           >
             Book a Table
@@ -97,7 +98,7 @@ export default function Header() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.3 }} 
             className="md:hidden bg-[#0b1d26]/95 backdrop-blur-xl border-t border-[#d4a24c]/20 overflow-hidden"
           >
             <div className="container mx-auto px-4 flex flex-col gap-4 py-6">

@@ -11,6 +11,12 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -107,213 +113,198 @@ export default function RegisterPage() {
 
   return (
     <>
-      <div className="min-h-screen py-8 bg-gradient-to-br from-white via-gray-50 to-[#fff5f5] relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-10 left-10 w-32 h-32 border-2 border-[#dc143c]/30 rounded-full"></div>
-          <div className="absolute top-32 right-20 w-24 h-24 border-2 border-[#dc143c]/20 rounded-full"></div>
-          <div className="absolute bottom-20 left-1/4 w-40 h-40 border-2 border-[#dc143c]/30 rounded-full"></div>
-          <div className="absolute bottom-32 right-10 w-28 h-28 border-2 border-[#dc143c]/20 rounded-full"></div>
+      <div className="min-h-screen bg-[#0b1d26] flex items-center justify-center px-4 py-10">
+
+        {/* Background glow */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-20 left-10 w-40 h-40 bg-[#d4a24c]/10 blur-3xl rounded-full" />
+          <div className="absolute bottom-20 right-10 w-40 h-40 bg-[#d4a24c]/10 blur-3xl rounded-full" />
         </div>
 
-        <div className="container mx-auto px-4 relative z-10 flex items-center justify-center min-h-screen">
-          <Card className="w-full max-w-2xl bg-white shadow-2xl border-2 border-[#dc143c]/20 !p-0">
-            <CardHeader className="text-center bg-gradient-to-r from-[#dc143c] to-[#7f0020] rounded-t-lg !p-0 px-6 py-4 !m-0">
-              <CardTitle className="text-3xl text-white mb-2 !mt-0">Ipponyari</CardTitle>
-              <h2 className="text-2xl text-white font-bold">Register</h2>
-              <p className="text-white/90 mt-2">Join the Ipponyari family!</p>
-            </CardHeader>
-            <CardContent className="pt-6 p-6">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name" className="text-gray-700 font-semibold flex items-center gap-2 mb-2">
-                      <User className="w-4 h-4 text-[#dc143c]" />
-                      Full Name *
-                    </Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange("name", e.target.value)}
-                      placeholder="Enter your full name"
-                      required
-                      className="border-2 border-[#dc143c]/30 bg-white text-gray-800 placeholder:text-gray-400 focus:border-[#dc143c] focus:ring-[#dc143c]/30 h-12 text-base"
-                      disabled={isSubmitting}
-                    />
-                  </div>
+        {/* Card */}
+        <div className="relative w-full max-w-2xl">   
+          <div className="bg-[#0f2a33] border border-[#d4a24c]/30 rounded-2xl p-8 shadow-[0_0_30px_rgba(212,162,76,0.25)] backdrop-blur">
 
-                  <div>
-                    <Label htmlFor="email" className="text-gray-700 font-semibold flex items-center gap-2 mb-2">
-                      <Mail className="w-4 h-4 text-[#dc143c]" />
-                      Email Address
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
-                      placeholder="your@email.com"
-                      required
-                      className="border-2 border-[#dc143c]/30 bg-white text-gray-800 placeholder:text-gray-400 focus:border-[#dc143c] focus:ring-[#dc143c]/30 h-12 text-base"
-                      disabled={isSubmitting}
-                    />
-                  </div>
-                </div>
+            {/* Header */}
+            <div className="text-center mb-8">
+              <h1 className={`text-3xl font-bold text-white ${playfair.className}`}>Create your Account</h1>
+              <p className="text-[#d4a24c] mt-1">Lumè Bean and Bar</p>
+            </div>
 
+            <form onSubmit={handleSubmit} className="space-y-6">
+
+              {/* Name + Email */}
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="phone" className="text-gray-700 font-semibold flex items-center gap-2 mb-2">
-                    <Phone className="w-4 h-4 text-[#dc143c]" />
-                    Phone Number
-                  </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    placeholder="09123456789 (11 digits)"
-                    maxLength={11}
-                    className="border-2 border-[#dc143c]/30 bg-white text-gray-800 placeholder:text-gray-400 focus:border-[#dc143c] focus:ring-[#dc143c]/30 h-12 text-base"
+                  <label className="text-sm text-white/60 mb-2 block flex items-center gap-2">
+                    <User className="w-4 h-4 text-[#d4a24c]" />
+                    Full Name
+                  </label>
+                  <input
+                    value={formData.name}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
+                    required
                     disabled={isSubmitting}
+                    placeholder="Enter your name"
+                    className="w-full h-12 rounded-lg bg-[#0b1d26] border border-white/10 px-4 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#d4a24c]/40"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="address" className="text-gray-700 font-semibold flex items-center gap-2 mb-2">
-                    <MapPin className="w-4 h-4 text-[#dc143c]" />
-                    Address
-                  </Label>
-                  <Input
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => handleInputChange("address", e.target.value)}
-                    placeholder="Enter your address"
-                    className="border-2 border-[#dc143c]/30 bg-white text-gray-800 placeholder:text-gray-400 focus:border-[#dc143c] focus:ring-[#dc143c]/30 h-12 text-base"
+                  <label className="text-sm text-white/60 mb-2 block flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-[#d4a24c]" />
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    required
                     disabled={isSubmitting}
+                    placeholder="you@email.com"
+                    className="w-full h-12 rounded-lg bg-[#0b1d26] border border-white/10 px-4 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#d4a24c]/40"
                   />
                 </div>
+              </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="city" className="text-gray-700 font-semibold flex items-center gap-2 mb-2">
-                      <Building className="w-4 h-4 text-[#dc143c]" />
-                      City
-                    </Label>
-                    <Input
-                      id="city"
-                      value={formData.city}
-                      onChange={(e) => handleInputChange("city", e.target.value)}
-                      placeholder="Enter your city"
-                      className="border-2 border-[#dc143c]/30 bg-white text-gray-800 placeholder:text-gray-400 focus:border-[#dc143c] focus:ring-[#dc143c]/30 h-12 text-base"
-                      disabled={isSubmitting}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="zip_code" className="text-gray-700 font-semibold flex items-center gap-2 mb-2">
-                      <Hash className="w-4 h-4 text-[#dc143c]" />
-                      ZIP Code
-                    </Label>
-                    <Input
-                      id="zip_code"
-                      value={formData.zip_code}
-                      onChange={(e) => handleInputChange("zip_code", e.target.value)}
-                      placeholder="12345"
-                      className="border-2 border-[#dc143c]/30 bg-white text-gray-800 placeholder:text-gray-400 focus:border-[#dc143c] focus:ring-[#dc143c]/30 h-12 text-base"
-                      disabled={isSubmitting}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="password" className="text-gray-700 font-semibold flex items-center gap-2 mb-2">
-                      <Lock className="w-4 h-4 text-[#dc143c]" />
-                      Password *
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        value={formData.password}
-                        onChange={(e) => handleInputChange("password", e.target.value)}
-                        placeholder="Enter password (min 8 characters)"
-                        required
-                        minLength={8}
-                        className="border-2 border-[#dc143c]/30 bg-white text-gray-800 placeholder:text-gray-400 focus:border-[#dc143c] focus:ring-[#dc143c]/30 h-12 text-base pr-10"
-                        disabled={isSubmitting}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#dc143c] hover:text-[#7f0020] transition-colors"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label
-                      htmlFor="password_confirmation"
-                      className="text-gray-700 font-semibold flex items-center gap-2 mb-2"
-                    >
-                      <Lock className="w-4 h-4 text-[#dc143c]" />
-                      Confirm Password
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="password_confirmation"
-                        type={showConfirmPassword ? "text" : "password"}
-                        value={formData.password_confirmation}
-                        onChange={(e) => handleInputChange("password_confirmation", e.target.value)}
-                        placeholder="Confirm password"
-                        required
-                        className="border-2 border-[#dc143c]/30 bg-white text-gray-800 placeholder:text-gray-400 focus:border-[#dc143c] focus:ring-[#dc143c]/30 h-12 text-base pr-10"
-                        disabled={isSubmitting}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#dc143c] hover:text-[#7f0020] transition-colors"
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-[#dc143c] to-[#7f0020] hover:from-[#e8324f] hover:to-[#a00028] text-white font-bold py-3 h-14 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                  size="lg"
+              {/* Phone */}
+              <div>
+                <label className="text-sm text-white/60 mb-2 block flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-[#d4a24c]" />
+                  Phone
+                </label>
+                <input
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  placeholder="09123456789"
+                  maxLength={11}
                   disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Creating Account...
-                    </span>
-                  ) : (
-                    <>
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Create Account
-                    </>
-                  )}
-                </Button>
+                  className="w-full h-12 rounded-lg bg-[#0b1d26] border border-white/10 px-4 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#d4a24c]/40"
+                />
+              </div>
 
-                <div className="text-center pt-4">
-                  <p className="text-gray-600">
-                    Already have an account?{" "}
-                    <Link href="/login" className="text-[#dc143c] hover:text-[#7f0020] font-semibold transition-colors">
-                      Login here
-                    </Link>
-                  </p>
+              {/* Address */}
+              <div>
+                <label className="text-sm text-white/60 mb-2 block flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-[#d4a24c]" />
+                  Address
+                </label>
+                <input
+                  value={formData.address}
+                  onChange={(e) => handleInputChange("address", e.target.value)}
+                  placeholder="Your address"
+                  disabled={isSubmitting}
+                  className="w-full h-12 rounded-lg bg-[#0b1d26] border border-white/10 px-4 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#d4a24c]/40"
+                />
+              </div>
+
+              {/* City + Zip */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-white/60 mb-2 block flex items-center gap-2">
+                    <Building className="w-4 h-4 text-[#d4a24c]" />
+                    City
+                  </label>
+                  <input
+                    value={formData.city}
+                    onChange={(e) => handleInputChange("city", e.target.value)}
+                    placeholder="City"
+                    disabled={isSubmitting}
+                    className="w-full h-12 rounded-lg bg-[#0b1d26] border border-white/10 px-4 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#d4a24c]/40"
+                  />
                 </div>
-              </form>
-            </CardContent>
-          </Card>
+
+                <div>
+                  <label className="text-sm text-white/60 mb-2 block flex items-center gap-2">
+                    <Hash className="w-4 h-4 text-[#d4a24c]" />
+                    ZIP Code
+                  </label>
+                  <input
+                    value={formData.zip_code}
+                    onChange={(e) => handleInputChange("zip_code", e.target.value)}
+                    placeholder="1234"
+                    disabled={isSubmitting}
+                    className="w-full h-12 rounded-lg bg-[#0b1d26] border border-white/10 px-4 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#d4a24c]/40"
+                  />
+                </div>
+              </div>
+
+              {/* Passwords */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-white/60 mb-2 block flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-[#d4a24c]" />
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={(e) => handleInputChange("password", e.target.value)}
+                      required
+                      disabled={isSubmitting}
+                      className="w-full h-12 rounded-lg bg-[#0b1d26] border border-white/10 px-4 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-[#d4a24c]/40"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#d4a24c]"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm text-white/60 mb-2 block flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-[#d4a24c]" />
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={formData.password_confirmation}
+                      onChange={(e) => handleInputChange("password_confirmation", e.target.value)}
+                      required
+                      disabled={isSubmitting}
+                      className="w-full h-12 rounded-lg bg-[#0b1d26] border border-white/10 px-4 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-[#d4a24c]/40"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#d4a24c]"
+                    >
+                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full h-12 rounded-full bg-[#d4a24c] text-black font-semibold hover:brightness-110 transition disabled:opacity-50"
+              >
+                {isSubmitting ? "Creating Account..." : "Create Account"}
+              </button>
+
+              {/* Footer */}
+              <div className="text-center pt-2">
+                <p className="text-white/60">
+                  Already have an account?{" "}
+                  <Link href="/login" className="text-[#d4a24c] hover:underline">
+                    Login
+                  </Link>
+                </p>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
+
       <Toaster />
     </>
+
   )
 }
