@@ -63,20 +63,20 @@ const Cart = () => {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-[#8B0000] via-[#6B0000] to-[#2B0000]">
+      <div className="min-h-screen py-24 bg-[#0b1d26] text-white">
         {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-[#dc143c]/30 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#dc143c]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#dc143c]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
+          <div className="absolute top-0 left-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#d4a24c]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
         </div>
 
         <div className="relative z-10 py-8">
           <div className="container mx-auto px-4">
             <div className="text-center py-16">
-              <div className="bg-[#4B0000]/70 backdrop-blur-sm border-white/30 rounded-3xl p-12 max-w-md mx-auto shadow-2xl">
+              <div className="bg-[#d4a24c]/70 backdrop-blur-sm border-white/30 rounded-3xl p-12 max-w-md mx-auto shadow-2xl">
                 <div className="relative">
-                  <ShoppingBag className="w-24 h-24 text-[#ff6b6b] mx-auto mb-6" />
+                  <ShoppingBag className="w-24 h-24 text-[#0b1d26] mx-auto mb-6" />
                 </div>
                 <h1 className="text-3xl font-bold mb-4 text-white text-balance">Your Cart is Empty</h1>
                 <p className="text-xl text-white/70 mb-8 text-pretty">
@@ -85,7 +85,7 @@ const Cart = () => {
                 <Button
                   asChild
                   size="lg"
-                  className="bg-white hover:bg-white/90 text-[#8B0000] font-bold px-8 py-6 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                  className="bg-white hover:bg-white/90 text-[#0b1d26] font-bold px-8 py-6 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
                 >
                   <Link href="/menu">Browse Our Menu</Link>
                 </Button>
@@ -98,12 +98,12 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-[#8B0000] via-[#6B0000] to-[#2B0000]">
+    <div className="min-h-screen py-24 bg-[#0b1d26] text-white">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-[#dc143c]/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#dc143c]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#dc143c]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute top-0 left-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#d4a24c]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
 
       <div className="relative z-10 py-8">
@@ -133,7 +133,7 @@ const Cart = () => {
                   return (
                     <Card
                       key={item.id}
-                      className="group hover:shadow-2xl transition-all duration-300 bg-[#4B0000]/70 backdrop-blur-sm border-white/30 hover:border-white/50 rounded-2xl overflow-hidden"
+                      className="group hover:shadow-2xl transition-all duration-300 bg-[#0b1d26]/70 backdrop-blur-sm border-white/30 hover:border-white/50 rounded-2xl overflow-hidden"
                     >
                       <CardContent className="p-6">
                         <div className="flex flex-col sm:flex-row gap-4">
@@ -173,14 +173,6 @@ const Cart = () => {
                                 >
                                   {item.category}
                                 </Badge>
-                                {item.isSpicy && (
-                                  <Badge className="text-xs bg-[#ff6b6b] text-white border-0">
-                                    Spicy
-                                  </Badge>
-                                )}
-                                {item.isVegetarian && (
-                                  <Badge className="text-xs bg-emerald-600 text-white">Veggie</Badge>
-                                )}
                               </div>
 
                               <div className="flex items-center gap-4">
@@ -220,10 +212,8 @@ const Cart = () => {
             </div>
 
             <div className="lg:w-96">
-              <Card className="sticky top-24 bg-[#4B0000]/70 backdrop-blur-sm border-white/30 rounded-2xl shadow-2xl overflow-hidden p-0">
-                <div className="bg-gradient-to-r from-[#8B0000] to-[#6B0000] text-white px-6 py-4">
-                  <h2 className="text-xl font-semibold flex items-center gap-2">Order Summary</h2>
-                </div>
+              <Card className="sticky top-24 backdrop-blur-sm overflow-hidden bg-[#0c222b] rounded-2xl p-8 border border-[#a47015]/60 text-center hover:border-[#d4a24c]/40 transition shadow-[0_0_20px_rgba(212,162,76,0.35)]">
+                  <h2 className="text-2xl font-semibold flex items-center gap-2 text-white">Order Summary</h2>
                 <CardContent className="space-y-4 p-6">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
@@ -239,7 +229,7 @@ const Cart = () => {
 
                   <Button
                     asChild
-                    className="w-full bg-white hover:bg-white/90 text-[#8B0000] rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 font-bold"
+                    className="w-full bg-white hover:bg-white/90 text-[#0c222b] rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 font-bold"
                     size="lg"
                   >
                     <Link href="/checkout">Proceed to Checkout</Link>
@@ -255,7 +245,7 @@ const Cart = () => {
                   </Button>
 
                   <div className="text-xs text-white/50 text-center bg-white/5 rounded-lg p-2 border border-white/10">
-                    Secure checkout • Ipponyari Japanese Restaurant
+                    Secure checkout • Lumè Bean and Bar
                   </div>
                 </CardContent>
               </Card>

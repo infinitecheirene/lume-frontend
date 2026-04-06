@@ -4,6 +4,8 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
 import { menuItems, categories, type Category } from "@/data/menuData"
+import { toast } from "@/hooks/use-toast"
+import { useCartStore } from "@/store/cartStore";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -12,10 +14,20 @@ const playfair = Playfair_Display({
 
 export default function MenuPage() {
   const [active, setActive] = useState<Category>("coffee")
+  const { addItem } = useCartStore();
 
   const filteredProducts = menuItems.filter(
     (item) => item.category?.toLowerCase() === active
   )
+
+  const handleAddToCart = (item: any) => {
+    addItem(item)
+
+    toast({
+      title: "Added to cart",
+      description: `${item.name} added to your order.`,
+    })
+  }
 
   return (
     <section className="py-24 bg-[#0b1d26] text-white">
@@ -41,11 +53,10 @@ export default function MenuPage() {
             <button
               key={cat.key}
               onClick={() => setActive(cat.key)}
-              className={`px-6 py-2.5 rounded-full text-sm transition ${
-                active === cat.key
-                  ? "bg-[#d4a24c] text-black font-semibold"
-                  : "bg-[#132e3b] text-white/70 hover:bg-[#193847] hover:text-white"
-              }`}
+              className={`px-6 py-2.5 rounded-full text-sm transition ${active === cat.key
+                ? "bg-[#d4a24c] text-black font-semibold"
+                : "bg-[#132e3b] text-white/70 hover:bg-[#193847] hover:text-white"
+                }`}
             >
               {cat.label}
             </button>
@@ -65,7 +76,7 @@ export default function MenuPage() {
               className="py-6 border-b border-white/10"
             >
               <div className="flex justify-between items-start gap-6">
-                
+
                 {/* Left content */}
                 <div>
                   <h3 className={`${playfair.className} text-lg md:text-xl font-semibold`}>
@@ -80,6 +91,13 @@ export default function MenuPage() {
                 <div className="text-[#d4a24c] font-semibold text-lg whitespace-nowrap">
                   ${item.price}
                 </div>
+
+                <button
+                  onClick={() => handleAddToCart(item)}
+                  className="px-4 py-1.5 rounded-full bg-[#d4a24c] text-black text-xs font-semibold hover:brightness-110 transition"
+                >
+                  + Add to Cart
+                </button>
 
               </div>
             </div>

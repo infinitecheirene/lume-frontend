@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { motion, AnimatePresence } from "framer-motion"
-import { usePathname } from "next/navigation"
+import { motion } from "framer-motion"
+import { usePathname, useRouter } from "next/navigation"
 import logo from "@/assets/logo.jpg"
-import { Menu, X } from "lucide-react"
+import { Menu, X, User, LogOut, ShoppingCart, Calendar, Settings } from "lucide-react"
+import { useCartStore } from "@/store/cartStore"
 import { Playfair_Display } from "next/font/google"
 
 const playfair = Playfair_Display({
@@ -19,59 +20,153 @@ const navLinks = [
   { label: "Menu", href: "/menu" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
-  { label: "Log In", href: "/login" },
 ]
 
 export default function Header() {
   const [open, setOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const itemCount = useCartStore((state) => state.getItemCount())
+
   const pathname = usePathname()
+  const router = useRouter()
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/"
-    return pathname?.startsWith(href)
+    return pathname.startsWith(href)
+  }
+
+  const loadUser = useCallback(() => {
+    try {
+      const storedUser = localStorage.getItem("user_data")
+      const token = localStorage.getItem("auth_token")
+
+      if (storedUser && token) {
+        const parsed = JSON.parse(storedUser)
+        setUser({ ...parsed, token })
+      } else {
+        setUser(null)
+      }
+    } catch {
+      setUser(null)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadUser()
+
+    const handleUpdate = () => loadUser()
+
+    window.addEventListener("userDataUpdated", handleUpdate)
+    window.addEventListener("storage", handleUpdate)
+
+    return () => {
+      window.removeEventListener("userDataUpdated", handleUpdate)
+      window.removeEventListener("storage", handleUpdate)
+    }
+  }, [loadUser])
+
+  const handleLogout = () => {
+    localStorage.removeItem("auth_token")
+    localStorage.removeItem("user_data")
+    setUser(null)
+    window.dispatchEvent(new Event("userDataUpdated"))
+    router.push("/login")
   }
 
   return (
     <motion.header
       initial={{ y: -40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6 }}
       className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-[#0b1d26]/70 border-b border-[#d4a24c]/20"
     >
       <div className="container mx-auto px-4 flex items-center justify-between py-4">
-        
-        {/* Logo */}
+
+        {/* LOGO */}
         <Link href="/" className="flex items-center gap-3">
           <Image
             src={logo}
-            alt="Lumè Bean and Bar Logo"
+            alt="Lumè Bean and Bar"
             width={40}
             height={40}
-            className="rounded-full object-cover"
-            priority
+            className="rounded-full"
           />
           <span className={`${playfair.className} text-xl font-semibold text-[#d4a24c]`}>
             Lumè Bean and Bar
           </span>
         </Link>
 
-        {/* Desktop Nav */}
+        {/* DESKTOP NAV */}
         <nav className="hidden md:flex items-center gap-8">
+
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm font-medium transition-colors ${
-                isActive(link.href)
-                  ? "text-[#d4a24c]"
-                  : "text-white/70 hover:text-[#d4a24c]"
-              }`}
+              className={`text-sm font-medium transition ${isActive(link.href)
+                ? "text-[#d4a24c]"
+                : "text-white/70 hover:text-[#d4a24c]"
+                }`}
             >
               {link.label}
             </Link>
           ))}
 
-          {/* CTA */}
+          <Link
+            href="/cart"
+            className={`relative px-4 py-2 transition ${isActive("/cart")
+                ? "text-[#d4a24c]"
+                : "text-white/70 hover:text-[#d4a24c]"
+              }`}
+          >
+            <ShoppingCart size={20} />
+
+            {/* BADGE */}
+            {itemCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#d4a24c] text-[#0b1d26] text-[14px] font-bold px-1.5 rounded-full min-w-[16px] text-center">
+                {itemCount}
+              </span>
+            )}
+          </Link>
+
+          {/* USER (DESKTOP) */}
+          {user ? (
+            <div className="relative">
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="p-2 text-white hover:text-[#d4a24c]"
+              >
+                <User size={20} />
+              </button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-[#0b1d26] border border-white/10 rounded-lg shadow-lg overflow-hidden">
+
+                  <Link href="/reservation-history" className="flex items-center gap-2 px-4 py-2 hover:bg-white/10">
+                    <Calendar size={16} /> Reservations
+                  </Link>
+
+                  <Link href="/profile" className="flex items-center gap-2 px-4 py-2 hover:bg-white/10">
+                    <Settings size={16} /> Account
+                  </Link>
+
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-4 py-2 text-[#d4a24c] hover:bg-white/10 w-full text-left"
+                  >
+                    <LogOut size={16} /> Logout
+                  </button>
+
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link href="/login" className="text-white/70 hover:text-[#d4a24c] text-sm font-medium">
+              Log In
+            </Link>
+          )}
+
+          {/* BOOK TABLE */}
           <Link
             href="/reservations"
             className="rounded-full bg-[#d4a24c] px-5 py-2 text-sm font-semibold text-black hover:brightness-110 transition"
@@ -80,54 +175,57 @@ export default function Header() {
           </Link>
         </nav>
 
-        {/* Mobile Toggle */}
-        <button
-          onClick={() => setOpen((prev) => !prev)}
-          className="md:hidden text-white"
-          aria-label="Toggle menu"
-          aria-expanded={open}
-        >
-          {open ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* MOBILE */}
+        <div className="flex items-center gap-3 md:hidden">
+
+          {/* USER MOBILE */}
+          {user && (
+            <button
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              className="text-white"
+            >
+              <User size={20} />
+            </button>
+          )}
+
+          {/* MENU TOGGLE */}
+          <button onClick={() => setOpen(!open)} className="text-white">
+            {open ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }} 
-            className="md:hidden bg-[#0b1d26]/95 backdrop-blur-xl border-t border-[#d4a24c]/20 overflow-hidden"
-          >
-            <div className="container mx-auto px-4 flex flex-col gap-4 py-6">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setOpen(false)}
-                  className={`transition-colors ${
-                    isActive(link.href)
-                      ? "text-[#d4a24c]"
-                      : "text-white/70 hover:text-[#d4a24c]"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
+      {/* MOBILE MENU */}
+      {open && (
+        <div className="md:hidden bg-[#0b1d26]/95 border-t border-[#d4a24c]/20 px-6 py-6 space-y-4">
 
-              <Link
-                href="/reserve"
-                onClick={() => setOpen(false)}
-                className="text-[#d4a24c] font-medium"
+          <Link href="/menu" onClick={() => setOpen(false)} className="block text-white/80 hover:text-[#d4a24c]">
+            Menu
+          </Link>
+
+          {/* LOGIN OR USER */}
+          {!user ? (
+            <Link href="/login" onClick={() => setOpen(false)} className="block text-white/80">
+              Log In
+            </Link>
+          ) : (
+            <div className="space-y-2">
+
+              <Link href="/cart" className="block text-white/80">Cart</Link>
+              <Link href="/reservation-history" className="block text-white/80">Reservations</Link>
+              <Link href="/profile" className="block text-white/80">Profile</Link>
+
+              <button
+                onClick={handleLogout}
+                className="block text-red-400"
               >
-                Book a Table
-              </Link>
+                Logout
+              </button>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+
+        </div>
+      )}
     </motion.header>
   )
 }

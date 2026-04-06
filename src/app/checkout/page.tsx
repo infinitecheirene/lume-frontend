@@ -319,7 +319,7 @@ const Checkout = () => {
 
   if (isLoadingUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#8B0000] via-[#6B0000] to-[#2B0000] flex items-center justify-center">
+      <div className="min-h-screen py-24 bg-[#0b1d26] text-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-[#ff6b6b] border-t-white rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-white/70">Loading checkout...</p>
@@ -329,28 +329,27 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-[#8B0000] via-[#6B0000] to-[#2B0000]">
+    <div className="min-h-screen py-24 bg-[#0b1d26] text-white">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-[#dc143c]/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#dc143c]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#dc143c]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute top-0 left-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#d4a24c]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
 
-      <div className="relative z-10 py-8">
+      <div className="relative z-10">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-4xl font-bold text-white">Checkout</h1>
             {userInfo && (
-              <div className="flex items-center gap-2 bg-[#4B0000]/70 backdrop-blur-sm rounded-lg px-4 py-2 border border-white/30">
-                <LogIn className="w-4 h-4 text-[#ff6b6b]" />
+              <div className="flex items-center gap-2 px-4 py-2 border bg-[#0b1d26]/70 backdrop-blur-sm border-white/30 hover:border-white/50 rounded-2xl overflow-hidden">
                 <span className="text-white font-medium">Welcome, {userInfo.name}!</span>
               </div>
             )}
           </div>
 
           {!userInfo && (
-            <Card className="mb-8 bg-[#4B0000]/70 backdrop-blur-sm border-white/30 rounded-2xl shadow-2xl">
+            <Card className="mb-8 shadow-2xl bg-[#0b1d26]/70 backdrop-blur-sm border-white/30 hover:border-white/50 rounded-2xl overflow-hidden">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -380,20 +379,20 @@ const Checkout = () => {
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card className="bg-[#4B0000]/70 backdrop-blur-sm border-white/30 shadow-2xl rounded-2xl overflow-hidden p-0">
-              <div className="border-b border-white/20 bg-gradient-to-r from-[#8B0000] to-[#6B0000] text-white px-6 py-4">
-                <h2 className="text-xl font-semibold">Delivery & Payment Information</h2>
+            <Card className="shadow-2xl p-0 bg-[#0b1d26]/70 backdrop-blur-sm border-white/30 hover:border-white/50 rounded-2xl overflow-hidden">
+              <div className="border-b border-white/20 bg-blue-950/30 text-white px-6 py-4">
+                <h2 className="text-2xl font-bold">Delivery & Payment Information</h2>
               </div>
-              <CardContent className="p-6">
+              <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-4">
-                    <h3 className="font-semibold text-lg text-white border-b border-white/20 pb-2">
+                  <div>
+                    <h3 className="font-semibold text-xl text-white border-b border-white/20 pb-2">
                       Personal Information
                     </h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 space-y-4">
                       <div>
-                        <Label htmlFor="name" className="text-white">
+                        <Label htmlFor="name" className="text-white py-2">
                           Full Name *
                         </Label>
                         <Input
@@ -406,7 +405,7 @@ const Checkout = () => {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="email" className="text-white">
+                        <Label htmlFor="email" className="text-white py-2">
                           Email Address *
                         </Label>
                         <Input
@@ -422,7 +421,7 @@ const Checkout = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="phone" className="text-white">
+                      <Label htmlFor="phone" className="text-white py-2">
                         Phone Number *
                       </Label>
                       <Input
@@ -440,12 +439,12 @@ const Checkout = () => {
                   <Separator className="bg-white/20" />
 
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-lg text-white border-b border-white/20 pb-2">
+                    <h3 className="font-semibold text-xl text-white border-b border-white/20 pb-2">
                       Delivery Address
                     </h3>
 
                     <div>
-                      <Label htmlFor="address" className="text-white">
+                      <Label htmlFor="address" className="text-white py-2">
                         Street Address *
                       </Label>
                       <Input
@@ -460,7 +459,7 @@ const Checkout = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="city" className="text-white">
+                        <Label htmlFor="city" className="text-white py-2">
                           City *
                         </Label>
                         <Input
@@ -473,7 +472,7 @@ const Checkout = () => {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="zipCode" className="text-white">
+                        <Label htmlFor="zipCode" className="text-white py-2">
                           ZIP Code *
                         </Label>
                         <Input
@@ -491,7 +490,7 @@ const Checkout = () => {
                   <Separator className="bg-white/20" />
 
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-lg text-white border-b border-white/20 pb-2">
+                    <h3 className="font-semibold text-xl text-white border-b border-white/20 pb-2">
                       Payment Method
                     </h3>
 
@@ -505,20 +504,18 @@ const Checkout = () => {
 
                     <div className="space-y-3">
                       <div
-                        className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                          total > 1000
-                            ? "bg-white/5 border-white/10 opacity-50 cursor-not-allowed"
-                            : checkoutInfo.paymentMethod === "cash"
-                              ? "bg-white/10 border-white"
-                              : "bg-white/5 border-white/20 hover:border-white/40"
-                        }`}
+                        className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${total > 1000
+                          ? "bg-white/5 border-white/10 opacity-50 cursor-not-allowed"
+                          : checkoutInfo.paymentMethod === "cash"
+                            ? "bg-white/10 border-white"
+                            : "bg-white/5 border-white/20 hover:border-white/40"
+                          }`}
                         onClick={() => total <= 1000 && handleInputChange("paymentMethod", "cash")}
                       >
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                              checkoutInfo.paymentMethod === "cash" ? "border-white" : "border-white/30"
-                            }`}
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${checkoutInfo.paymentMethod === "cash" ? "border-white" : "border-white/30"
+                              }`}
                           >
                             {checkoutInfo.paymentMethod === "cash" && (
                               <div className="w-3 h-3 rounded-full bg-white"></div>
@@ -533,18 +530,16 @@ const Checkout = () => {
                       </div>
 
                       <div
-                        className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                          checkoutInfo.paymentMethod === "gcash"
-                            ? "bg-white/10 border-white"
-                            : "bg-white/5 border-white/20 hover:border-white/40"
-                        }`}
+                        className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${checkoutInfo.paymentMethod === "gcash"
+                          ? "bg-white/10 border-white"
+                          : "bg-white/5 border-white/20 hover:border-white/40"
+                          }`}
                         onClick={() => handleInputChange("paymentMethod", "gcash")}
                       >
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                              checkoutInfo.paymentMethod === "gcash" ? "border-white" : "border-white/30"
-                            }`}
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${checkoutInfo.paymentMethod === "gcash" ? "border-white" : "border-white/30"
+                              }`}
                           >
                             {checkoutInfo.paymentMethod === "gcash" && (
                               <div className="w-3 h-3 rounded-full bg-white"></div>
@@ -561,18 +556,16 @@ const Checkout = () => {
                       </div>
 
                       <div
-                        className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                          checkoutInfo.paymentMethod === "security_bank"
-                            ? "bg-white/10 border-white"
-                            : "bg-white/5 border-white/20 hover:border-white/40"
-                        }`}
+                        className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${checkoutInfo.paymentMethod === "security_bank"
+                          ? "bg-white/10 border-white"
+                          : "bg-white/5 border-white/20 hover:border-white/40"
+                          }`}
                         onClick={() => handleInputChange("paymentMethod", "security_bank")}
                       >
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                              checkoutInfo.paymentMethod === "security_bank" ? "border-white" : "border-white/30"
-                            }`}
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${checkoutInfo.paymentMethod === "security_bank" ? "border-white" : "border-white/30"
+                              }`}
                           >
                             {checkoutInfo.paymentMethod === "security_bank" && (
                               <div className="w-3 h-3 rounded-full bg-white"></div>
@@ -590,8 +583,8 @@ const Checkout = () => {
                     {(checkoutInfo.paymentMethod === "gcash" || checkoutInfo.paymentMethod === "security_bank") && (
                       <div className="mt-4 p-4 bg-white/10 rounded-lg border border-white/20">
                         <p className="text-sm text-white mb-3">
-                        
-{checkoutInfo.paymentMethod === "gcash"
+
+                          {checkoutInfo.paymentMethod === "gcash"
                             ? "Send payment to: 0945-675-4591"
                             : "Account: 0000-075486-863"}
                         </p>
@@ -648,7 +641,7 @@ const Checkout = () => {
                   <Button
                     type="submit"
                     disabled={isProcessing}
-                    className="w-full bg-white hover:bg-white/90 text-[#8B0000] py-6 tracking-wider shadow-lg hover:shadow-xl transition-all duration-300 font-bold"
+                    className="mb-4 w-full bg-white hover:bg-white/90 text-[#0b1d26] py-6 tracking-wider shadow-lg hover:shadow-xl transition-all duration-300 font-bold"
                   >
                     {isProcessing ? "Processing..." : `Place Order • ₱${formatPrice(total)}`}
                   </Button>
@@ -657,27 +650,59 @@ const Checkout = () => {
             </Card>
 
             {/* Order Summary */}
-            <Card className="h-fit sticky top-24 bg-[#4B0000]/70 backdrop-blur-sm border-white/30 rounded-2xl shadow-2xl overflow-hidden p-0">
-              <div className="bg-gradient-to-r from-[#8B0000] to-[#6B0000] text-white px-6 py-4">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                  <Package className="w-5 h-5" />
+            <Card className="h-fit sticky top-24 shadow-2xl p-0 bg-[#0b1d26]/70 backdrop-blur-sm border-white/30 hover:border-white/50 rounded-2xl overflow-hidden">
+              <div className="border-b border-white/20 bg-blue-950/30 text-white px-6 py-4">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Package className="w-6 h-6" />
                   Order Summary
                 </h2>
               </div>
-              <CardContent className="p-6 space-y-4">
-                {items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center py-2 border-b border-white/10">
-                    <div>
-                      <p className="text-white font-medium">{item.name}</p>
-                      <p className="text-white/70 text-sm">Qty: {item.quantity}</p>
-                    </div>
-                    <p className="text-white">₱{formatPrice(Number(item.price) * item.quantity)}</p>
-                  </div>
-                ))}
+              <CardContent>
+                <div className="w-full overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+
+                    {/* HEADERS */}
+                    <thead>
+                      <tr className="border-b border-white/10 text-white/70 text-sm">
+                        <th className="py-3 font-medium">Product</th>
+                        <th className="py-3 font-medium text-center">Qty</th>
+                        <th className="py-3 font-medium text-right">Subtotal</th>
+                      </tr>
+                    </thead>
+
+                    {/* BODY */}
+                    <tbody>
+                      {items.map((item) => (
+                        <tr
+                          key={item.id}
+                          className="border-b border-white/10 hover:bg-white/5 transition"
+                        >
+                          {/* PRODUCT NAME */}
+                          <td className="py-3 text-white font-medium">
+                            <div className="max-w-[220px] truncate">
+                              {item.name}
+                            </div>
+                          </td>
+
+                          {/* QUANTITY */}
+                          <td className="py-3 text-white/70 text-center">
+                            {item.quantity}
+                          </td>
+
+                          {/* SUBTOTAL */}
+                          <td className="py-3 text-white text-right font-medium">
+                            ₱{formatPrice(Number(item.price) * item.quantity)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+
+                  </table>
+                </div>
 
                 <Separator className="bg-white/20" />
 
-                <div className="flex justify-between font-bold text-lg">
+                <div className="flex justify-between font-bold text-lg py-6">
                   <span className="text-white">Total</span>
                   <span className="text-white">₱{formatPrice(total)}</span>
                 </div>

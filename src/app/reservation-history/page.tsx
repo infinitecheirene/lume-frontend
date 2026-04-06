@@ -22,6 +22,12 @@ import {
 import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
 import { useAuthStore } from "@/store/authStore"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 const ReservationsHistory = () => {
   const [reservations, setReservations] = useState<any[]>([])
@@ -143,7 +149,7 @@ const ReservationsHistory = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#8B0000] via-[#6B0000] to-[#2B0000] flex items-center justify-center">
+      <div className="min-h-screen py-24 bg-[#0b1d26] text-white">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-white font-semibold text-lg">Loading your reservations...</p>
@@ -154,23 +160,24 @@ const ReservationsHistory = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-[#8B0000] via-[#6B0000] to-[#2B0000] flex items-center justify-center p-4">
+      <div className="min-h-screen py-24 bg-[#0b1d26] text-white">
         {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-[#dc143c]/30 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#dc143c]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-0 left-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-[#d4a24c]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
         </div>
 
-        <Card className="max-w-md w-full bg-[#4B0000]/70 backdrop-blur-sm border-white/30 shadow-2xl relative z-10">
+        <Card className="max-w-md w-full bg-[#0c222b] backdrop-blur-sm border-white/30 shadow-2xl relative z-10">
           <CardContent className="p-10 text-center">
             <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
               <User className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-3xl font-black text-white mb-3">Welcome Back</h1>
+            <h1 className="text-3xl font-black text-white mb-3">Welcome Back!</h1>
             <p className="text-white/70 mb-8">Please log in to view your reservations history.</p>
             <div className="flex flex-col gap-3">
               <Link href="/login" className="w-full">
-                <Button className="w-full bg-white hover:bg-white/90 text-[#8B0000] font-bold py-6 text-lg shadow-lg">
+                <Button className="w-full bg-white hover:bg-white/90 text-[#d4a24c] font-bold py-6 text-lg shadow-lg">
                   <LogIn className="w-5 h-5 mr-2" />
                   Login to Continue
                 </Button>
@@ -191,12 +198,12 @@ const ReservationsHistory = () => {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-[#8B0000] via-[#6B0000] to-[#2B0000] py-8 px-4">
+    <div className="min-h-screen py-24 bg-[#0b1d26] text-white">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-[#dc143c]/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#dc143c]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-[#dc143c]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute top-0 left-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-[#d4a24c]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
@@ -204,8 +211,8 @@ const ReservationsHistory = () => {
         <div className="mb-8">
           <div className="text-center gap-4 mb-6">
             <div>
-              <h1 className="text-4xl md:text-5xl font-black text-white mb-2">
-                Your <span className="text-[#ff6b6b]">Reservation</span>
+              <h1 className={`${playfair.className} text-4xl md:text-5xl font-black text-white mb-2`}>
+                Your <span className="text-[#d4a24c] italic">Reservation</span>
               </h1>
               <p className="text-white/70 text-lg">Track your dining experience in one place</p>
             </div>
@@ -214,8 +221,8 @@ const ReservationsHistory = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
           <div className="space-y-2">
-            <div className="flex items-center gap-3 bg-[#4B0000]/70 backdrop-blur-sm px-6 py-3 rounded-2xl shadow-lg border border-white/30">
-              <User className="w-5 h-5 text-[#ff6b6b]" />
+            <div className="flex items-center gap-3 backdrop-blur-sm px-6 py-3 bg-[#0c222b] rounded-2xl p-8 border border-[#a47015]/60 text-center hover:border-[#d4a24c]/40 transition shadow-[0_0_20px_rgba(212,162,76,0.35)]">
+              <User className="w-5 h-5 text-[#d4a24c]" />
               <div>
                 <p className="text-xs text-white/70">Welcome back,</p>
                 <p className="font-bold text-white">{user.name}</p>
@@ -223,9 +230,9 @@ const ReservationsHistory = () => {
             </div>
 
             {/* Filters */}
-            <div className="bg-[#4B0000]/60 backdrop-blur-sm rounded-xl border border-white/20 p-3 h-fit lg:sticky lg:top-6">
+            <div className="backdrop-blur-sm h-fit lg:sticky lg:top-6 bg-[#0c222b] rounded-2xl p-8 border border-[#a47015]/60 text-center hover:border-[#d4a24c]/40 transition shadow-[0_0_20px_rgba(212,162,76,0.35)]">
               <div className="flex items-center gap-2 mb-2">
-                <Filter className="w-4 h-4 text-[#ff6b6b]" />
+                <Filter className="w-4 h-4 text-[#d4a24c]" />
                 <span className="text-xs font-semibold text-white uppercase tracking-wide">
                   Status
                 </span>
@@ -235,7 +242,7 @@ const ReservationsHistory = () => {
                 <button
                   onClick={() => setActiveFilter("all")}
                   className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${activeFilter === "all"
-                    ? "bg-white text-[#8B0000] shadow"
+                    ? "bg-white text-[#0c222b] shadow"
                     : "bg-white/10 text-white hover:bg-white/20"
                     }`}
                 >
@@ -277,23 +284,22 @@ const ReservationsHistory = () => {
             <div className="mt-5 text-center">
               <Button
                 asChild
-                className="bg-white hover:bg-white/90 text-[#8B0000] font-bold text-md shadow-lg rounded-2xl"
+                className="bg-white hover:bg-white/90 text-[#0c222b] font-bold text-md shadow-lg rounded-2xl"
               >
                 <Link href="/reservations">
-                  <Plus className="w-4 h-4 mr-2" />Make New Reservation
+                  <Plus className="w-4 h-4 mr-2" /> Make New Reservation
                 </Link>
               </Button>
             </div>
           </div>
 
-
           {/* Content */}
           {filteredReservations.length === 0 ? (
             <div className="flex items-center justify-center py-16">
-              <Card className="max-w-lg w-full bg-[#4B0000]/70 backdrop-blur-sm border-white/30 shadow-2xl">
+              <Card className="max-w-lg w-full backdrop-blur-sm bg-[#0c222b] rounded-2xl p-8 border border-[#a47015]/60 text-center hover:border-[#d4a24c]/40 transition shadow-[0_0_20px_rgba(212,162,76,0.35)]">
                 <CardContent className="p-12 text-center">
                   <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Calendar className="w-12 h-12 text-[#ff6b6b]" />
+                    <Calendar className="w-12 h-12 text-[#d4a24c]" />
                   </div>
                   <h2 className="text-3xl font-black text-white mb-3">No Reservations Yet</h2>
                   <p className="text-white/70 mb-8 text-lg">
@@ -301,7 +307,7 @@ const ReservationsHistory = () => {
                   </p>
                   <Button
                     asChild
-                    className="bg-white hover:bg-white/90 text-[#8B0000] font-bold py-6 px-8 text-lg shadow-lg"
+                    className="bg-white hover:bg-white/90 text-[#0c222b] font-bold py-6 px-8 text-lg shadow-lg"
                   >
                     <Link href="/reservations">Make Reservation</Link>
                   </Button>

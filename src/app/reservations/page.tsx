@@ -273,112 +273,112 @@ export default function ReservationsPage() {
   }
 
   const handleSubmit = async () => {
-  if (isDailyLimitReached()) {
-    setMessage(
-      "You have reached the maximum of 2 reservations per day. Please choose a different date."
-    )
-    return
-  }
-
-  setLoading(true)
-  setMessage("")
-
-  try {
-    const token = localStorage.getItem("auth_token")
-    if (!token) {
-      window.location.href = "/login?redirect=/reservations"
+    if (isDailyLimitReached()) {
+      setMessage(
+        "You have reached the maximum of 2 reservations per day. Please choose a different date."
+      )
       return
     }
 
-    console.log("📝 Submitting reservation with data:", formData)
+    setLoading(true)
+    setMessage("")
 
-    // Prepare JSON payload (excluding file)
-    const payload: any = {
-      ...formData,
-      reservation_fee: Number(formData.reservation_fee) || 0,
-    }
-    delete payload.payment_receipt
-
-    const response = await fetch("/api/reservations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    })
-
-    const responseText = await response.text()
-    let data
     try {
-      data = JSON.parse(responseText)
-    } catch (e) {
-      console.error("Failed to parse response:", responseText)
-      setMessage("Server error: Invalid response format")
-      return
-    }
+      const token = localStorage.getItem("auth_token")
+      if (!token) {
+        window.location.href = "/login?redirect=/reservations"
+        return
+      }
 
-    if (!response.ok) {
-      const errorMsg = data.message || data.error || "Failed to create reservation"
-      setMessage(errorMsg)
-      return
-    }
+      console.log("📝 Submitting reservation with data:", formData)
 
-    console.log("✅ Reservation created successfully")
+      // Prepare JSON payload (excluding file)
+      const payload: any = {
+        ...formData,
+        reservation_fee: Number(formData.reservation_fee) || 0,
+      }
+      delete payload.payment_receipt
 
-    // If you need to upload the file separately:
-    if (formData.payment_receipt) {
-      const fileForm = new FormData()
-      fileForm.append("receipt", formData.payment_receipt)
-
-      const fileResponse = await fetch(`/api/reservations/upload-receipt/${data.reservation_id}`, {
+      const response = await fetch("/api/reservations", {
         method: "POST",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: fileForm,
+        body: JSON.stringify(payload),
       })
 
-      if (!fileResponse.ok) {
-        console.warn("Receipt upload failed, please check backend handling")
+      const responseText = await response.text()
+      let data
+      try {
+        data = JSON.parse(responseText)
+      } catch (e) {
+        console.error("Failed to parse response:", responseText)
+        setMessage("Server error: Invalid response format")
+        return
       }
+
+      if (!response.ok) {
+        const errorMsg = data.message || data.error || "Failed to create reservation"
+        setMessage(errorMsg)
+        return
+      }
+
+      console.log("✅ Reservation created successfully")
+
+      // If you need to upload the file separately:
+      if (formData.payment_receipt) {
+        const fileForm = new FormData()
+        fileForm.append("receipt", formData.payment_receipt)
+
+        const fileResponse = await fetch(`/api/reservations/upload-receipt/${data.reservation_id}`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: fileForm,
+        })
+
+        if (!fileResponse.ok) {
+          console.warn("Receipt upload failed, please check backend handling")
+        }
+      }
+
+      // Trigger email confirmation
+      setMessage("success")
+
+      setTimeout(() => {
+        setStep(1)
+        setFormData({
+          name: user?.name || "",
+          email: user?.email || "",
+          phone: user?.phone || "",
+          date: "",
+          time: "",
+          guests: "2",
+          dining_preference: "Main Dining",
+          special_requests: "",
+          occasion_type: "",
+          occasion_instructions: "",
+          reservation_fee: "",
+          payment_method: "",
+          payment_reference: "",
+          payment_receipt: undefined,
+        })
+        setMessage("")
+        setDailyBookingsCount(0)
+      }, 3000)
+    } catch (error) {
+      console.error("❌ Reservation error:", error)
+      setMessage(error instanceof Error ? error.message : "An error occurred")
+    } finally {
+      setLoading(false)
     }
-
-    // Trigger email confirmation
-    setMessage("success")
-
-    setTimeout(() => {
-      setStep(1)
-      setFormData({
-        name: user?.name || "",
-        email: user?.email || "",
-        phone: user?.phone || "",
-        date: "",
-        time: "",
-        guests: "2",
-        dining_preference: "Main Dining",
-        special_requests: "",
-        occasion_type: "",
-        occasion_instructions: "",
-        reservation_fee: "",
-        payment_method: "",
-        payment_reference: "",
-        payment_receipt: undefined,
-      })
-      setMessage("")
-      setDailyBookingsCount(0)
-    }, 3000)
-  } catch (error) {
-    console.error("❌ Reservation error:", error)
-    setMessage(error instanceof Error ? error.message : "An error occurred")
-  } finally {
-    setLoading(false)
   }
-}
 
   if (message === "success") {
     return (
-      <div className="min-h-screen bg-linear-to-b from-[#8B0000] via-[#6B0000] to-[#2B0000] flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-screen py-24 bg-[#0b1d26] text-white">
         {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
           <div className="absolute top-20 left-10 w-64 h-64 bg-[#dc143c]/30 rounded-full blur-3xl animate-pulse"></div>
@@ -417,28 +417,44 @@ export default function ReservationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-[#8B0000] via-[#6B0000] to-[#2B0000] py-12 px-4 relative overflow-hidden">
+    <div className="min-h-screen py-24 bg-[#0b1d26] text-white">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-[#dc143c]/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#dc143c]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-0 left-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
       <div className="max-w-2xl mx-auto relative z-10">
         {/* Header */}
-        <div className="text-center mb-12 animate-in fade-in slide-in-from-top duration-700">
-          <h1 className="text-5xl md:text-6xl font-black mb-2 text-white drop-shadow-2xl">
-            Your Table <span className="text-[#d4a24c] ">Awaits</span>
-          </h1>
-          <p className="text-lg text-white/80">An elevated Japanese dining experience begins with your reservation</p>
+        <div className="flex flex-col items-center">
 
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-center mb-6"
+          >
+            <p className="tracking-[0.3em] uppercase text-sm mb-3 text-[#d4a24c]">
+              Reservations
+            </p>
+
+            <h2 className={`${playfair.className} text-4xl md:text-5xl font-bold`}>
+              Reserve Your <span className="text-[#d4a24c] italic">Moment</span>
+            </h2>
+          </motion.div>
+
+          {/* User Badge */}
           {user && (
-            <div className="mt-4 inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full shadow-lg">
-              <User className="w-4 h-4 text-[#d4a24c] " />
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full shadow-lg"
+            >
+              <User className="w-4 h-4 text-[#d4a24c]" />
               <span className="text-sm text-white">
                 Reserving as <span className="font-semibold">{user.name}</span>
               </span>
-            </div>
+            </motion.div>
           )}
         </div>
 
@@ -463,7 +479,7 @@ export default function ReservationsPage() {
                   <div
                     key={s}
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 transform ${s <= step
-                      ? "bg-white text-[#8B0000] shadow-xl scale-110"
+                      ? "bg-white text-[#0f4764] shadow-xl scale-110"
                       : "bg-white/20 text-white/50"
                       }`}
                   >
@@ -584,7 +600,7 @@ export default function ReservationsPage() {
                             "Family Seating",
                             "Group Dining",
                           ].map((option) => (
-                            <option key={option} value={option} className="bg-red-200 text-gray-900">
+                            <option key={option} value={option} className="bg-blue-250 text-gray-900">
                               {option}
                             </option>
                           ))}
@@ -716,7 +732,7 @@ export default function ReservationsPage() {
                           "Casual Dinner",
                           "Other",
                         ].map((option) => (
-                          <option key={option} value={option} className="bg-red-200 text-gray-900">
+                          <option key={option} value={option} className="bg-blue-250 text-gray-900">
                             {option}
                           </option>
                         ))}
@@ -772,12 +788,12 @@ export default function ReservationsPage() {
                       className="w-full pl-4 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg appearance-none text-white"
                     >
                       {["GCash", "BPI", "Security Bank", "Other"].map((option) => (
-                        <option key={option} value={option} className="bg-red-200 text-gray-900">
+                        <option key={option} value={option} className="bg-blue-250 text-gray-900">
                           {option}
                         </option>
                       ))}
                     </select>
-                  </div>   
+                  </div>
 
                   <div className="relative">
                     <label className="block text-sm font-semibold text-white mb-3">Reference Number *</label>
@@ -900,7 +916,7 @@ export default function ReservationsPage() {
                 <button
                   onClick={() => setStep(step + 1)}
                   disabled={!isStepValid()}
-                  className="flex-1 px-6 py-3 bg-white hover:bg-white/90 disabled:bg-white/20 text-[#8B0000] disabled:text-white/50 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg disabled:shadow-none hover:scale-105 disabled:hover:scale-100"
+                  className="flex-1 px-6 py-3 bg-white hover:bg-white/90 disabled:bg-white/20 text-[#0b1d26] disabled:text-white/50 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg disabled:shadow-none hover:scale-105 disabled:hover:scale-100"
                 >
                   Continue
                   <ChevronRight className="w-5 h-5" />
@@ -909,7 +925,7 @@ export default function ReservationsPage() {
                 <button
                   onClick={handleSubmit}
                   disabled={loading || isDailyLimitReached()}
-                  className="flex-1 px-6 py-3 bg-white hover:bg-white/90 disabled:bg-white/20 text-[#8B0000] disabled:text-white/50 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg disabled:shadow-none hover:scale-105 disabled:hover:scale-100"
+                  className="flex-1 px-6 py-3 bg-white hover:bg-white/90 disabled:bg-white/20 text-[#0b1d26] disabled:text-white/50 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg disabled:shadow-none hover:scale-105 disabled:hover:scale-100"
                 >
                   {loading ? "Confirming..." : "Confirm Reservation"}
                 </button>
@@ -918,6 +934,6 @@ export default function ReservationsPage() {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   )
 }
