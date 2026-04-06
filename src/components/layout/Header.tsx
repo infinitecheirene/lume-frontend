@@ -6,7 +6,7 @@ import Image from "next/image"
 import { motion } from "framer-motion"
 import { usePathname, useRouter } from "next/navigation"
 import logo from "@/assets/logo.jpg"
-import { Menu, X, User, LogOut, ShoppingCart, Calendar, Settings } from "lucide-react"
+import { Menu, X, User, LogOut, ShoppingCart, Calendar, Settings, Package } from "lucide-react"
 import { useCartStore } from "@/store/cartStore"
 import { Playfair_Display } from "next/font/google"
 
@@ -141,7 +141,9 @@ export default function Header() {
 
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-[#0b1d26] border border-white/10 rounded-lg shadow-lg overflow-hidden">
-
+                  <Link href="/orders" className="flex items-center gap-2 px-4 py-2 hover:bg-white/10">
+                    <Package size={16} /> Orders
+                  </Link> 
                   <Link href="/reservation-history" className="flex items-center gap-2 px-4 py-2 hover:bg-white/10">
                     <Calendar size={16} /> Reservations
                   </Link>
@@ -212,6 +214,7 @@ export default function Header() {
             <div className="space-y-2">
 
               <Link href="/cart" className="block text-white/80">Cart</Link>
+              <Link href="/orders" className="block text-white/80">Orders</Link>
               <Link href="/reservation-history" className="block text-white/80">Reservations</Link>
               <Link href="/profile" className="block text-white/80">Profile</Link>
 

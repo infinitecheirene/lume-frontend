@@ -52,11 +52,6 @@ const items = [
       { title: "Testimonials", url: "/admin/testimonials" },
     ],
   },
-  {
-    title: "Restaurant",
-    icon: ChefHat,
-    items: [{ title: "Chefs", url: "/admin/chefs" }],
-  },
   { title: "Settings", url: "/admin/settings", icon: Settings },
 ]
 
@@ -83,8 +78,8 @@ export function AppSidebar() {
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 overflow-hidden">
                 <Image
-                  src="/logoippon.png"
-                  alt="Ipponyari Logo"
+                  src="/logo.jpg"
+                  alt="Lume Logo"
                   fill
                   className="object-contain bg-white rounded-full"
                 />
