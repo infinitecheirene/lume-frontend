@@ -79,7 +79,7 @@ export function AppSidebar() {
               <div className="relative w-12 h-12 overflow-hidden">
                 <Image
                   src="/logo.jpg"
-                  alt="Lume Logo"
+                  alt="Lumè Logo"
                   fill
                   className="object-contain bg-white rounded-full"
                 />

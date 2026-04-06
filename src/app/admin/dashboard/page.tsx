@@ -7,21 +7,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, TrendingUp, ShoppingCart, DollarSign, Users, ArrowUpRight, ArrowDownRight } from "lucide-react"
-import {
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts"
+import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts"
 
 interface AnalyticsData {
   keyMetrics: {
@@ -64,7 +50,7 @@ const MetricCard = ({
   change,
   icon: Icon,
   subtitle,
-  trend = "up"
+  trend = "up",
 }: {
   title: string
   value: string | number
@@ -81,21 +67,16 @@ const MetricCard = ({
         <div className="flex h-10 w-10 items-center justify-center rounded-md border border-red-100 text-gray-700">
           <Icon className="h-6 w-6 text-red-900" />
         </div>
-        <p className="text-lg font-bold uppercase tracking-wider text-red-900">
-          {title}
-        </p>
+        <p className="text-lg font-bold uppercase tracking-wider text-red-900">{title}</p>
       </div>
 
       <div className="mt-4 flex items-center justify-center gap-2">
         <h3 className="text-2xl font-bold text-gray-900">{value}</h3>
         {change && (
           <span
-            className={`flex items-center gap-1 text-sm font-medium ${trend === "up"
-              ? "text-emerald-600"
-              : trend === "down"
-                ? "text-rose-600"
-                : "text-gray-500"
-              }`}
+            className={`flex items-center gap-1 text-sm font-medium ${
+              trend === "up" ? "text-emerald-600" : trend === "down" ? "text-rose-600" : "text-gray-500"
+            }`}
           >
             {trend === "up" && <ArrowUpRight className="h-4 w-4" />}
             {trend === "down" && <ArrowDownRight className="h-4 w-4" />}
@@ -104,11 +85,7 @@ const MetricCard = ({
         )}
       </div>
 
-      {subtitle && (
-        <p className="text-center mt-2 text-xs text-gray-400">
-          {subtitle}
-        </p>
-      )}
+      {subtitle && <p className="text-center mt-2 text-xs text-gray-400">{subtitle}</p>}
     </CardContent>
   </Card>
 )
@@ -199,14 +176,8 @@ export default function AdminDashboard() {
           {isDesktop && (
             <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-white px-4 shadow-sm">
               <SidebarTrigger className="-ml-1" />
-              <Image
-                src="/logoippon.png"
-                alt="Ipponyari Logo"
-                width={40}
-                height={40}
-                className="object-contain"
-              />
-              <h1 className="text-lg font-bold text-gray-900">Ipponyari Japanese Restaurant</h1>
+              <Image src="/logo.jpg" alt="Lumè Logo" width={40} height={40} className="object-contain" />
+              <h1 className="text-lg font-bold text-gray-900">Lumè Bean and Bar</h1>
             </div>
           )}
 
@@ -225,9 +196,7 @@ export default function AdminDashboard() {
                     key={p}
                     onClick={() => setPeriod(p as any)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition
-                      ${period === p
-                        ? "bg-red-600 text-white"
-                        : "bg-white border text-gray-600 hover:bg-gray-100"}`}
+                      ${period === p ? "bg-red-600 text-white" : "bg-white border text-gray-600 hover:bg-gray-100"}`}
                   >
                     {p.charAt(0).toUpperCase() + p.slice(1)}
                   </button>
@@ -237,35 +206,42 @@ export default function AdminDashboard() {
 
             {/* Key Metrics */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              <MetricCard
-                title="Total Revenue"
-                value={`₱${(analytics.keyMetrics?.totalRevenue || 0).toLocaleString()}`}
-                change={`${analytics.keyMetrics?.TotalCustomers || 0}%`}
-                icon={DollarSign}
-                subtitle="Last 30 days"
-                trend="up"
-              />
-              <MetricCard
-                title="Total Orders"
-                value={(analytics.keyMetrics?.totalOrders || 0).toLocaleString()}
-                icon={ShoppingCart}
-                subtitle="All time orders"
-                trend="neutral"
-              />
-              <MetricCard
-                title="Rating Average"
-                value={`${analytics.keyMetrics.overallRating.toFixed(1)} / 5`}
-                icon={TrendingUp}
-                subtitle="Customer satisfaction"
-                trend="up"
-              />
-              <MetricCard
-                title="Customers"
-                value={(analytics.keyMetrics?.totalCustomers || 0).toLocaleString()}
-                icon={Users}
-                subtitle="Unique customers"
-                trend="neutral"
-              />
+              {analytics.keyMetrics?.overallRating != null && (
+                <MetricCard
+                  title="Rating Average"
+                  value={`${analytics.keyMetrics.overallRating.toFixed(1)} / 5`}
+                  icon={TrendingUp}
+                  subtitle="Customer satisfaction"
+                  trend="up"
+                />
+              )}
+              {analytics.keyMetrics?.totalOrders != null && (
+                <MetricCard
+                  title="Total Orders"
+                  value={(analytics.keyMetrics?.totalOrders || 0).toLocaleString()}
+                  icon={ShoppingCart}
+                  subtitle="All time orders"
+                  trend="neutral"
+                />
+              )}
+              {analytics.keyMetrics?.overallRating != null && (
+                <MetricCard
+                  title="Rating Average"
+                  value={`${analytics.keyMetrics.overallRating.toFixed(1)} / 5`}
+                  icon={TrendingUp}
+                  subtitle="Customer satisfaction"
+                  trend="up"
+                />
+              )}
+              {analytics.keyMetrics?.totalCustomers != null && (
+                <MetricCard
+                  title="Customers"
+                  value={(analytics.keyMetrics?.totalCustomers || 0).toLocaleString()}
+                  icon={Users}
+                  subtitle="Unique customers"
+                  trend="neutral"
+                />
+              )}
             </div>
 
             {/* Category & Products */}
@@ -290,9 +266,7 @@ export default function AdminDashboard() {
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="h-[320px] flex items-center justify-center text-gray-400">
-                      No category data
-                    </div>
+                    <div className="h-[320px] flex items-center justify-center text-gray-400">No category data</div>
                   )}
                 </CardContent>
               </Card>
@@ -318,9 +292,13 @@ export default function AdminDashboard() {
                             <div>
                               <h3 className="font-semibold text-gray-900">{product.name}</h3>
                               <div className="flex items-center gap-2 mt-1">
-                                <Badge variant="secondary" className="text-xs">{product.category}</Badge>
+                                <Badge variant="secondary" className="text-xs">
+                                  {product.category}
+                                </Badge>
                                 {product.is_spicy && (
-                                  <Badge variant="outline" className="text-xs border-red-300 text-red-700">🌶️ Spicy</Badge>
+                                  <Badge variant="outline" className="text-xs border-red-300 text-red-700">
+                                    🌶️ Spicy
+                                  </Badge>
                                 )}
                               </div>
                             </div>
@@ -334,9 +312,7 @@ export default function AdminDashboard() {
                       ))}
                     </div>
                   ) : (
-                    <div className="py-12 text-center text-gray-400">
-                      No product data available
-                    </div>
+                    <div className="py-12 text-center text-gray-400">No product data available</div>
                   )}
                 </CardContent>
               </Card>
@@ -398,9 +374,7 @@ export default function AdminDashboard() {
                       {/* Total Orders in center */}
                       <div className="mt-2 text-center">
                         <p className="text-sm text-gray-500">Total Orders</p>
-                        <p className="text-2xl font-bold text-gray-900">
-                          {analytics.orderStatusData.reduce((acc, item) => acc + item.count, 0)}
-                        </p>
+                        <p className="text-2xl font-bold text-gray-900">{analytics.orderStatusData.reduce((acc, item) => acc + item.count, 0)}</p>
                       </div>
 
                       {/* Legend */}
@@ -418,9 +392,7 @@ export default function AdminDashboard() {
                       </div>
                     </>
                   ) : (
-                    <div className="h-[280px] flex items-center justify-center text-gray-400">
-                      No order status data
-                    </div>
+                    <div className="h-[280px] flex items-center justify-center text-gray-400">No order status data</div>
                   )}
                 </CardContent>
               </Card>
@@ -436,13 +408,7 @@ export default function AdminDashboard() {
                     <>
                       <ResponsiveContainer width="100%" height={280}>
                         <PieChart>
-                          <Pie
-                            data={analytics.paymentMethodData}
-                            innerRadius={65}
-                            outerRadius={100}
-                            dataKey="count"
-                            paddingAngle={4}
-                          >
+                          <Pie data={analytics.paymentMethodData} innerRadius={65} outerRadius={100} dataKey="count" paddingAngle={4}>
                             {analytics.paymentMethodData.map((_, i) => (
                               <Cell key={i} fill={paymentColors[i % paymentColors.length]} />
                             ))}
@@ -454,10 +420,7 @@ export default function AdminDashboard() {
                       <div className="grid grid-cols-2 gap-2 mt-4 w-full">
                         {analytics.paymentMethodData.map((item, i) => (
                           <div key={item.method} className="flex items-center gap-2 text-sm">
-                            <div
-                              className="w-3 h-3 rounded-full"
-                              style={{ backgroundColor: paymentColors[i % paymentColors.length] }}
-                            />
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: paymentColors[i % paymentColors.length] }} />
                             <span className="text-gray-600 capitalize">{item.method}</span>
                             <span className="text-gray-900 font-medium ml-auto">{item.count}</span>
                           </div>
@@ -465,9 +428,7 @@ export default function AdminDashboard() {
                       </div>
                     </>
                   ) : (
-                    <div className="h-[280px] flex items-center justify-center text-gray-400">
-                      No payment data
-                    </div>
+                    <div className="h-[280px] flex items-center justify-center text-gray-400">No payment data</div>
                   )}
                 </CardContent>
               </Card>
