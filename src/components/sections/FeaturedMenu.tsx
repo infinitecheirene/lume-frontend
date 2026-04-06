@@ -3,6 +3,8 @@
 import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
 import { menuItems } from "@/data/menuData"
+import { useScroll, useTransform } from "framer-motion"
+import { useRef } from "react"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -10,14 +12,27 @@ const playfair = Playfair_Display({
 })
 
 export default function BestSellerPage() {
+  const containerRef = useRef(null)
 
-  // BEST SELLER FILTER
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"],
+  })
+
+  // Controls coffee fill
+  const fillHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"])
+  const streamHeight = useTransform(scrollYProgress, [0, 1], ["0%", "120%"])
+
   const bestSellers = menuItems.filter(
     (item) => item.isBestSeller === true
   )
 
   return (
-    <section className="py-24 bg-[#0c222b] text-white">
+    <section
+      ref={containerRef}
+      className="relative py-24 bg-[#0c222b] text-white overflow-hidden"
+    >
+
       <div className="container mx-auto px-4 max-w-6xl">
 
         {/* Heading */}

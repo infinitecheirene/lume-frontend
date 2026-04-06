@@ -118,11 +118,10 @@ export default function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm transition ${
-                isActive(link.href)
-                  ? "text-[#d4a24c]"
-                  : "text-white/70 hover:text-[#d4a24c]"
-              }`}
+              className={`text-sm transition ${isActive(link.href)
+                ? "text-[#d4a24c]"
+                : "text-white/70 hover:text-[#d4a24c]"
+                }`}
             >
               {link.label}
             </Link>
@@ -130,7 +129,7 @@ export default function Header() {
 
           {/* CART */}
           {user && (
-            <Link href="/cart" className="relative text-white/70 hover:text-[#d4a24c]">
+            <Link href="/cart" className="text-white/70 hover:text-[#d4a24c]">
               <ShoppingCart size={20} />
 
               {itemCount > 0 && (
@@ -143,7 +142,7 @@ export default function Header() {
 
           {/* USER MENU */}
           {user ? (
-            <div className="relative" ref={dropdownRef}>
+            <div ref={dropdownRef}>
               <button
                 onClick={() => setUserMenuOpen((p) => !p)}
                 className="text-white/80 hover:text-[#d4a24c]"
@@ -189,15 +188,19 @@ export default function Header() {
         </nav>
 
         {/* MOBILE */}
-        <div className="md:hidden flex items-center gap-3">
+        <div className="md:hidden flex items-center gap-5">
 
+          {/* CART */}
           {user && (
-            <button
-              onClick={() => setUserMenuOpen((p) => !p)}
-              className="text-white"
-            >
-              <User size={20} />
-            </button>
+            <Link href="/cart" className="text-white hover:text-[#d4a24c]">
+              <ShoppingCart size={24} />
+
+              {itemCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-[#d4a24c] text-black text-xs font-bold px-1.5 rounded-full min-w-[18px] text-center">
+                  {itemCount}
+                </span>
+              )}
+            </Link>
           )}
 
           <button onClick={() => setOpen(!open)} className="text-white">
@@ -208,38 +211,44 @@ export default function Header() {
 
       {/* MOBILE MENU */}
       {open && (
-        <div className="md:hidden bg-[#0b1d26]/95 border-t border-[#d4a24c]/20 px-6 py-6 space-y-4">
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="md:hidden border-t border-gold bg-background/95 backdrop-blur-xl"
+        >
+          <div className="md:hidden bg-[#0b1d26]/95 border-t border-[#d4a24c]/20 px-6 py-6 space-y-4">
 
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setOpen(false)}
-              className="block text-white/80 hover:text-[#d4a24c]"
-            >
-              {link.label}
-            </Link>
-          ))}
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setOpen(false)}
+                className="block text-white/80 hover:text-[#d4a24c]"
+              >
+                {link.label}
+              </Link>
+            ))}
 
-          {!user ? (
-            <Link href="/login" className="block text-white/80">
-              Log In
-            </Link>
-          ) : (
-            <div className="space-y-2">
+            {!user ? (
+              <Link href="/login" className="block text-white/80">
+                Log In
+              </Link>
+            ) : (
+              <div className="space-y-2">
 
-              <Link href="/cart" className="block text-white/80">Cart</Link>
-              <Link href="/reservation-history" className="block text-white/80">Reservations</Link>
-              <Link href="/profile" className="block text-white/80">Profile</Link>
+                <div className="border-t border-[#d4a24c]/50" />
+                <Link href="/reservation-history" className="block text-white/80">Reservations</Link>
+                <Link href="/profile" className="block text-white/80">Profile</Link>
 
-              <button onClick={handleLogout} className="text-red-400">
-                Logout
-              </button>
+                <button onClick={handleLogout} className="text-red-400">
+                  Logout
+                </button>
 
-            </div>
-          )}
+              </div>
+            )}
 
-        </div>
+          </div>
+        </motion.div>
       )}
     </motion.header>
   )
