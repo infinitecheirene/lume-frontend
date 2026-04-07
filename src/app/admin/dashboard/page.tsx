@@ -17,11 +17,12 @@ interface AnalyticsData {
     overallRating: number
     totalReviews: number
     TotalCustomers: number
+    averageOrderValue: number
   }
   revenueData: Array<{ date: string; revenue: number; orders: number }>
   orderStatusData: Array<{ status: string; count: number; percentage: number }>
-  paymentMethodData: Array<{ method: string; count: number; percentage: number }>
-  popularProducts: Array<{ name: string; orders: number; revenue: number; category: string; is_spicy: boolean }>
+  paymentMethodData: Array<{ payment_method: string; count: number; percentage: number }>
+  popularProducts: Array<{ name: string; orders: number; revenue: number; total_sold: number; category: string }>
   categoryData: Array<{ category: string; orders: number; revenue: number }>
   reservationData: {
     totalWalkIns: number
@@ -110,7 +111,7 @@ export default function AdminDashboard() {
     const fetchAnalytics = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dashboard?period=${period}`)
+        const response = await fetch(`/api/dashboard?period=${period}`)
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
         const data = await response.json()
         if (data.success) setAnalytics(data.data)
@@ -148,7 +149,7 @@ export default function AdminDashboard() {
           <div className="flex-1 min-w-0 flex items-center justify-center p-4">
             <Card className="max-w-md w-full border-[#0b1d26]">
               <CardHeader>
-                <CardTitle className="text-white">Failed to Load Analytics</CardTitle>
+                <CardTitle className="text-black">Failed to Load Analytics</CardTitle>
                 <CardDescription>{error || "No data available"}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -206,12 +207,12 @@ export default function AdminDashboard() {
 
             {/* Key Metrics */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {analytics.keyMetrics?.overallRating != null && (
+              {analytics.keyMetrics?.averageOrderValue != null && (
                 <MetricCard
-                  title="Rating Average"
-                  value={`${analytics.keyMetrics.overallRating.toFixed(1)} / 5`}
+                  title="Average Order Value"
+                  value={`$${analytics.keyMetrics.averageOrderValue.toFixed(2)}`}
                   icon={TrendingUp}
-                  subtitle="Customer satisfaction"
+                  subtitle="Average revenue per order"
                   trend="up"
                 />
               )}
@@ -224,12 +225,12 @@ export default function AdminDashboard() {
                   trend="neutral"
                 />
               )}
-              {analytics.keyMetrics?.overallRating != null && (
+              {analytics.keyMetrics?.totalRevenue != null && (
                 <MetricCard
-                  title="Rating Average"
-                  value={`${analytics.keyMetrics.overallRating.toFixed(1)} / 5`}
+                  title="Total Revenue"
+                  value={`$${analytics.keyMetrics.totalRevenue.toFixed(2)}`}
                   icon={TrendingUp}
-                  subtitle="Customer satisfaction"
+                  subtitle="Total income generated"
                   trend="up"
                 />
               )}
@@ -261,7 +262,7 @@ export default function AdminDashboard() {
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Bar dataKey="orders" name="Orders" fill="#1f4152" radius={[6, 6, 0, 0]} />
+                        <Bar dataKey="total_sold" name="Orders" fill="#1f4152" radius={[6, 6, 0, 0]} />
                         <Bar dataKey="revenue" name="Revenue" fill="#0b1d26" radius={[6, 6, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
@@ -299,8 +300,10 @@ export default function AdminDashboard() {
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="font-bold text-gray-900">{product.orders}</div>
-                            <div className="text-sm text-gray-500">orders</div>
+                            <div className="text-sm text-gray-500">
+                              {" "}
+                              <span className="font-bold text-gray-900">{product.total_sold}</span> orders
+                            </div>
                             <div className="text-sm font-medium text-yellow-600 mt-1">₱{product.revenue.toLocaleString()}</div>
                           </div>
                         </div>
@@ -416,7 +419,7 @@ export default function AdminDashboard() {
                         {analytics.paymentMethodData.map((item, i) => (
                           <div key={item.method} className="flex items-center gap-2 text-sm">
                             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: paymentColors[i % paymentColors.length] }} />
-                            <span className="text-gray-600 capitalize">{item.method}</span>
+                            <span className="text-gray-600 capitalize">{item.payment_method}</span>
                             <span className="text-gray-900 font-medium ml-auto">{item.count}</span>
                           </div>
                         ))}
