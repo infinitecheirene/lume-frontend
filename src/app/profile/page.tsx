@@ -138,6 +138,14 @@ export default function ProfilePage() {
 
       setUser((prev) => (prev ? { ...prev, phone: phoneInput } : prev))
 
+      // update localStorage user_data
+      const storedUser = localStorage.getItem("user_data")
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser)
+        parsed.phone = phoneInput
+        localStorage.setItem("user_data", JSON.stringify(parsed))
+      }
+
       toast({
         title: "Success",
         description: "Phone number updated successfully.",
