@@ -33,14 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -92,13 +85,13 @@ interface Order {
   delivery_city: string
   delivery_zip_code: string
   payment_method: string
-  status: "pending" | "confirmed" | "preparing" | "ready" | "delivered" | "cancelled"
+  order_status: "pending" | "confirmed" | "preparing" | "ready" | "delivered" | "cancelled"
   subtotal: number
   delivery_fee: number
   total_amount: number
   notes?: string
   receipt_file?: string
-  items: OrderItem[]
+  order_items: OrderItem[]
   created_at: string
   updated_at: string
 }
@@ -407,32 +400,9 @@ export default function UsersAdminPage() {
   // Define columns for DataTable
   const columns: ColumnDef<User>[] = [
     {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
       accessorKey: "id",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="p-0 h-auto font-normal"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="p-0 h-auto font-normal">
           ID
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
@@ -442,11 +412,7 @@ export default function UsersAdminPage() {
     {
       accessorKey: "name",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="p-0 h-auto font-normal"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="p-0 h-auto font-normal">
           Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
@@ -501,66 +467,64 @@ export default function UsersAdminPage() {
     },
     {
       accessorKey: "actions",
-      header: ({ column }) => (
-        <div className="p-0 h-auto font-normal hidden lg:flex" >
-          Actions
-        </div>
-      ),
+      header: ({ column }) => <div className="p-0 h-auto font-normal hidden lg:flex">Actions</div>,
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
         const user = row.original
         return (
           <div className="flex items-center gap-1">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedUser(user)}
-                  className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-2"
-                >
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="sm" onClick={() => setSelectedUser(user)} className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-2">
                   <Eye className="h-4 w-4" />
                   <span className="ml-1 sr-only sm:not-sr-only hidden sm:inline">View</span>
                 </Button>
-              </SheetTrigger>
-              <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+              </DialogTrigger>
+
+              <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                 {selectedUser && (
                   <>
-                    <SheetHeader>
-                      <SheetTitle>User Details - {selectedUser.name}</SheetTitle>
-                      <SheetDescription>Complete information for this user</SheetDescription>
-                    </SheetHeader>
+                    <DialogHeader>
+                      <DialogTitle className="text-black">User Details - {selectedUser.name}</DialogTitle>
+                      <DialogDescription>Complete information for this user</DialogDescription>
+                    </DialogHeader>
+
                     <div className="mt-6 space-y-6">
                       {/* User Info Card */}
-                      <Card>
-                        <CardHeader className="pb-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-lg">
+                      <Card className="gap-0 p-0">
+                        <CardHeader className="py-3 bg-slate-700 text-white rounded-t-lg">
                           <h3 className="font-semibold text-lg flex items-center gap-2">
                             <UserCheck className="w-5 h-5" />
                             Personal Information
                           </h3>
                         </CardHeader>
+
                         <CardContent className="space-y-4 pt-4">
                           <div className="grid grid-cols-2 gap-4">
                             <div>
                               <p className="text-sm font-medium text-gray-500">Full Name</p>
                               <p className="font-medium">{selectedUser.name}</p>
                             </div>
+
                             <div>
                               <p className="text-sm font-medium text-gray-500">Role</p>
                               <Badge variant="outline">{selectedUser.role}</Badge>
                             </div>
                           </div>
+
                           <div className="flex items-center gap-2 text-sm">
                             <Mail className="w-4 h-4 text-gray-400" />
                             <p>{selectedUser.email}</p>
                           </div>
+
                           {selectedUser.phone && (
                             <div className="flex items-center gap-2 text-sm">
                               <Phone className="w-4 h-4 text-gray-400" />
                               <p>{selectedUser.phone}</p>
                             </div>
                           )}
+
                           {selectedUser.address && (
                             <div className="flex items-start gap-2 text-sm">
                               <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
@@ -574,7 +538,8 @@ export default function UsersAdminPage() {
                               </div>
                             </div>
                           )}
-                          <div className="flex items-center gap-2 text-sm pt-2 border-t">
+
+                          <div className="pb-4 flex items-center gap-2 text-sm pt-2 border-t">
                             <Calendar className="w-4 h-4 text-gray-400" />
                             <p className="text-gray-600">
                               Joined on{" "}
@@ -590,8 +555,8 @@ export default function UsersAdminPage() {
                     </div>
                   </>
                 )}
-              </SheetContent>
-            </Sheet>
+              </DialogContent>
+            </Dialog>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -611,7 +576,7 @@ export default function UsersAdminPage() {
                   Send Email
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600" onClick={() => handleDeactivateUser(user)}>
+                <DropdownMenuItem className="text-yellow-600" onClick={() => handleDeactivateUser(user)}>
                   <UserX className="mr-2 h-4 w-4" />
                   Deactivate User
                 </DropdownMenuItem>
@@ -643,12 +608,12 @@ export default function UsersAdminPage() {
   if (loading) {
     return (
       <SidebarProvider defaultOpen={!isDesktop}>
-        <div className="flex min-h-screen w-full bg-gradient-to-br from-orange-50 to-red-50">
+        <div className="flex min-h-screen w-full bg-gradient-to-br from-yellow-50 to-yellow-50">
           <AppSidebar />
           <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
             <div className="flex items-center justify-center min-h-screen w-full">
               <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-xl shadow-lg">
-                <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+                <Loader2 className="h-6 w-6 animate-spin text-yellow-500" />
                 <span className="text-gray-700 font-medium">Loading users...</span>
               </div>
             </div>
@@ -660,19 +625,13 @@ export default function UsersAdminPage() {
 
   return (
     <SidebarProvider defaultOpen={!isDesktop}>
-      <div className="flex min-h-screen w-full bg-gradient-to-br from-red-50 to-red-50">
+      <div className="flex min-h-screen w-full bg-gradient-to-br from-yellow-50 to-yellow-50">
         <AppSidebar />
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
           {isDesktop && (
             <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-white px-4 shadow-sm">
               <SidebarTrigger className="-ml-1" />
-              <Image
-                src="/logo.jpg"
-                alt="Lumè Bean and Bar Logo"
-                width={40}
-                height={40}
-                className="object-contain"
-              />
+              <Image src="/logo.jpg" alt="Lumè Bean and Bar Logo" width={40} height={40} className="object-contain" />
               <h1 className="text-lg font-bold text-gray-900">Lumè Bean and Bar</h1>
             </div>
           )}
@@ -686,18 +645,18 @@ export default function UsersAdminPage() {
                   <p className="text-gray-600 mt-1">Manage customer accounts and information</p>
                 </div>
 
-                <div className="flex items-center gap-4 bg-white/70 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-orange-100">
+                <div className="flex items-center gap-4 bg-white/70 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-yellow-100">
                   <div className="flex items-center gap-2 text-sm">
-                    <UsersIcon className="w-5 h-5 text-orange-500" />
+                    <UsersIcon className="w-5 h-5 text-yellow-500" />
                     <span className="text-gray-600 font-medium">Total Customers:</span>
-                    <span className="font-bold text-orange-600 text-lg">{users.length}</span>
+                    <span className="font-bold text-yellow-600 text-lg">{users.length}</span>
                   </div>
                 </div>
               </div>
 
               {/* Filters and Search */}
-              <Card className="bg-white/70 backdrop-blur-sm shadow-xl p-0 pb-5 border-red-100">
-                <CardHeader className="p-3 bg-gradient-to-r from-red-500 to-red-500 text-white rounded-t-lg">
+              <Card className="bg-white/70 backdrop-blur-sm shadow-xl p-0 pb-5 border-yellow-100">
+                <CardHeader className="p-3 bg-slate-800 text-white rounded-t-lg">
                   <div className="flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
                       <div className="relative flex-1 max-w-sm">
@@ -717,17 +676,14 @@ export default function UsersAdminPage() {
                     Showing {table.getFilteredRowModel().rows.length} of {users.length} users
                   </div>
                   <div className="w-full">
-                    <div className="rounded-lg border border-orange-200 overflow-hidden shadow-lg">
+                    <div className="rounded-lg border border-yellow-200 overflow-hidden shadow-lg">
                       <div className="overflow-x-auto">
                         <table className="w-full min-w-[800px]">
-                          <thead className="bg-gradient-to-r from-orange-100 to-red-100">
-                            <tr className="border-b border-orange-200">
+                          <thead className="bg-gradient-to-r from-yellow-100 to-yellow-100">
+                            <tr className="border-b border-yellow-200">
                               {table.getHeaderGroups().map((headerGroup) =>
                                 headerGroup.headers.map((header) => (
-                                  <th
-                                    key={header.id}
-                                    className="text-left p-2 sm:p-3 text-xs sm:text-sm font-semibold text-gray-700"
-                                  >
+                                  <th key={header.id} className="text-left p-2 sm:p-3 text-xs sm:text-sm font-semibold text-gray-700">
                                     {header.isPlaceholder ? null : (
                                       <div>
                                         {typeof header.column.columnDef.header === "function"
@@ -744,7 +700,7 @@ export default function UsersAdminPage() {
                             {table.getRowModel().rows.map((row, index) => (
                               <tr
                                 key={row.id}
-                                className={`border-b border-orange-100 hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 transition-all duration-200 ${index % 2 === 0 ? "bg-white" : "bg-orange-25"}`}
+                                className={`border-b border-yellow-100 hover:bg-gradient-to-r hover:from-yellow-50 hover:to-yellow-50 transition-all duration-200 ${index % 2 === 0 ? "bg-white" : "bg-yellow-25"}`}
                               >
                                 {row.getVisibleCells().map((cell) => (
                                   <td key={cell.id} className="p-2 sm:p-3 text-xs sm:text-sm">
@@ -760,9 +716,9 @@ export default function UsersAdminPage() {
                       </div>
                     </div>
                     {table.getRowModel().rows.length === 0 && (
-                      <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-orange-200 mt-4">
-                        <div className="bg-gradient-to-r from-orange-100 to-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <UsersIcon className="w-8 h-8 text-orange-500" />
+                      <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-yellow-200 mt-4">
+                        <div className="bg-gradient-to-r from-yellow-100 to-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <UsersIcon className="w-8 h-8 text-yellow-500" />
                         </div>
                         <p className="text-lg font-medium text-gray-700">No users found</p>
                         {globalFilter && <p className="text-sm mt-1 text-gray-500">Try adjusting your search terms</p>}
@@ -779,13 +735,13 @@ export default function UsersAdminPage() {
       <Dialog open={showOrdersDialog} onOpenChange={setShowOrdersDialog}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Orders for {selectedUser?.name}</DialogTitle>
+            <DialogTitle className="text-black">Orders for {selectedUser?.name}</DialogTitle>
             <DialogDescription>View all orders placed by this customer</DialogDescription>
           </DialogHeader>
           <div className="mt-4">
             {loadingOrders ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+                <Loader2 className="h-6 w-6 animate-spin text-yellow-500" />
                 <span className="ml-2 text-gray-600">Loading orders...</span>
               </div>
             ) : userOrders.length === 0 ? (
@@ -796,7 +752,7 @@ export default function UsersAdminPage() {
             ) : (
               <div className="space-y-4">
                 {userOrders.map((order) => (
-                  <Card key={order.id} className="border-orange-200">
+                  <Card key={order.id} className="border-yellow-200">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
@@ -804,14 +760,11 @@ export default function UsersAdminPage() {
                             <p className="font-semibold text-lg">Order #{order.order_number}</p>
                             <Badge
                               variant={
-                                order.status === "delivered"
-                                  ? "default"
-                                  : order.status === "cancelled"
-                                    ? "destructive"
-                                    : "outline"
+                                order.order_status === "delivered" ? "default" : order.order_status === "cancelled" ? "destructive" : "outline"
                               }
+                              className="capitalize"
                             >
-                              {order.status}
+                              {order.order_status}
                             </Badge>
                           </div>
                           <div className="space-y-1 text-sm text-gray-600">
@@ -843,57 +796,64 @@ export default function UsersAdminPage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-xl text-orange-600">₱{order.total_amount.toFixed(2)}</p>
-                          <p className="text-xs text-gray-500 mt-1">Subtotal: ₱{order.subtotal.toFixed(2)}</p>
-                          <p className="text-xs text-gray-500">Delivery: ₱{order.delivery_fee.toFixed(2)}</p>
-                          <Badge variant="outline" className="mt-2 text-xs">
+                          <p className="font-bold text-xl text-yellow-600">₱{(order.total_amount ?? 0).toFixed(2)}</p>
+                          <Badge variant="outline" className="mt-2 text-xs capitalize">
                             {order.payment_method}
                           </Badge>
                         </div>
                       </div>
 
                       {/* Order Items */}
-                      {order.items && order.items.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-orange-100">
-                          <p className="text-sm font-semibold mb-2 text-gray-700">Order Items ({order.items.length})</p>
-                          <div className="space-y-2">
-                            {order.items.map((item, index) => (
-                              <div key={index} className="flex items-center gap-3 text-sm bg-orange-50 p-2 rounded">
-                                <div className="flex-1">
-                                  <p className="font-medium">{item.name}</p>
-                                  <p className="text-xs text-gray-600">{item.description}</p>
-                                  <div className="flex gap-1 mt-1">
-                                    <Badge variant="outline" className="text-xs">
-                                      {item.category}
-                                    </Badge>
-                                    {item.is_spicy && (
-                                      <Badge variant="destructive" className="text-xs">
-                                        Spicy
-                                      </Badge>
-                                    )}
-                                    {item.is_vegetarian && (
-                                      <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
-                                        Veg
-                                      </Badge>
-                                    )}
+                      {order.order_items?.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-yellow-100">
+                          <div className="flex items-center justify-between mb-3">
+                            <p className="text-sm font-semibold text-gray-700">Order Items</p>
+                            <span className="text-xs text-gray-500">({order.order_items.length})</span>
+                          </div>
+
+                          <div className="space-y-3">
+                            {order.order_items.map((item, index) => {
+                              const total = item.price * item.quantity
+
+                              return (
+                                <div key={index} className="rounded-lg border border-yellow-100 bg-yellow-50/60 p-3">
+                                  <div className="flex items-start justify-between gap-4">
+                                    {/* LEFT */}
+                                    <div className="flex-1 space-y-1">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <p className="font-medium text-gray-900 leading-tight">{item.name}</p>
+
+                                        {item.category && (
+                                          <Badge variant="outline" className="text-[10px] px-2 py-0.5 capitalize">
+                                            {item.category}
+                                          </Badge>
+                                        )}
+                                      </div>
+
+                                      {item.description && <p className="text-xs text-gray-600 line-clamp-2">{item.description}</p>}
+                                    </div>
+
+                                    {/* RIGHT */}
+                                    <div className="text-right shrink-0 min-w-[120px] space-y-1">
+                                      <p className="text-xs text-gray-500">
+                                        Qty: <span className="font-medium text-gray-700">{item.quantity}</span>
+                                      </p>
+
+                                      <p className="text-xs text-gray-500">₱{item.price.toFixed(2)} each</p>
+
+                                      <p className="text-sm font-semibold text-yellow-700">₱{total.toFixed(2)}</p>
+                                    </div>
                                   </div>
                                 </div>
-                                <div className="text-right">
-                                  <p className="font-medium">₱{item.price.toFixed(2)}</p>
-                                  <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                                  <p className="font-semibold text-orange-600">
-                                    ₱{(item.price * item.quantity).toFixed(2)}
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
+                              )
+                            })}
                           </div>
                         </div>
                       )}
 
                       {/* Special Notes */}
                       {order.notes && (
-                        <div className="mt-4 pt-4 border-t border-orange-100">
+                        <div className="mt-4 pt-4 border-t border-yellow-100">
                           <p className="text-sm font-semibold mb-1 text-gray-700">Special Notes:</p>
                           <p className="text-sm text-gray-600 bg-yellow-50 p-2 rounded">{order.notes}</p>
                         </div>
@@ -910,16 +870,20 @@ export default function UsersAdminPage() {
       <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Send Email to {selectedUser?.name}</DialogTitle>
+            <DialogTitle className="text-black">Send Email to {selectedUser?.name}</DialogTitle>
             <DialogDescription>Compose and send an email to this customer</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 mt-4">
             <div>
-              <Label htmlFor="email-to">To</Label>
+              <Label htmlFor="email-to" className="text-black">
+                To
+              </Label>
               <Input id="email-to" value={selectedUser?.email || ""} disabled className="mt-1" />
             </div>
             <div>
-              <Label htmlFor="email-subject">Subject</Label>
+              <Label htmlFor="email-subject" className="text-black">
+                Subject
+              </Label>
               <Input
                 id="email-subject"
                 placeholder="Enter email subject"
@@ -929,7 +893,9 @@ export default function UsersAdminPage() {
               />
             </div>
             <div>
-              <Label htmlFor="email-message">Message</Label>
+              <Label htmlFor="email-message" className="text-black">
+                Message
+              </Label>
               <Textarea
                 id="email-message"
                 placeholder="Enter your message"
@@ -940,10 +906,14 @@ export default function UsersAdminPage() {
             </div>
           </div>
           <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setShowEmailDialog(false)} disabled={sendingEmail}>
+            <Button variant="outline" onClick={() => setShowEmailDialog(false)} disabled={sendingEmail} className="text-black">
               Cancel
             </Button>
-            <Button onClick={sendEmail} disabled={sendingEmail || !emailSubject || !emailMessage}>
+            <Button
+              onClick={sendEmail}
+              disabled={sendingEmail || !emailSubject || !emailMessage}
+              className="bg-yellow-700 hover:bg-yellow-800 text-white"
+            >
               {sendingEmail ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -963,20 +933,17 @@ export default function UsersAdminPage() {
       <AlertDialog open={showDeactivateDialog} onOpenChange={setShowDeactivateDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle className="text-black">Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will deactivate the user account for <strong>{userToDeactivate?.name}</strong>. The user will no
-              longer be able to access their account, but their data will be preserved. You can reactivate this user
-              later if needed.
+              This will deactivate the user account for <strong>{userToDeactivate?.name}</strong>. The user will no longer be able to access their
+              account, but their data will be preserved. You can reactivate this user later if needed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deactivatingUser}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={deactivateUser}
-              disabled={deactivatingUser}
-              className="bg-red-600 hover:bg-red-700"
-            >
+            <AlertDialogCancel disabled={deactivatingUser} className="text-black">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={deactivateUser} disabled={deactivatingUser} className="bg-yellow-600 hover:bg-yellow-700">
               {deactivatingUser ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
