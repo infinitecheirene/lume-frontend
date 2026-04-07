@@ -10,20 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  MoreHorizontal,
-  Eye,
-  Plus,
-  Search,
-  Loader2,
-  ArrowUpDown,
-  Edit,
-  Trash2,
-  Upload,
-  Flame,
-  Leaf,
-  Star,
-} from "lucide-react"
+import { MoreHorizontal, Eye, Plus, Search, Loader2, ArrowUpDown, Edit, Trash2, Upload, Flame, Leaf, Star } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,15 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import {
   AlertDialog,
@@ -317,13 +296,7 @@ export default function ProductsAdminPage() {
           aria-label="Select all"
         />
       ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
+      cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />,
       enableSorting: false,
       enableHiding: false,
     },
@@ -335,29 +308,42 @@ export default function ProductsAdminPage() {
           {Object.keys(rowSelection).length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
+                <Button variant="destructive" size="sm" className="flex items-center gap-2">
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete {Object.keys(rowSelection).length} product(s).
-                  </AlertDialogDescription>
+                  <AlertDialogTitle className="text-black">Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>This will permanently delete {Object.keys(rowSelection).length} product(s).</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="flex flex-col sm:flex-row gap-2">
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel className="text-black">Cancel</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={async () => {
-                      const idsToDelete = Object.keys(rowSelection).map(Number);
-                      await Promise.all(idsToDelete.map((id) => handleDelete(id)));
-                      setRowSelection({});
+                      // Map table row IDs to actual product IDs
+                      const idsToDelete = Object.keys(rowSelection).map((rowId) => {
+                        const row = table.getRow(rowId)
+                        return row.original.id // this is the real product ID
+                      })
+
+                      try {
+                        await Promise.all(idsToDelete.map((id) => handleDelete(id)))
+                        toast({
+                          title: "Success",
+                          description: `${idsToDelete.length} product(s) deleted successfully!`,
+                        })
+                      } catch (error: any) {
+                        toast({
+                          variant: "destructive",
+                          title: "Error",
+                          description: error.message || "Error deleting products",
+                        })
+                      } finally {
+                        setRowSelection({}) // reset selection after deletion
+                      }
                     }}
+                    className="bg-red-600"
                   >
                     Delete
                   </AlertDialogAction>
@@ -394,12 +380,19 @@ export default function ProductsAdminPage() {
     {
       accessorKey: "category",
       header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="p-0 h-auto font-normal hidden sm:flex">
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="p-0 h-auto font-normal hidden sm:flex"
+        >
           Category <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) =>
-        <Badge variant="outline" className="text-xs hidden sm:inline-flex">{row.original.category}</Badge>,
+      cell: ({ row }) => (
+        <Badge variant="outline" className="text-xs hidden sm:inline-flex">
+          {row.original.category}
+        </Badge>
+      ),
     },
     {
       accessorKey: "price",
@@ -413,7 +406,11 @@ export default function ProductsAdminPage() {
     {
       accessorKey: "created_at",
       header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="p-0 h-auto font-normal hidden lg:flex">
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="p-0 h-auto font-normal hidden lg:flex"
+        >
           Created <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
@@ -425,11 +422,7 @@ export default function ProductsAdminPage() {
     },
     {
       accessorKey: "actions",
-      header: ({ column }) => (
-        <div className="p-0 h-auto font-normal hidden lg:flex">
-          Actions
-        </div>
-      ),
+      header: ({ column }) => <div className="p-0 h-auto font-normal hidden lg:flex">Actions</div>,
       id: "view",
       enableHiding: false,
       cell: ({ row }) => {
@@ -569,7 +562,8 @@ export default function ProductsAdminPage() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="h-4 w-4" /></Button>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
@@ -950,10 +944,7 @@ export default function ProductsAdminPage() {
                             <tr className="border-b border-blue-200">
                               {table.getHeaderGroups().map((headerGroup) =>
                                 headerGroup.headers.map((header) => (
-                                  <th
-                                    key={header.id}
-                                    className="text-left p-3 sm:p-4 text-sm font-semibold text-gray-700 tracking-wide"
-                                  >
+                                  <th key={header.id} className="text-left p-3 sm:p-4 text-sm font-semibold text-white tracking-wide">
                                     {header.isPlaceholder ? null : (
                                       <div className="flex items-center gap-2">
                                         {typeof header.column.columnDef.header === "function"
@@ -1014,7 +1005,7 @@ export default function ProductsAdminPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
                             className="border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-50"
                           >
@@ -1023,7 +1014,7 @@ export default function ProductsAdminPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages}
                             className="border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-50"
                           >

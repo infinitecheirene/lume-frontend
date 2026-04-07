@@ -5,7 +5,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 // Helper to get auth token
 function getAuthToken(request: NextRequest): string | null {
   const authHeader = request.headers.get("authorization")
-  const cookieToken = request.cookies.get("token")?.value
+  const cookieToken = request.cookies.get("auth_token")?.value
   return authHeader?.replace("Bearer ", "") || cookieToken || null
 }
 
@@ -40,39 +40,69 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-// POST - update product via FormData (_method=PUT)
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+// PUT
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    // Debug: log params
+    console.log("Received params:", params)
     const resolvedParams = await params
     const { id } = resolvedParams
+    console.log("Resolved product ID:", id)
+
+    // Check auth token
     const token = getAuthToken(request)
+    console.log("Auth token:", token ? "Present" : "Missing")
+    if (!token) {
+      console.warn("Unauthorized request – missing token")
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+    }
 
-    if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
-
+    // Read incoming form data
     const formData = await request.formData()
+    console.log("Incoming formData keys:", Array.from(formData.keys()))
+
     const laravelFormData = new FormData()
+    // Append fields with debug
+    const fields = ["name", "description", "price", "category", "is_spicy", "is_vegetarian", "is_featured"]
+    fields.forEach((field) => {
+      const value = formData.get(field)
+      let convertedValue: string
+      if (field.startsWith("is_")) {
+        convertedValue = value === "true" ? "1" : "0"
+      } else {
+        convertedValue = value as string
+      }
+      laravelFormData.append(field, convertedValue)
+      console.log(`Appending to laravelFormData: ${field} = ${convertedValue}`)
+    })
 
-    // Append fields
-    laravelFormData.append("name", formData.get("name") as string)
-    laravelFormData.append("description", formData.get("description") as string)
-    laravelFormData.append("price", formData.get("price") as string)
-    laravelFormData.append("category", formData.get("category") as string)
-    laravelFormData.append("is_spicy", (formData.get("is_spicy") === "true" ? "1" : "0"))
-    laravelFormData.append("is_vegetarian", (formData.get("is_vegetarian") === "true" ? "1" : "0"))
-    laravelFormData.append("is_featured", (formData.get("is_featured") === "true" ? "1" : "0"))
-    laravelFormData.append("_method", (formData.get("_method") as string) || "PUT")
-
+    // Handle image
     const image = formData.get("image") as File
-    if (image && image.size > 0) laravelFormData.append("image", image)
+    if (image && image.size > 0) {
+      laravelFormData.append("image", image)
+      console.log("Image appended:", image.name, image.size, "bytes")
+    } else {
+      console.log("No image file provided")
+    }
 
+    // Debug: show laravelFormData keys before sending
+    console.log("laravelFormData keys to send:", Array.from(laravelFormData.keys()))
+
+    // Send to Laravel API
     const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
-      method: "POST",
-      headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
+      method: "PUT",
+      headers: {
+        // NOTE: Content-Type should NOT be set when sending FormData
+        Authorization: `Bearer ${token}`,
+      },
       body: laravelFormData,
     })
 
-    let responseData: any
+    console.log("Laravel API response status:", response.status, response.statusText)
     const text = await response.text()
+    console.log("Raw response text:", text)
+
+    let responseData: any
     try {
       responseData = text ? JSON.parse(text) : {}
     } catch {
@@ -80,15 +110,20 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     if (!response.ok) {
+      console.error("Failed to update product:", responseData)
       return NextResponse.json(
-        { message: responseData.message || "Failed to update product", errors: responseData.errors || null },
-        { status: response.status }
+        {
+          message: responseData.message || "Failed to update product",
+          errors: responseData.errors || null,
+        },
+        { status: response.status },
       )
     }
 
+    console.log("Product updated successfully:", responseData)
     return NextResponse.json(responseData)
   } catch (error: any) {
-    console.error("Error updating product:", error)
+    console.error("Error in PUT /api/product/[id]:", error)
     return NextResponse.json({ message: error.message || "Internal server error" }, { status: 500 })
   }
 }

@@ -16,14 +16,10 @@ import { useAuthStore } from "@/store/authStore"
 
 const queryClient = new QueryClient()
 
-export default function ClientLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const showHeader = pathname !== "/login" && pathname !== "/register"
-  
+  const showHeader = pathname !== "/login" && pathname !== "/register" && pathname !== "/admin" && !pathname.startsWith("/admin/")
+
   // Initialize auth from storage on mount
   const initializeAuth = useAuthStore((state) => state.initializeAuth)
 
@@ -39,10 +35,10 @@ export default function ClientLayout({
           <div className="min-h-screen flex flex-col">
             {showHeader && <Header />}
             <main className="flex-1">{children}</main>
-            <Footer />
+            {showHeader && <Footer />}
           </div>
           {/* <FloatingSocialMedia /> */}
-          <CustomerServiceChatbot />
+          {showHeader && <CustomerServiceChatbot />}
           <Toaster />
           <SonnerToaster />
         </TooltipProvider>

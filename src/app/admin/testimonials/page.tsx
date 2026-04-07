@@ -163,13 +163,13 @@ export default function TestimonialsAdmin() {
             <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-white px-4 shadow-sm">
               <SidebarTrigger className="-ml-1" />
               <Image
-                src="/logoippon.png"
-                alt="Ipponyari Logo"
+                src="/logo.jpg"
+                alt="Lumè Logo"
                 width={40}
                 height={40}
                 className="object-contain"
               />
-              <h1 className="text-lg font-bold text-gray-900">Ipponyari Japanese Restaurant</h1>
+              <h1 className="text-lg font-bold text-gray-900">Lumè Bean and Bar</h1>
             </div>
           )}
 

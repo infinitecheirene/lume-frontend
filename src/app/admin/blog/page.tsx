@@ -158,8 +158,8 @@ export default function BlogPostsAdmin() {
           {isDesktop && (
             <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-white px-4">
               <SidebarTrigger />
-              <Image src="/logoippon.png" alt="Logo" width={40} height={40} />
-              <h1 className="font-bold">Ipponyari Japanese Restaurant</h1>
+              <Image src="/logo.jpg" alt="Logo" width={40} height={40} />
+              <h1 className="font-bold">Lumè Bean and Bar</h1>
             </div>
           )}
 
