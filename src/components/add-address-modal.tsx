@@ -87,7 +87,7 @@ export function AddAddressModal({ isOpen, onClose, onSubmit, isEditing = false, 
               value={formData.street}
               onChange={(e) => setFormData({ ...formData, street: e.target.value })}
               required
-              className="border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+              className="text-black border-gray-300 focus:border-yellow-500 focus:ring-yellow-500"
             />
           </div>
 
@@ -99,7 +99,7 @@ export function AddAddressModal({ isOpen, onClose, onSubmit, isEditing = false, 
                 value={formData.city}
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                 required
-                className="border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                className="text-black border-gray-300 focus:border-yellow-500 focus:ring-yellow-500"
               />
             </div>
             <div>
@@ -109,7 +109,7 @@ export function AddAddressModal({ isOpen, onClose, onSubmit, isEditing = false, 
                 value={formData.state}
                 onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                 required
-                className="border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                className="text-black border-gray-300 focus:border-yellow-500 focus:ring-yellow-500"
               />
             </div>
           </div>
@@ -122,7 +122,7 @@ export function AddAddressModal({ isOpen, onClose, onSubmit, isEditing = false, 
                 value={formData.postal_code}
                 onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })}
                 required
-                className="border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                className="text-black border-gray-300 focus:border-yellow-500 focus:ring-yellow-500"
               />
             </div>
             <div>
@@ -132,7 +132,7 @@ export function AddAddressModal({ isOpen, onClose, onSubmit, isEditing = false, 
                 value={formData.country}
                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                 required
-                className="border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                className="text-black border-gray-300 focus:border-yellow-500 focus:ring-yellow-500"
               />
             </div>
           </div>
@@ -142,7 +142,7 @@ export function AddAddressModal({ isOpen, onClose, onSubmit, isEditing = false, 
             <Button
               type="submit"
               disabled={isLoading}
-              className="flex-1 bg-gradient-to-r from-orange-600 to-orange-700 text-white hover:from-orange-700 hover:to-orange-800 shadow-md disabled:opacity-50"
+              className="flex-1 bg-gradient-to-r from-yellow-600 to-yellow-700 text-white hover:from-yellow-700 hover:to-yellow-800 shadow-md disabled:opacity-50"
             >
               {isLoading ? "Saving..." : isEditing ? "Update Address" : "Add Address"}
             </Button>
