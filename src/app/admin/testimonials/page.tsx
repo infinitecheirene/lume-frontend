@@ -379,7 +379,7 @@ export default function TestimonialsAdmin() {
             <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Delete Testimonial</DialogTitle>
+                  <DialogTitle className="text-black">Delete Testimonial</DialogTitle>
                   <DialogDescription>Are you sure you want to delete this testimonial? This action cannot be undone.</DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="flex justify-end gap-2">
@@ -389,6 +389,7 @@ export default function TestimonialsAdmin() {
                       setDeleteOpen(false)
                       setDeleteId(null)
                     }}
+                    className="bg-transparent text-black"
                   >
                     Cancel
                   </Button>
