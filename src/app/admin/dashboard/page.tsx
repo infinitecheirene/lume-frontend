@@ -75,9 +75,8 @@ const MetricCard = ({
         <h3 className="text-2xl font-bold text-gray-900">{value}</h3>
         {change && (
           <span
-            className={`flex items-center gap-1 text-sm font-medium ${
-              trend === "up" ? "text-emerald-600" : trend === "down" ? "text-rose-600" : "text-gray-500"
-            }`}
+            className={`flex items-center gap-1 text-sm font-medium ${trend === "up" ? "text-emerald-600" : trend === "down" ? "text-rose-600" : "text-gray-500"
+              }`}
           >
             {trend === "up" && <ArrowUpRight className="h-4 w-4" />}
             {trend === "down" && <ArrowDownRight className="h-4 w-4" />}
@@ -128,13 +127,43 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <SidebarProvider defaultOpen={!isDesktop}>
-        <div className="flex min-h-screen w-full bg-[#0b1d26]">
+        <div className="flex min-h-screen w-full bg-amber-50">
+
           <AppSidebar />
-          <div className="flex-1 min-w-0 flex items-center justify-center">
-            <div className="flex items-center gap-3 bg-[#0b1d26] px-8 py-6 rounded-2xl shadow-lg">
-              <Loader2 className="h-6 w-6 animate-spin text-white" />
-              <span className="text-white font-medium text-lg">Loading Dashboard...</span>
+
+          <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
+
+            <div className="flex items-center justify-center min-h-screen w-full">
+
+              <div className="flex flex-col items-center gap-4 bg-[#162A3A] backdrop-blur-xl px-8 py-8 rounded-2xl border border-[#d4a24c]/70 shadow-2xl">
+
+                {/* Spinner */}
+                <div className="relative">
+                  <Loader2 className="h-8 w-8 animate-spin text-[#d4a24c]" />
+                  <div className="absolute inset-0 rounded-full border border-[#d4a24c]/20 blur-sm" />
+                </div>
+
+                {/* Text */}
+                <div className="text-center">
+                  <p className="text-lg font-semibold text-white">
+                    Loading Dashboard
+                  </p>
+                  <p className="text-sm text-white/60">
+                    Please wait while we fetch the data...
+                  </p>
+                </div>
+
+                {/* Animated dots */}
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce" />
+                </div>
+
+              </div>
+
             </div>
+
           </div>
         </div>
       </SidebarProvider>
