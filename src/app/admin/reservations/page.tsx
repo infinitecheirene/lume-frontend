@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ChevronLeft, ChevronRight, Plus, Loader2 } from "lucide-react"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
@@ -27,7 +27,7 @@ interface Reservation {
   time: string
   guests: number
   special_requests?: string
-  status: "Pending" | "Confirmed" | "Cancelled"
+  status: "pending" | "confirmed" | "cancelled"
   created_at: string
   reservation_fee_paid: boolean
   dining_preference: "Main Dining" | "Private Tatami Room" | "Chef's Counter" | "Window Seat" | "Celebration Area" | "Family Seating" | "Group Dining"
@@ -41,10 +41,7 @@ interface Reservation {
 
 function isSameMonth(dateStr: string, currentDate: Date) {
   const d = new Date(dateStr)
-  return (
-    d.getFullYear() === currentDate.getFullYear() &&
-    d.getMonth() === currentDate.getMonth()
-  )
+  return d.getFullYear() === currentDate.getFullYear() && d.getMonth() === currentDate.getMonth()
 }
 
 function getReservationColor(reservation: Reservation) {
@@ -54,7 +51,7 @@ function getReservationColor(reservation: Reservation) {
   return "bg-green-100 text-green-800 hover:bg-green-200"
 }
 
-type ReservationStatus = "Pending" | "Confirmed" | "Cancelled"
+type ReservationStatus = "pending" | "confirmed" | "cancelled"
 type DiningPreference = Reservation["dining_preference"]
 type OccasionType = Reservation["occasion_type"]
 
@@ -66,6 +63,8 @@ export default function ReservationsAdmin() {
   const [isAddingReservation, setIsAddingReservation] = useState(false)
   const [isWalkInGuest, setIsWalkInGuest] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
+  const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   useEffect(() => {
     const checkDesktop = () => {
@@ -86,10 +85,9 @@ export default function ReservationsAdmin() {
     dining_preference: "Main Dining" as DiningPreference,
     occasion_type: "Casual Dinner" as OccasionType,
     special_requests: "",
-    status: "Pending" as ReservationStatus,
+    status: "pending" as ReservationStatus,
     is_walkin: false,
   })
-
 
   useEffect(() => {
     fetchReservations()
@@ -103,7 +101,7 @@ export default function ReservationsAdmin() {
   }, [reservations])
 
   function getAuthHeaders() {
-    const token = localStorage.getItem('auth_token')
+    const token = localStorage.getItem("auth_token")
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     }
@@ -117,7 +115,7 @@ export default function ReservationsAdmin() {
     try {
       setLoading(true)
       const response = await fetch("/api/reservations", {
-        headers: getAuthHeaders()
+        headers: getAuthHeaders(),
       })
 
       console.log("Response status:", response.status)
@@ -176,11 +174,11 @@ export default function ReservationsAdmin() {
     if (!date) return []
 
     const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const day = String(date.getDate()).padStart(2, "0")
     const dateStr = `${year}-${month}-${day}`
 
-    const found = reservations.filter(res => {
+    const found = reservations.filter((res) => {
       const resDate = res.date.substring(0, 10)
       return resDate === dateStr
     })
@@ -201,7 +199,7 @@ export default function ReservationsAdmin() {
   }
 
   function formatMonthYear(date: Date) {
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    return date.toLocaleDateString("en-US", { month: "long", year: "numeric" })
   }
 
   function isToday(date: Date | null) {
@@ -212,18 +210,18 @@ export default function ReservationsAdmin() {
 
   function formatDate(dateString: string) {
     const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     })
   }
 
   function formatTime(timeString: string) {
-    const [hours, minutes] = timeString.split(':')
+    const [hours, minutes] = timeString.split(":")
     const hour = parseInt(hours)
-    const minute = minutes || '00'
-    const period = hour >= 12 ? 'PM' : 'AM'
+    const minute = minutes || "00"
+    const period = hour >= 12 ? "PM" : "AM"
     const displayHour = hour % 12 || 12
     return `${displayHour}:${minute}${period}`
   }
@@ -261,7 +259,7 @@ export default function ReservationsAdmin() {
         time: "",
         guests: 1,
         special_requests: "",
-        status: "Pending",
+        status: "pending",
         dining_preference: "Main Dining",
         occasion_type: "Casual Dinner",
         is_walkin: false,
@@ -278,7 +276,7 @@ export default function ReservationsAdmin() {
       const payload = {
         ...formData,
         is_walkin: true,
-        status: "Confirmed",
+        status: "confirmed",
       }
 
       const response = await fetch("/api/reservations", {
@@ -299,7 +297,7 @@ export default function ReservationsAdmin() {
         dining_preference: "Main Dining",
         occasion_type: "Casual Dinner",
         special_requests: "",
-        status: "Pending",
+        status: "pending",
         is_walkin: false,
       })
 
@@ -310,10 +308,7 @@ export default function ReservationsAdmin() {
     }
   }
 
-
   async function handleDelete(id: number) {
-    if (!confirm("Are you sure you want to delete this reservation?")) return
-
     try {
       const response = await fetch(`/api/reservations/${id}`, {
         method: "DELETE",
@@ -323,6 +318,9 @@ export default function ReservationsAdmin() {
       if (!response.ok) throw new Error("Failed to delete")
 
       setSelectedReservation(null)
+      setDeleteOpen(false)
+      setDeleteId(null)
+
       fetchReservations()
     } catch (error) {
       console.error("Error deleting reservation:", error)
@@ -349,7 +347,7 @@ export default function ReservationsAdmin() {
   }
 
   const days = getDaysInMonth(currentDate)
-  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
   if (loading) {
     return (
@@ -370,21 +368,11 @@ export default function ReservationsAdmin() {
   }
 
   const reservationCustomerCount = reservations
-    .filter(
-      r =>
-        !r.is_walkin &&
-        r.status !== "Cancelled" &&
-        isSameMonth(r.date, currentDate)
-    )
+    .filter((r) => !r.is_walkin && r.status !== "cancelled" && isSameMonth(r.date, currentDate))
     .reduce((sum, r) => sum + r.guests, 0)
 
   const walkInCustomerCount = reservations
-    .filter(
-      r =>
-        r.is_walkin &&
-        r.status !== "Cancelled" &&
-        isSameMonth(r.date, currentDate)
-    )
+    .filter((r) => r.is_walkin && r.status !== "cancelled" && isSameMonth(r.date, currentDate))
     .reduce((sum, r) => sum + r.guests, 0)
 
   return (
@@ -410,12 +398,8 @@ export default function ReservationsAdmin() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                  Reservation Management
-                </h1>
-                <p className="text-gray-600 mt-1">
-                  Manage your restaurant&apos;s reservations and walk-in guests
-                </p>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Reservation Management</h1>
+                <p className="text-gray-600 mt-1">Manage your restaurant&apos;s reservations and walk-in guests</p>
               </div>
 
               {/* Monthly Guest Counts */}
@@ -423,20 +407,14 @@ export default function ReservationsAdmin() {
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-full bg-green-500"></span>
                   <span className="text-gray-700">
-                    Reservation:{" "}
-                    <span className="font-semibold text-green-800">
-                      {reservationCustomerCount}
-                    </span>
+                    Reservation: <span className="font-semibold text-green-800">{reservationCustomerCount}</span>
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-full bg-blue-500"></span>
                   <span className="text-gray-700">
-                    Walk-In:{" "}
-                    <span className="font-semibold text-blue-800">
-                      {walkInCustomerCount}
-                    </span>
+                    Walk-In: <span className="font-semibold text-blue-800">{walkInCustomerCount}</span>
                   </span>
                 </div>
               </div>
@@ -474,7 +452,7 @@ export default function ReservationsAdmin() {
               </div>
 
               <div className="grid grid-cols-7 gap-1 sm:gap-2 mx-5">
-                {weekDays.map(day => (
+                {weekDays.map((day) => (
                   <div key={day} className="p-1 sm:p-2 text-center font-semibold text-xs sm:text-sm text-gray-600">
                     <span className="hidden sm:inline">{day}</span>
                     <span className="sm:hidden">{day.substring(0, 1)}</span>
@@ -487,21 +465,20 @@ export default function ReservationsAdmin() {
                   return (
                     <Card
                       key={index}
-                      className={`min-h-[80px] sm:min-h-[100px] lg:min-h-[120px] ${!date ? 'invisible' : ''} ${isToday(date) ? 'ring-2 ring-blue-500' : ''
-                        }`}
+                      className={`min-h-[80px] sm:min-h-[100px] lg:min-h-[120px] ${!date ? "invisible" : ""} ${
+                        isToday(date) ? "ring-2 ring-blue-500" : ""
+                      }`}
                     >
                       <CardContent className="p-1 sm:p-2">
                         {date && (
                           <>
-                            <div className="text-xs sm:text-sm font-semibold mb-1 sm:mb-2 text-gray-700">
-                              {date.getDate()}
-                            </div>
+                            <div className="text-xs sm:text-sm font-semibold mb-1 sm:mb-2 text-gray-700">{date.getDate()}</div>
                             <div className="space-y-0.5 sm:space-y-1">
-                              {dayReservations.map(reservation => (
+                              {dayReservations.map((reservation) => (
                                 <button
                                   key={reservation.id}
                                   onClick={() => setSelectedReservation(reservation)}
-                                  className={`w-full text-left px-1 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs truncate transition-colors font-medium ${getReservationColor(reservation)}`}
+                                  className={`capitalize w-full text-left px-1 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs truncate transition-colors font-medium ${getReservationColor(reservation)}`}
                                 >
                                   <span className="hidden sm:inline">{reservation.time.substring(0, 5)} - </span>
                                   {reservation.status}
@@ -589,15 +566,15 @@ export default function ReservationsAdmin() {
                               handleStatusChange(selectedReservation.id, value)
                             }
                           >
-                            <SelectTrigger className="w-full text-gray-600">
-                              <SelectValue>
+                            <SelectTrigger className="w-full text-gray-600 capitalize">
+                              <SelectValue className="capitalize">
                                 {selectedReservation.status ? selectedReservation.status : "Select Status"}
                               </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Pending">Pending</SelectItem>
-                              <SelectItem value="Confirmed">Confirmed</SelectItem>
-                              <SelectItem value="Cancelled">Cancelled</SelectItem>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="confirmed">Confirmed</SelectItem>
+                              <SelectItem value="cancelled">Cancelled</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -646,7 +623,10 @@ export default function ReservationsAdmin() {
                       <Button
                         variant="destructive"
                         className="w-full mt-4"
-                        onClick={() => handleDelete(selectedReservation.id)}
+                        onClick={() => {
+                          setDeleteId(selectedReservation.id)
+                          setDeleteOpen(true)
+                        }}
                       >
                         Delete Reservation
                       </Button>
@@ -1059,6 +1039,70 @@ export default function ReservationsAdmin() {
                       </Button>
                     </div>
 
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              {/* Delete Confirmation Dialog */}
+              <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="text-black">Delete Reservation</DialogTitle>
+                    <DialogDescription>Are you sure you want to delete this reservation? This action cannot be undone.</DialogDescription>
+                  </DialogHeader>
+
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setDeleteOpen(false)
+                        setDeleteId(null)
+                      }}
+                      className="text-black"
+                    >
+                      Cancel
+                    </Button>
+
+                    <Button
+                      variant="destructive"
+                      onClick={() => {
+                        if (deleteId) handleDelete(deleteId)
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              {/* Delete Confirmation Dialog */}
+              <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="text-black">Delete Reservation</DialogTitle>
+                    <DialogDescription>Are you sure you want to delete this reservation? This action cannot be undone.</DialogDescription>
+                  </DialogHeader>
+
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setDeleteOpen(false)
+                        setDeleteId(null)
+                      }}
+                      className="text-black"
+                    >
+                      Cancel
+                    </Button>
+
+                    <Button
+                      variant="destructive"
+                      onClick={() => {
+                        if (deleteId) handleDelete(deleteId)
+                      }}
+                    >
+                      Delete
+                    </Button>
                   </div>
                 </DialogContent>
               </Dialog>
