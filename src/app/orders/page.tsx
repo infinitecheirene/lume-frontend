@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -36,6 +37,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([])
@@ -226,17 +233,6 @@ const Orders = () => {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#d4a24c] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-700 font-semibold text-lg">Loading your history...</p>
-        </div>
-      </div>
-    )
-  }
-
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center p-4">
@@ -272,7 +268,7 @@ const Orders = () => {
   const currentData = activeTab === "orders" ? filteredOrders : activeTab === "events" ? filteredReservations : filteredReservations
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-[#0b1d26] via-[#0b1d26] to-[#000000] py-8 px-4">
+    <div className="py-24 bg-[#0b1d26] text-white">
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <AlertDialogContent className="max-w-md bg-white border-gray-200">
           <AlertDialogHeader>
@@ -310,7 +306,7 @@ const Orders = () => {
         <div className="mb-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div>
-              <h1 className="text-4xl md:text-5xl font-black text-white mb-2">History & Records</h1>
+              <h1 className={`${playfair.className} text-4xl md:text-5xl font-black text-white mb-2`}>History & Records</h1>
               <p className="text-white/70 text-lg">Track your orders and table bookings in one place</p>
             </div>
             <div className="flex items-center gap-3 bg-white px-6 py-3 rounded-2xl shadow-md border border-gray-200">
@@ -325,7 +321,7 @@ const Orders = () => {
           <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
             <div className="flex flex-row lg:flex-col flex-wrap space-x-4 space-y-2">
               {/* Tab buttons */}
-              <div className="flex flex-col justify-center gap-3 mb-6 flex-wrap">
+              <div className="flex flex-col justify-center mb-6 flex-wrap">
                 <button
                   onClick={() => {
                     setActiveTab("orders")

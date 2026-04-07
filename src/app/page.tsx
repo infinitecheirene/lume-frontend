@@ -8,6 +8,7 @@ import TestimonialsSection from "@/components/sections/testimonials"
 export default function Home() {
   return (
     <div className="min-h-screen">
+      
       <HeroSection />
       <OfferSection />
       <FeaturedMenu />

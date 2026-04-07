@@ -1,9 +1,11 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import heroImage from "@/assets/hero-coffee.jpg"
 import { Playfair_Display } from "next/font/google"
+import LumeLoaderMinimal from "@/components/oppa-loader"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -26,6 +28,20 @@ const values = [
 ]
 
 const About = () => {
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 800) // adjust or remove if not needed
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (loading) {
+    return <LumeLoaderMinimal />
+  }
+
   return (
     <div className="min-h-screen bg-[#0f2a33] text-white">
 

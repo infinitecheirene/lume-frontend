@@ -1,12 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
 import { menuItems, categories, type Category } from "@/data/menuData"
 import { toast } from "@/hooks/use-toast"
-import { useCartStore } from "@/store/cartStore";
-
+import { useCartStore } from "@/store/cartStore"
+import LumeLoaderMinimal from "@/components/oppa-loader"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -14,8 +14,17 @@ const playfair = Playfair_Display({
 })
 
 export default function MenuPage() {
+  const [loading, setLoading] = useState(true)
   const [active, setActive] = useState<Category>("coffee")
-  const { addItem } = useCartStore();
+  const { addItem } = useCartStore()
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 800) // adjust or remove if not needed
+
+    return () => clearTimeout(timer)
+  }, [])
 
   const filteredProducts = menuItems.filter(
     (item) => item.category?.toLowerCase() === active
@@ -28,6 +37,10 @@ export default function MenuPage() {
       title: "Added to cart",
       description: `${item.name} added to your order.`,
     })
+  }
+
+  if (loading) {
+    return <LumeLoaderMinimal />
   }
 
   return (
@@ -54,10 +67,11 @@ export default function MenuPage() {
             <button
               key={cat.key}
               onClick={() => setActive(cat.key)}
-              className={`px-6 py-2.5 rounded-full text-sm transition ${active === cat.key
-                ? "bg-[#d4a24c] text-black font-semibold"
-                : "bg-[#132e3b] text-white/70 hover:bg-[#193847] hover:text-white"
-                }`}
+              className={`px-6 py-2.5 rounded-full text-sm transition ${
+                active === cat.key
+                  ? "bg-[#d4a24c] text-black font-semibold"
+                  : "bg-[#132e3b] text-white/70 hover:bg-[#193847] hover:text-white"
+              }`}
             >
               {cat.label}
             </button>
@@ -72,14 +86,11 @@ export default function MenuPage() {
           className="grid md:grid-cols-2 gap-x-16"
         >
           {filteredProducts.map((item, i) => (
-            <div
-              key={item.id ?? i}
-              className="py-6 border-b border-white/10"
-            >
+            <div key={item.id ?? i} className="py-6 border-b border-white/10">
               <div className="flex justify-between items-start gap-6">
 
-                {/* Left content */}
-                <div>
+                {/* Left */}
+                <div className="flex-1">
                   <h3 className={`${playfair.className} text-lg md:text-xl font-semibold`}>
                     {item.name}
                   </h3>
@@ -88,17 +99,19 @@ export default function MenuPage() {
                   </p>
                 </div>
 
-                {/* Price */}
-                <div className="text-[#d4a24c] font-semibold text-lg whitespace-nowrap">
-                  ₱{item.price}
-                </div>
+                {/* Right */}
+                <div className="flex items-center gap-4">
+                  <div className="text-[#d4a24c] font-semibold text-lg whitespace-nowrap">
+                    ₱{item.price}
+                  </div>
 
-                <button
-                  onClick={() => handleAddToCart(item)}
-                  className="px-4 py-1.5 rounded-full bg-[#d4a24c] text-black text-xs font-semibold hover:brightness-110 transition"
-                >
-                  + Add to Cart
-                </button>
+                  <button
+                    onClick={() => handleAddToCart(item)}
+                    className="px-4 py-1.5 rounded-full bg-[#d4a24c] text-black text-xs font-semibold hover:brightness-110 transition"
+                  >
+                    + Add
+                  </button>
+                </div>
 
               </div>
             </div>
