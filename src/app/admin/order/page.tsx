@@ -66,6 +66,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
+
 
 interface OrderItem {
   id: number
@@ -749,7 +756,7 @@ export default function OrdersAdminPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <Card className="shadow-sm">
                           <CardHeader>
-                            <h3 className="text-lg font-semibold flex items-center gap-2">Customer Information</h3>
+                            <h3 className="text-xl font-bold flex items-center gap-2">Customer Information</h3>
                           </CardHeader>
                           <CardContent className="space-y-3">
                             <p className="flex items-center gap-2 text-sm sm:text-base">
@@ -769,7 +776,7 @@ export default function OrdersAdminPage() {
 
                         <Card className="shadow-sm">
                           <CardHeader>
-                            <h3 className="text-lg font-semibold flex items-center gap-2">Delivery Address</h3>
+                            <h3 className="text-xl font-bold flex items-center gap-2">Delivery Address</h3>
                           </CardHeader>
                           <CardContent className="space-y-3 text-sm sm:text-base">
                             <p className="flex items-center gap-2">
@@ -807,7 +814,7 @@ export default function OrdersAdminPage() {
                           {selectedOrder.order_items.length === 0 ? (
                             <Card>
                               <CardContent className="text-center py-12">
-                                <div className="bg-gradient-to-r from-orange-100 to-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <div className="bg-gradient-to-r from-orange-100 to-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                                   <Package className="w-8 h-8 text-orange-500" />
                                 </div>
                                 <p className="text-lg font-medium text-gray-700">No order items found</p>
@@ -885,7 +892,7 @@ export default function OrdersAdminPage() {
   if (loading) {
     return (
       <SidebarProvider defaultOpen={!isDesktop}>
-        <div className="flex min-h-screen w-full bg-gradient-to-br from-orange-50 to-red-50">
+        <div className="flex min-h-screen w-full bg-gradient-to-br from-orange-50 to-blue-50">
           <AppSidebar />
           <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
             <div className="flex items-center justify-center min-h-screen w-full">
@@ -902,14 +909,20 @@ export default function OrdersAdminPage() {
 
   return (
     <SidebarProvider defaultOpen={!isDesktop}>
-      <div className="flex min-h-screen w-full bg-gradient-to-br from-red-50 to-red-50">
+      <div className="flex min-h-screen w-full bg-amber-50">
         <AppSidebar />
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
           {isDesktop && (
-            <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-white px-4 shadow-sm">
+            <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-[#162A3A] px-4 shadow-sm">
               <SidebarTrigger className="-ml-1" />
-              <Image src="/logo.jpg" alt="Lumè Logo" width={40} height={40} className="object-contain" />
-              <h1 className="text-lg font-bold text-gray-900">Lumè Bean and Bar</h1>
+              <Image
+                src="/logo.jpg"
+                alt="Lumè Bean and Bar Logo"
+                width={40}
+                height={40}
+                className="object-contain rounded-full"
+              />
+              <h1 className={`${playfair.className} text-lg font-semibold text-white`}>Lumè Bean and Bar</h1>
             </div>
           )}
 
@@ -940,14 +953,14 @@ export default function OrdersAdminPage() {
                       key={status}
                       className="group relative overflow-hidden border border-gray-200 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm"
                     >
-                      <div className="absolute left-0 top-0 h-full w-[2px] bg-[#dc143c]/70" />
+                      <div className="absolute left-0 top-0 h-full w-[2px] bg-[#E5A834]" />
 
                       <CardContent className="px-5">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-md border border-red-100 text-gray-700">
-                            {statusInfo?.icon && <statusInfo.icon className="h-6 w-6 text-red-900" />}
+                          <div className="flex h-10 w-10 items-center justify-center rounded-md border border-blue-100 text-gray-700">
+                            {statusInfo?.icon && <statusInfo.icon className="h-6 w-6 text-[#162A3A]" />}
                           </div>
-                          <p className="text-lg font-bold uppercase tracking-wider text-red-900">{statusInfo?.label || status}</p>
+                          <p className="text-lg font-bold uppercase tracking-wider text-blue-950">{statusInfo?.label || status}</p>
                         </div>
 
                         <div className="mt-4 flex items-center justify-center gap-2">
@@ -961,23 +974,23 @@ export default function OrdersAdminPage() {
               </div>
 
               {/* Filters and Search */}
-              <Card className="bg-white/70 backdrop-blur-sm shadow-xl p-0 pb-5 border-red-100">
-                <CardHeader className="p-3 bg-gradient-to-r from-red-500 to-red-500 text-white rounded-t-lg">
+              <Card className="bg-white/70 backdrop-blur-sm shadow-xl p-0 pb-5 border-blue-100">
+                <CardHeader className="p-3 bg-[#162A3A] text-white rounded-t-lg">
                   <div className="flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
                       <div className="relative flex-1 max-w-sm">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-950" />
                         <Input
                           placeholder="Search orders..."
                           value={globalFilter || ""}
                           onChange={(event) => setGlobalFilter(event.target.value)}
-                          className="pl-9 pr-3 py-2 w-full bg-white/20 border-white/30 text-white placeholder:text-white/70 focus:bg-white/30 focus:border-white/50"
+                          className="pl-9 pr-3 py-2 w-full bg-blue-100 border-blue-950 text-gray-950 placeholder:text-gray-950 focus:bg-blue-50 focus:border-blue-500 transition-all duration-200"
                         />
                       </div>
 
                       <div className="flex gap-2">
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                          <SelectTrigger className="w-32 bg-white/20 border-white/30 text-white focus:bg-white/30 focus:border-white/50">
+                          <SelectTrigger className="w-32 border-white/20 bg-blue-200/60 text-white focus:bg-white/30 focus:border-white/50">
                             <SelectValue placeholder="Status" />
                           </SelectTrigger>
                           <SelectContent>
@@ -991,7 +1004,7 @@ export default function OrdersAdminPage() {
                         </Select>
 
                         <Select value={paymentMethodFilter} onValueChange={setPaymentMethodFilter}>
-                          <SelectTrigger className="w-32 bg-white/20 border-white/30 text-white focus:bg-white/30 focus:border-white/50">
+                          <SelectTrigger className="w-32 border-white/20 bg-blue-200/60 text-white focus:bg-white/30 focus:border-white/50">
                             <SelectValue placeholder="Payment" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1007,18 +1020,18 @@ export default function OrdersAdminPage() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="bg-white">
+                <CardContent>
                   <div className="text-sm text-gray-600 mb-4 font-medium">
                     Showing {table.getFilteredRowModel().rows.length} of {orders.length} orders
                   </div>
 
                   {/* Orders Table */}
                   <div className="w-full">
-                    <div className="rounded-lg border border-orange-200 overflow-hidden shadow-lg">
+                    <div className="rounded-lg border border-blue-200 overflow-hidden shadow-lg">
                       <div className="overflow-x-auto">
                         <table className="w-full min-w-[800px]">
-                          <thead className="bg-gradient-to-r from-orange-100 to-red-100">
-                            <tr className="border-b border-orange-200">
+                          <thead className="bg-gradient-to-r from-blue-100 to-blue-100 h-20">
+                            <tr className="border-b border-blue-200">
                               {table.getHeaderGroups().map((headerGroup) =>
                                 headerGroup.headers.map((header) => (
                                   <th key={header.id} className="text-left p-2 sm:p-3 text-xs sm:text-sm font-semibold text-gray-700">
@@ -1038,7 +1051,7 @@ export default function OrdersAdminPage() {
                             {table.getRowModel().rows.map((row, index) => (
                               <tr
                                 key={row.id}
-                                className={`border-b border-orange-100 hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 transition-all duration-200 ${index % 2 === 0 ? "bg-white" : "bg-orange-25"}`}
+                                className={`border-b border-orange-100 hover:bg-gradient-to-r hover:from-orange-50 hover:to-blue-50 transition-all duration-200 ${index % 2 === 0 ? "bg-white" : "bg-orange-25"}`}
                               >
                                 {row.getVisibleCells().map((cell) => (
                                   <td key={cell.id} className="p-2 sm:p-3 text-xs sm:text-sm">
@@ -1055,7 +1068,7 @@ export default function OrdersAdminPage() {
                     </div>
                     {table.getRowModel().rows.length === 0 && (
                       <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-orange-200 mt-4">
-                        <div className="bg-gradient-to-r from-orange-100 to-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div className="bg-gradient-to-r from-orange-100 to-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                           <Package className="w-8 h-8 text-orange-500" />
                         </div>
                         <p className="text-lg font-medium text-gray-700">No orders found</p>
@@ -1078,7 +1091,7 @@ export default function OrdersAdminPage() {
                               variant={currentPage === page ? "default" : "outline"}
                               size="sm"
                               onClick={() => setCurrentPage(page)}
-                              className="w-8 h-8 p-0"
+                              className="w-8 h-8 p-0 bg-[#162A3A] text-white hover:bg-[#162A3A]/90"
                             >
                               {page}
                             </Button>

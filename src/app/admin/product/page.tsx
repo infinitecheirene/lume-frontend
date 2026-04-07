@@ -900,12 +900,12 @@ export default function ProductsAdminPage() {
                       {/* Search Bar */}
                       <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
                         <div className="relative flex-1 max-w-sm">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-800" />
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-950" />
                           <Input
                             placeholder="Search products..."
                             value={globalFilter || ""}
                             onChange={(event) => setGlobalFilter(event.target.value)}
-                            className="pl-9 pr-3 py-2 w-full bg-blue-100 border-blue-800 text-blue-800 placeholder:text-blue-800 focus:bg-white/30 focus:border-blue-500 transition-all duration-200"
+                            className="pl-9 pr-3 py-2 w-full bg-blue-100 border-blue-950 text-gray-950 placeholder:text-gray-950 focus:bg-blue-50 focus:border-blue-500 transition-all duration-200"
                           />
                         </div>
                       </div>
@@ -913,7 +913,7 @@ export default function ProductsAdminPage() {
                   </div>
                 </CardHeader>
 
-                <CardContent className="bg-white">
+                <CardContent>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                     <div className="text-sm text-gray-600 font-medium">
                       Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} products
@@ -944,7 +944,7 @@ export default function ProductsAdminPage() {
                             <tr className="border-b border-blue-200">
                               {table.getHeaderGroups().map((headerGroup) =>
                                 headerGroup.headers.map((header) => (
-                                  <th key={header.id} className="text-left p-3 sm:p-4 text-sm font-semibold text-white tracking-wide">
+                                  <th key={header.id} className="text-left p-3 sm:p-4 text-sm font-semibold text-blue-950  tracking-wide">
                                     {header.isPlaceholder ? null : (
                                       <div className="flex items-center gap-2">
                                         {typeof header.column.columnDef.header === "function"
