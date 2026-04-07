@@ -133,7 +133,7 @@ export default function AdminDashboard() {
     const fetchAnalytics = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`/api/dashboard?period=${period}`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dashboard?period=${period}`)
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
         const data = await response.json()
         if (data.success) setAnalytics(data.data)

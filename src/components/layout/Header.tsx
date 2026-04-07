@@ -86,6 +86,10 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
+  if (pathname.startsWith("/admin")) {
+    return null
+  }
+
   const handleLogout = () => {
     localStorage.removeItem("auth_token")
     localStorage.removeItem("user_data")
@@ -112,15 +116,16 @@ export default function Header() {
         </Link>
 
         {/* DESKTOP NAV */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-6 relative">
 
+          {/* NAV LINKS */}
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={`text-sm transition ${isActive(link.href)
-                ? "text-[#d4a24c]"
-                : "text-white/70 hover:text-[#d4a24c]"
+                  ? "text-[#d4a24c]"
+                  : "text-white/70 hover:text-[#d4a24c]"
                 }`}
             >
               {link.label}
@@ -129,7 +134,10 @@ export default function Header() {
 
           {/* CART */}
           {user && (
-            <Link href="/cart" className="text-white/70 hover:text-[#d4a24c]">
+            <Link
+              href="/cart"
+              className="relative text-white/70 hover:text-[#d4a24c]"
+            >
               <ShoppingCart size={20} />
 
               {itemCount > 0 && (
@@ -142,16 +150,16 @@ export default function Header() {
 
           {/* USER MENU */}
           {user ? (
-            <div ref={dropdownRef}>
+            <div ref={dropdownRef} className="relative">
               <button
                 onClick={() => setUserMenuOpen((p) => !p)}
-                className="text-white/80 hover:text-[#d4a24c]"
+                className="text-white/70 hover:text-[#d4a24c]"
               >
                 <User size={20} />
               </button>
 
               {userMenuOpen && (
-                <div className="absolute right-0 mt-3 w-52 bg-[#0b1d26] border border-white/10 rounded-xl shadow-lg overflow-hidden">
+                <div className="absolute right-0 mt-3 w-52 bg-[#0b1d26] border border-white/10 rounded-xl shadow-lg overflow-hidden z-50">
 
                   <Link href="/reservation-history" className="flex items-center gap-2 px-4 py-2 hover:bg-white/10">
                     <Calendar size={16} /> Reservations
@@ -172,7 +180,10 @@ export default function Header() {
               )}
             </div>
           ) : (
-            <Link href="/login" className="text-white/70 hover:text-[#d4a24c] text-sm">
+            <Link
+              href="/login"
+              className="text-white/70 hover:text-[#d4a24c] text-sm"
+            >
               Log In
             </Link>
           )}
@@ -180,7 +191,7 @@ export default function Header() {
           {/* CTA */}
           <Link
             href="/reservations"
-            className="bg-[#d4a24c] text-black px-5 py-2 rounded-full text-sm font-semibold hover:brightness-110 transition"
+            className="ml-2 bg-[#d4a24c] text-black px-5 py-2 rounded-full text-sm font-semibold hover:brightness-110 transition whitespace-nowrap"
           >
             Book a Table
           </Link>

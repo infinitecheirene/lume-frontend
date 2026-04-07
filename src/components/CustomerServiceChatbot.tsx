@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { MessageCircle, X, RotateCcw } from "lucide-react"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -47,6 +48,7 @@ const FAQ_DATA = [
 ]
 
 export default function CustomerServiceChatbot() {
+  const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const [isChatEnded, setIsChatEnded] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
@@ -131,6 +133,10 @@ export default function CustomerServiceChatbot() {
       setIsTyping(false)
     }, 2000)
   }
+
+  if (pathname.startsWith("/admin")) {
+    return null
+  } 
 
   return (
     <>

@@ -37,6 +37,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { useMemo } from "react"
 
 const items = [
+  { title: "Home", url: "/", icon: Home },
   { title: "Dashboard", url: "/admin/dashboard", icon: Home },
   { title: "Products", url: "/admin/product", icon: Package },
   { title: "Orders", url: "/admin/order", icon: ShoppingCart },
@@ -51,11 +52,6 @@ const items = [
       { title: "Blog Posts", url: "/admin/blog" },
       { title: "Testimonials", url: "/admin/testimonials" },
     ],
-  },
-  {
-    title: "Restaurant",
-    icon: ChefHat,
-    items: [{ title: "Chefs", url: "/admin/chefs" }],
   },
   { title: "Settings", url: "/admin/settings", icon: Settings },
 ]
@@ -75,23 +71,23 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar collapsible="offcanvas" className="border-r border-red-100">
-      <SidebarContent className="bg-gradient-to-b from-red-50 via-amber-50 to-red-50">
+    <Sidebar collapsible="offcanvas" className="border-r border-blue-950">
+      <SidebarContent className="bg-amber-50 lg:px-5">
         <SidebarGroup>
           {/* Header */}
-          <div className="px-4 py-6 bg-gradient-to-r from-red-700 to-red-800 text-white rounded-lg mx-3 mt-3 mb-4 shadow-lg">
+          <div className="px-4 py-6 bg-[#162A3A] text-white rounded-lg mx-3 mt-3 mb-4 shadow-lg">
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 overflow-hidden">
                 <Image
-                  src="/logoippon.png"
-                  alt="Ipponyari Logo"
+                  src="/logo.jpg"
+                  alt="Lumè Bean and Bar Logo"  
                   fill
-                  className="object-contain bg-white rounded-full"
+                  className="object-contain rounded-full"
                 />
               </div>
               <div>
-                <h2 className="font-semibold text-lg">Restaurant Admin</h2>
-                <p className="text-red-100 text-xs">Management Portal</p>
+                <h2 className="font-semibold text-lg">Admin Panel</h2>
+                <p className="text-amber-300 text-xs">Management Portal</p>
               </div>
             </div>
           </div>
@@ -108,7 +104,7 @@ export function AppSidebar() {
                       <Collapsible defaultOpen={isParentActive}>
                         <CollapsibleTrigger asChild>
                           <SidebarMenuButton className="mx-1 rounded-lg">
-                            <item.icon className="h-5 w-5 text-red-700" />
+                            <item.icon className="h-5 w-5 text-[#162A3A]" />
                             <span>{item.title}</span>
                             <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
                           </SidebarMenuButton>
@@ -124,7 +120,7 @@ export function AppSidebar() {
                                   onClick={handleNavigate}
                                 >
                                   <Link href={sub.url} className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-red-500" />
+                                    <span className="w-2 h-2 rounded-full bg-[#162A3A]" />
                                     {sub.title}
                                   </Link>
                                 </SidebarMenuSubButton>
@@ -141,7 +137,7 @@ export function AppSidebar() {
                         className="mx-1 rounded-lg"
                       >
                         <Link href={item.url!} className="flex items-center gap-3">
-                          <item.icon className="h-5 w-5 text-red-700" />
+                          <item.icon className="h-5 w-5 text-[#162A3A]" />
                           <span>{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
@@ -154,13 +150,13 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-3 border-t border-red-200">
+      <SidebarFooter className="p-3 border-t border-blue-200">
         <Button
           variant="ghost"
           className="w-full justify-start"
           onClick={handleLogout}
         >
-          <LogOut className="h-4 w-4 mr-2 text-red-500" />
+          <LogOut className="h-4 w-4 mr-2 text-[#162A3A]" />
           Logout
         </Button>
       </SidebarFooter>

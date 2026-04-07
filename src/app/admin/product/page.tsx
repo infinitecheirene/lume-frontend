@@ -68,6 +68,12 @@ import {
 } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import Image from "next/image"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 // Product data type
 interface Product {
@@ -85,16 +91,9 @@ interface Product {
 }
 
 const categories = [
-  "Appetizers",
-  "Main Course",
-  "Desserts",
-  "Beverages",
-  "Korean BBQ",
-  "Noodles",
-  "Rice Dishes",
-  "Soups",
-  "Sashimi",
-  "Add-ons",
+  "Coffee",
+  "Kitchen",
+  "Bar",
 ]
 
 const getImageUrl = (imagePath: string): string => {
@@ -437,65 +436,124 @@ export default function ProductsAdminPage() {
         const product = row.original
         return (
           <div className="flex items-center gap-1">
-            {/* View Sheet */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" onClick={() => setSelectedProduct(product)} className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedProduct(product)}
+                  className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-2"
+                >
                   <Eye className="h-4 w-4" />
-                  <span className="ml-1 sr-only sm:not-sr-only hidden sm:inline">View</span>
+                  <span className="ml-1 sr-only sm:not-sr-only hidden sm:inline">
+                    View
+                  </span>
                 </Button>
-              </SheetTrigger>
-              <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+              </DialogTrigger>
+
+              <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="bg-[#162A3A] text-white p-6 -m-6 mb-4 rounded-t-lg">
+                  <DialogTitle className="text-2xl font-bold">Product Details</DialogTitle>
+                </DialogHeader>
+
                 {selectedProduct && (
                   <div className="space-y-6">
                     <div className="flex justify-center mb-6">
                       <div className="w-32 h-32 rounded-lg overflow-hidden border-2 border-gray-200">
-                        <Image src={getImageUrl(selectedProduct.image)} alt={selectedProduct.name} width={128} height={128} className="object-cover w-full h-full" />
+                        <Image
+                          src={getImageUrl(selectedProduct.image)}
+                          alt={selectedProduct.name}
+                          width={128}
+                          height={128}
+                          className="object-cover w-full h-full"
+                        />
                       </div>
                     </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-4">
                         <div>
-                          <Label className="text-sm text-gray-500">Product Name</Label>
-                          <p className="text-lg font-semibold">{selectedProduct.name}</p>
+                          <Label className="text-gray-700 font-bold text-md">Product Name</Label>
+                          <p className="text-md text-gray-800">
+                            {selectedProduct.name}
+                          </p>
                         </div>
+
                         <div>
-                          <Label className="text-sm text-gray-500">Category</Label>
-                          <Badge variant="outline" className="text-sm">{selectedProduct.category}</Badge>
+                          <Label className="text-gray-700 font-bold text-md">Category</Label>
+                          <Badge variant="outline" className="my-2 text-md text-gray-800">
+                            {selectedProduct.category}
+                          </Badge>
                         </div>
+
                         <div>
-                          <Label className="text-sm text-gray-500">Price</Label>
-                          <p className="text-xl font-bold text-green-600">₱{formatPrice(selectedProduct.price)}</p>
+                          <Label className="text-gray-700 font-bold text-md">Price</Label>
+                          <p className="text-xl font-bold text-green-600">
+                            ₱{formatPrice(selectedProduct.price)}
+                          </p>
                         </div>
                       </div>
-                      <div className="space-y-4">
-                        <Label className="text-sm text-gray-500">Properties</Label>
-                        <div className="flex gap-2 flex-wrap mt-1">
-                          {selectedProduct.is_featured && <Badge variant="secondary" className="text-xs bg-yellow-100 text-yellow-800"><Star className="w-3 h-3 mr-1" /> Featured</Badge>}
-                          {selectedProduct.is_spicy && <Badge variant="destructive" className="text-xs"><Flame className="w-3 h-3 mr-1" /> Spicy</Badge>}
-                          {selectedProduct.is_vegetarian && <Badge variant="secondary" className="text-xs bg-green-100 text-green-800"><Leaf className="w-3 h-3 mr-1" /> Vegetarian</Badge>}
-                          {!selectedProduct.is_featured && !selectedProduct.is_spicy && !selectedProduct.is_vegetarian && (
-                            <span className="text-sm text-gray-500">None</span>
+
+                      <div className="space-y-2">
+                        <Label className="text-gray-700 font-bold text-md">Properties</Label>
+                        <div className="flex">
+                          {selectedProduct.is_featured && (
+                            <Badge className="text-xs bg-yellow-100 text-yellow-800">
+                              <Star className="w-3 h-3 mr-1" /> Featured
+                            </Badge>
                           )}
+
+                          {selectedProduct.is_spicy && (
+                            <Badge variant="destructive" className="text-xs">
+                              <Flame className="w-3 h-3 mr-1" /> Spicy
+                            </Badge>
+                          )}
+
+                          {selectedProduct.is_vegetarian && (
+                            <Badge className="text-xs bg-green-100 text-green-800">
+                              <Leaf className="w-3 h-3 mr-1" /> Vegetarian
+                            </Badge>
+                          )}
+
+                          {!selectedProduct.is_featured &&
+                            !selectedProduct.is_spicy &&
+                            !selectedProduct.is_vegetarian && (
+                              <span className="text-md text-gray-800">None</span>
+                            )}
                         </div>
+
                         <div>
-                          <Label className="text-sm text-gray-500">Created On</Label>
-                          <p className="text-sm">{new Date(selectedProduct.created_at).toLocaleDateString("en-US", { month: "long", day: "2-digit", year: "numeric" })}</p>
+                          <Label className="text-gray-700 font-bold text-md">Created On</Label>
+                          <p className="text-md text-gray-800">
+                            {new Date(selectedProduct.created_at).toLocaleDateString(
+                              "en-US",
+                              { month: "long", day: "2-digit", year: "numeric" }
+                            )}
+                          </p>
                         </div>
+
                         <div>
-                          <Label className="text-sm text-gray-500">Last Updated</Label>
-                          <p className="text-sm">{new Date(selectedProduct.updated_at).toLocaleDateString("en-US", { month: "long", day: "2-digit", year: "numeric" })}</p>
+                          <Label className="text-gray-700 font-bold text-md">Last Updated</Label>
+                          <p className="text-md text-gray-800">
+                            {new Date(selectedProduct.updated_at).toLocaleDateString(
+                              "en-US",
+                              { month: "long", day: "2-digit", year: "numeric" }
+                            )}
+                          </p>
                         </div>
                       </div>
                     </div>
+
                     <div>
-                      <Label className="text-sm text-gray-500">Description</Label>
-                      <p className="text-sm mt-1 p-3 bg-gray-50 rounded-md whitespace-pre-wrap">{selectedProduct.description}</p>
+                      <Label className="text-gray-700 font-bold text-md">Description</Label>
+                      <p className="text-md text-gray-800 p-3 border rounded-md whitespace-pre-wrap">
+                        {selectedProduct.description}
+                      </p>
                     </div>
                   </div>
                 )}
-              </SheetContent>
-            </Sheet>
+              </DialogContent>
+            </Dialog>
           </div>
         )
       },
@@ -522,19 +580,19 @@ export default function ProductsAdminPage() {
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                      <Trash2 className="text-red-600 mr-2 h-4 w-4" /> Delete
+                      <Trash2 className="text-[#162A3A] mr-2 h-4 w-4" /> Delete
                     </DropdownMenuItem>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogTitle className="font-bold text-2xl text-gray-900">Are you sure?</AlertDialogTitle>
                       <AlertDialogDescription>
                         This action will permanently delete &apos;{product.name}&apos;.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleDelete(product.id)}>Delete</AlertDialogAction>
+                      <AlertDialogCancel className="text-gray-900">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleDelete(product.id)} className="text-red-100 bg-red-800 hover:bg-red-700">Delete</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -582,12 +640,12 @@ export default function ProductsAdminPage() {
   if (loading) {
     return (
       <SidebarProvider defaultOpen={!isDesktop}>
-        <div className="flex min-h-screen w-full bg-gradient-to-br from-red-50 to-red-50">
+        <div className="flex min-h-screen w-full bg-gradient-to-br from-blue-50 to-blue-50">
           <AppSidebar />
           <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
             <div className="flex items-center justify-center min-h-screen w-full">
               <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-xl shadow-lg">
-                <Loader2 className="h-6 w-6 animate-spin text-red-500" />
+                <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
                 <span className="text-gray-700 font-medium">Loading products...</span>
               </div>
             </div>
@@ -599,20 +657,20 @@ export default function ProductsAdminPage() {
 
   return (
     <SidebarProvider defaultOpen={!isDesktop}>
-      <div className="flex min-h-screen w-full bg-gradient-to-br from-red-50 to-red-50">
+      <div className="flex min-h-screen w-full bg-amber-50">
         <AppSidebar />
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
           {isDesktop && (
-            <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-white px-4 shadow-sm">
+            <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-[#162A3A] px-4 shadow-sm">
               <SidebarTrigger className="-ml-1" />
               <Image
-                src="/logoippon.png"
-                alt="Ipponyari Logo"
+                src="/logo.jpg"
+                alt="Lumè Bean and Bar Logo"
                 width={40}
                 height={40}
-                className="object-contain"
+                className="object-contain rounded-full"
               />
-              <h1 className="text-lg font-bold text-gray-900">Ipponyari Japanese Restaurant</h1>
+              <h1 className={`${playfair.className} text-lg font-semibold text-white`}>Lumè Bean and Bar</h1>
             </div>
           )}
 
@@ -626,8 +684,8 @@ export default function ProductsAdminPage() {
                 </div>
               </div>
 
-              <Card className="bg-white/70 backdrop-blur-sm shadow-xl p-0 pb-5 border-red-100">
-                <CardHeader className="p-3 bg-gradient-to-r from-red-500 to-red-500 text-white rounded-t-lg">
+              <Card className="bg-white/70 backdrop-blur-sm shadow-xl p-0 pb-5 border-blue-100">
+                <CardHeader className="p-3 bg-[#162A3A] text-white rounded-t-lg">
                   <div className="flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row gap-3 items-center sm:items-center justify-between">
                       {/* Add Product Button */}
@@ -635,24 +693,24 @@ export default function ProductsAdminPage() {
                         <DialogTrigger asChild>
                           <Button
                             size="sm"
-                            className="shrink-0 bg-white text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                            className="shrink-0 bg-white text-[#162A3A] hover:bg-blue-50 hover:text-blue-800 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                           >
                             <Plus className="mr-2 h-4 w-4" />
                             <span className="hidden sm:inline">Add Product</span>
                             <span className="sm:hidden">Add</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto mx-4 bg-gradient-to-br from-red-50 to-red-50">
-                          <DialogHeader className="bg-gradient-to-r from-red-500 to-red-500 text-white p-6 -m-6 mb-4 rounded-t-lg">
-                            <DialogTitle className="text-xl font-bold">Add New Product</DialogTitle>
-                            <DialogDescription className="text-red-100">
+                        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto mx-4 bg-amber-50">
+                          <DialogHeader className="bg-[#162A3A] text-white p-6 -m-6 mb-4 rounded-t-lg">
+                            <DialogTitle className="text-2xl font-bold">Add New Product</DialogTitle>
+                            <DialogDescription className="text-amber-50">
                               Fill in the details for your new menu item.
                             </DialogDescription>
                           </DialogHeader>
-                          <form onSubmit={handleCreateSubmit} className="space-y-6 py-4">
+                          <form onSubmit={handleCreateSubmit} className="space-y-6">
                             <div className="grid grid-cols-1 gap-4">
                               <div>
-                                <Label htmlFor="name" className="text-gray-700 font-medium">
+                                <Label htmlFor="name" className="text-gray-700 font-bold text-md">
                                   Product Name
                                 </Label>
                                 <Input
@@ -663,12 +721,12 @@ export default function ProductsAdminPage() {
                                   required
                                   disabled={isCreating}
                                   placeholder="e.g., Kimchi Fried Rice"
-                                  className="mt-1 border-red-200 focus:border-red-400 focus:ring-red-400"
+                                  className="mt-1 border-blue-950 focus:border-blue-700 focus:ring-blue-800"
                                 />
                               </div>
 
                               <div>
-                                <Label htmlFor="description" className="text-gray-700 font-medium">
+                                <Label htmlFor="description" className="text-gray-700 font-bold text-md">
                                   Description
                                 </Label>
                                 <Textarea
@@ -680,13 +738,13 @@ export default function ProductsAdminPage() {
                                   rows={3}
                                   disabled={isCreating}
                                   placeholder="Describe the dish, ingredients, and preparation..."
-                                  className="mt-1 resize-none border-red-200 focus:border-red-400 focus:ring-red-400"
+                                  className="mt-1 resize-none border-blue-950 focus:border-blue-700 focus:ring-blue-800"
                                 />
                               </div>
 
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                  <Label htmlFor="price" className="text-gray-700 font-medium">
+                                  <Label htmlFor="price" className="text-gray-700 font-bold text-md">
                                     Price (₱)
                                   </Label>
                                   <Input
@@ -700,12 +758,12 @@ export default function ProductsAdminPage() {
                                     required
                                     disabled={isCreating}
                                     placeholder="0.00"
-                                    className="mt-1 border-red-200 focus:border-red-400 focus:ring-red-400"
+                                    className="mt-1 border-blue-950 focus:border-blue-700 focus:ring-blue-800"
                                   />
                                 </div>
 
                                 <div>
-                                  <Label htmlFor="category" className="text-gray-700 font-medium">
+                                  <Label htmlFor="category" className="text-gray-700 font-bold text-md">
                                     Category
                                   </Label>
                                   <Select
@@ -713,13 +771,13 @@ export default function ProductsAdminPage() {
                                     onValueChange={handleCategoryChange}
                                     disabled={isCreating}
                                   >
-                                    <SelectTrigger className="mt-1 border-red-200 focus:border-red-400 focus:ring-red-400">
+                                    <SelectTrigger className="mt-1 border-blue-950 focus:border-blue-700 focus:ring-blue-800">
                                       <SelectValue placeholder="Select category" />
                                     </SelectTrigger>
                                     <SelectContent>
                                       {categories.map((category) => (
                                         <SelectItem key={category} value={category}>
-                                          {category}
+                                          <span className="text-gray-800">{category}</span>
                                         </SelectItem>
                                       ))}
                                     </SelectContent>
@@ -728,33 +786,22 @@ export default function ProductsAdminPage() {
                               </div>
 
                               <div>
-                                <Label htmlFor="image" className="text-gray-700 font-medium">
+                                <Label htmlFor="image" className="text-gray-700 font-bold text-md">
                                   Product Image
                                 </Label>
-                                <div className="flex items-center gap-4 mt-1">
+                                <div className="flex items-center gap-4 mt-1 text-gray-800">
                                   <Input
                                     ref={fileInputRef}
                                     type="file"
                                     accept="image/*"
                                     onChange={handleImageSelect}
                                     disabled={isCreating}
-                                    className="flex-1 border-red-200 focus:border-red-400 focus:ring-red-400"
+                                    className="flex-1 border-blue-950 focus:border-blue-700 focus:ring-blue-800"
                                   />
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    disabled={isCreating}
-                                    size="sm"
-                                    className="border-red-300 text-red-600 hover:bg-red-50"
-                                  >
-                                    <Upload className="w-4 h-4 mr-2" />
-                                    Browse
-                                  </Button>
                                 </div>
                                 {imagePreview && (
                                   <div className="mt-3">
-                                    <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-red-200 shadow-md">
+                                    <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-blue-200 shadow-md">
                                       <Image
                                         src={imagePreview || "/placeholder.svg"}
                                         alt="Preview"
@@ -767,8 +814,8 @@ export default function ProductsAdminPage() {
                                 )}
                               </div>
 
-                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div className="flex items-center space-x-2 p-3 border-2 border-red-200 rounded-lg bg-white/50 hover:bg-white/70 transition-colors">
+                              {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="flex items-center space-x-2 p-3 border-2 border-blue-200 rounded-lg bg-white/50 hover:bg-white/70 transition-colors">
                                   <Switch
                                     id="is_featured"
                                     checked={newFormData.is_featured}
@@ -784,7 +831,7 @@ export default function ProductsAdminPage() {
                                   </Label>
                                 </div>
 
-                                <div className="flex items-center space-x-2 p-3 border-2 border-red-200 rounded-lg bg-white/50 hover:bg-white/70 transition-colors">
+                                <div className="flex items-center space-x-2 p-3 border-2 border-blue-200 rounded-lg bg-white/50 hover:bg-white/70 transition-colors">
                                   <Switch
                                     id="is_spicy"
                                     checked={newFormData.is_spicy}
@@ -795,12 +842,12 @@ export default function ProductsAdminPage() {
                                     htmlFor="is_spicy"
                                     className="flex items-center gap-2 cursor-pointer text-gray-700 font-medium"
                                   >
-                                    <Flame className="w-4 h-4 text-red-500" />
+                                    <Flame className="w-4 h-4 text-blue-500" />
                                     Spicy
                                   </Label>
                                 </div>
 
-                                <div className="flex items-center space-x-2 p-3 border-2 border-red-200 rounded-lg bg-white/50 hover:bg-white/70 transition-colors">
+                                <div className="flex items-center space-x-2 p-3 border-2 border-blue-200 rounded-lg bg-white/50 hover:bg-white/70 transition-colors">
                                   <Switch
                                     id="is_vegetarian"
                                     checked={newFormData.is_vegetarian}
@@ -815,7 +862,7 @@ export default function ProductsAdminPage() {
                                     Vegetarian
                                   </Label>
                                 </div>
-                              </div>
+                              </div> */}
                             </div>
 
                             <DialogFooter className="gap-2">
@@ -827,14 +874,14 @@ export default function ProductsAdminPage() {
                                   resetForm()
                                 }}
                                 disabled={isCreating}
-                                className="flex-1 sm:flex-none border-red-300 text-red-600 hover:bg-red-50"
+                                className="flex-1 sm:flex-none border-blue-300 text-blue-950 hover:bg-blue-200"
                               >
                                 Cancel
                               </Button>
                               <Button
                                 type="submit"
                                 disabled={isCreating}
-                                className="flex-1 sm:flex-none bg-gradient-to-r from-red-500 to-red-500 hover:from-red-600 hover:to-red-600 text-white font-semibold shadow-lg"
+                                className="flex-1 sm:flex-none bg-[#162A3A] hover:bg-blue-800 text-white font-semibold shadow-lg"
                               >
                                 {isCreating ? (
                                   <>
@@ -859,12 +906,12 @@ export default function ProductsAdminPage() {
                       {/* Search Bar */}
                       <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
                         <div className="relative flex-1 max-w-sm">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-red-800" />
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-800" />
                           <Input
                             placeholder="Search products..."
                             value={globalFilter || ""}
                             onChange={(event) => setGlobalFilter(event.target.value)}
-                            className="pl-9 pr-3 py-2 w-full bg-red-100 border-red-800 text-red-800 placeholder:text-red-800 focus:bg-white/30 focus:border-red-500 transition-all duration-200"
+                            className="pl-9 pr-3 py-2 w-full bg-blue-100 border-blue-800 text-blue-800 placeholder:text-blue-800 focus:bg-white/30 focus:border-blue-500 transition-all duration-200"
                           />
                         </div>
                       </div>
@@ -882,7 +929,7 @@ export default function ProductsAdminPage() {
                         Items per page:
                       </Label>
                       <Select value={itemsPerPage === -1 ? "all" : itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
-                        <SelectTrigger id="items-per-page" className="w-[100px] border-red-200 focus:border-red-400 focus:ring-red-400">
+                        <SelectTrigger id="items-per-page" className="w-[100px] border-blue-200 focus:border-blue-400 focus:ring-blue-400">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -896,11 +943,11 @@ export default function ProductsAdminPage() {
                     </div>
                   </div>
                   <div className="w-full">
-                    <div className="rounded-lg border border-red-200 overflow-hidden shadow-lg">
+                    <div className="rounded-lg border border-blue-200 overflow-hidden shadow-lg">
                       <div className="overflow-x-auto">
                         <table className="w-full min-w-[600px]">
-                          <thead className="bg-gradient-to-r from-red-100 to-red-100 h-20">
-                            <tr className="border-b border-red-200">
+                          <thead className="bg-gradient-to-r from-blue-100 to-blue-100 h-20">
+                            <tr className="border-b border-blue-200">
                               {table.getHeaderGroups().map((headerGroup) =>
                                 headerGroup.headers.map((header) => (
                                   <th
@@ -923,7 +970,7 @@ export default function ProductsAdminPage() {
                             {paginatedRows.map((row, index) => (
                               <tr
                                 key={row.id}
-                                className={`border-b border-red-100 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-50 transition-all duration-200 ${index % 2 === 0 ? "bg-white" : "bg-red-25"}`}
+                                className={`border-b border-blue-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-50 transition-all duration-200 ${index % 2 === 0 ? "bg-white" : "bg-blue-25"}`}
                               >
                                 {row.getVisibleCells().map((cell) => (
                                   <td key={cell.id} className="p-3 sm:p-4 text-sm">
@@ -939,9 +986,9 @@ export default function ProductsAdminPage() {
                       </div>
                     </div>
                     {table.getRowModel().rows.length === 0 && (
-                      <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-red-200 mt-4">
-                        <div className="bg-gradient-to-r from-red-100 to-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Search className="w-8 h-8 text-red-500" />
+                      <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-blue-200 mt-4">
+                        <div className="bg-gradient-to-r from-blue-100 to-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Search className="w-8 h-8 text-blue-500" />
                         </div>
                         <p className="text-lg font-medium text-gray-700">No products found</p>
                         {globalFilter && <p className="text-sm mt-1 text-gray-500">Try adjusting your search terms</p>}
@@ -950,7 +997,7 @@ export default function ProductsAdminPage() {
 
                     {/* Pagination Controls */}
                     {totalPages > 1 && (
-                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 pt-4 border-t border-red-200">
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 pt-4 border-t border-blue-200">
                         <div className="text-sm text-gray-600">
                           Page {currentPage} of {totalPages}
                         </div>
@@ -960,7 +1007,7 @@ export default function ProductsAdminPage() {
                             size="sm"
                             onClick={() => setCurrentPage(1)}
                             disabled={currentPage === 1}
-                            className="border-red-300 text-red-600 hover:bg-red-50 disabled:opacity-50"
+                            className="border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-50"
                           >
                             First
                           </Button>
@@ -969,7 +1016,7 @@ export default function ProductsAdminPage() {
                             size="sm"
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
-                            className="border-red-300 text-red-600 hover:bg-red-50 disabled:opacity-50"
+                            className="border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-50"
                           >
                             Previous
                           </Button>
@@ -978,7 +1025,7 @@ export default function ProductsAdminPage() {
                             size="sm"
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages}
-                            className="border-red-300 text-red-600 hover:bg-red-50 disabled:opacity-50"
+                            className="border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-50"
                           >
                             Next
                           </Button>
@@ -987,7 +1034,7 @@ export default function ProductsAdminPage() {
                             size="sm"
                             onClick={() => setCurrentPage(totalPages)}
                             disabled={currentPage === totalPages}
-                            className="border-red-300 text-red-600 hover:bg-red-50 disabled:opacity-50"
+                            className="border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-50"
                           >
                             Last
                           </Button>

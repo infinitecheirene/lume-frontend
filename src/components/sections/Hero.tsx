@@ -44,7 +44,7 @@ export default function HeroSection() {
             key={i}
             initial={{ y: 100, opacity: 0 }}
             animate={{
-              y: -200,
+              y: -800,
               opacity: [50, 10, 50],
               x: [0, 20, -20, 0],
             }}
@@ -54,7 +54,30 @@ export default function HeroSection() {
               delay: i * 1,
               ease: "easeInOut",
             }}
-            className="absolute bottom-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"
+            className="absolute bottom-0 w-32 h-32 bg-white/20 rounded-full blur-2xl"
+            style={{
+              left: `${10 + i * 15}%`,
+            }}
+          />
+        ))}
+      </div>
+      <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            initial={{ y: 100, opacity: 0 }}
+            animate={{
+              y: -500,
+              opacity: [50, 10, 50],
+              x: [0, 20, 50, 0],
+            }}
+            transition={{
+              duration: 6 + i * 1.5,
+              repeat: Infinity,
+              delay: i * 1,
+              ease: "easeInOut",
+            }}
+            className="absolute bottom-0 w-32 h-32 bg-white/20 rounded-full blur-2xl"
             style={{
               left: `${10 + i * 15}%`,
             }}
