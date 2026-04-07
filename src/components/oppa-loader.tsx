@@ -1,12 +1,17 @@
 "use client"
 import { useEffect, useState } from "react"
+import { motion } from "framer-motion"
+
 export default function LumeLoaderMinimal() {
   const [loading, setLoading] = useState(true)
+
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2000)
     return () => clearTimeout(timer)
   }, [])
+
   if (!loading) return null
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0b1d26]">
       {/* Background glow */}

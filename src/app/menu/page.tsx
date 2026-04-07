@@ -1,10 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
 import { toast } from "@/hooks/use-toast"
 import { useCartStore } from "@/store/cartStore"
+import LumeLoaderMinimal from "@/components/oppa-loader"
 import Image from "next/image"
 
 const playfair = Playfair_Display({
@@ -18,17 +19,27 @@ interface Product {
   description: string
   category: string
   price: number
-  image: string 
+  image: string
 }
 
 export default function MenuPage() {
   const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(false)
-  const [activeMainCategory, setActiveMainCategory] = useState<"Kitchen" | "Coffee" | "Bar">("Kitchen")
+  const [loading, setLoading] = useState(true)
+  const [activeMainCategory, setActiveMainCategory] =
+    useState<"Kitchen" | "Coffee" | "Bar">("Kitchen")
+
   const { addItem } = useCartStore()
 
   const mainCategoryMap = {
-    Kitchen: ["Appetizers", "Main Course", "Desserts", "Noodles", "Rice Dishes", "Soups", "Add-ons"],
+    Kitchen: [
+      "Appetizers",
+      "Main Course",
+      "Desserts",
+      "Noodles",
+      "Rice Dishes",
+      "Soups",
+      "Add-ons",
+    ],
     Coffee: ["Coffee"],
     Bar: ["Beverages"],
   }
@@ -36,15 +47,16 @@ export default function MenuPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true)
-      const response = await fetch("/api/product?paginate=false")
-      const result = await response.json()
-      if (response.ok) {
-        setProducts(result)
-      } else {
-        throw new Error(result.message || "Failed to fetch products")
-      }
+
+      const res = await fetch("/api/product?paginate=false")
+      const data = await res.json()
+
+      if (!res.ok) throw new Error(data.message)
+
+      setProducts(data)
     } catch (error) {
-      console.error("Failed to fetch products:", error)
+      console.error(error)
+
       toast({
         variant: "destructive",
         title: "Error",
@@ -59,105 +71,150 @@ export default function MenuPage() {
     fetchProducts()
   }, [])
 
-  const getImageUrl = (imagePath: string): string => {
-    if (!imagePath) {
-      return "/placeholder-food.jpg"
-    }
+  const getImageUrl = (imagePath: string) => {
+    if (!imagePath) return "/placeholder-food.jpg"
 
-    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-      return imagePath
-    }
+    if (imagePath.startsWith("http")) return imagePath
 
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+    const base =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
-    let fullPath = imagePath
-    if (!imagePath.startsWith("images/products/")) {
-      fullPath = `images/products/${imagePath}`
-    }
-
-    return `${API_BASE_URL}/${fullPath}`
+    return `${base}/images/products/${imagePath}`
   }
 
-  const filteredProducts = products.filter((item) => mainCategoryMap[activeMainCategory].includes(item.category))
-
-  const groupedProducts = filteredProducts.reduce(
-    (acc, item) => {
-      if (!acc[item.category]) acc[item.category] = []
-      acc[item.category].push(item)
-      return acc
-    },
-    {} as Record<string, Product[]>,
+  const filteredProducts = products.filter((item) =>
+    mainCategoryMap[activeMainCategory].includes(item.category)
   )
+
+  const groupedProducts = filteredProducts.reduce((acc, item) => {
+    if (!acc[item.category]) acc[item.category] = []
+    acc[item.category].push(item)
+    return acc
+  }, {} as Record<string, Product[]>)
 
   const handleAddToCart = (item: Product) => {
     addItem(item)
+
     toast({
       title: "Added to cart",
       description: `${item.name} added to your order.`,
     })
   }
 
+  if (loading) {
+    return (
+      <LumeLoaderMinimal />
+    )
+  }
+
   return (
     <section className="py-24 bg-[#0b1d26] text-white">
       <div className="container mx-auto px-4 max-w-6xl">
+
         {/* Heading */}
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} className="text-center mb-16">
-          <p className="tracking-[0.3em] uppercase text-sm mb-3 text-[#d4a24c]">Our Offerings</p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-16"
+        >
+          <p className="tracking-[0.3em] uppercase text-sm mb-3 text-[#d4a24c]">
+            Our Offerings
+          </p>
           <h2 className={`${playfair.className} text-4xl md:text-5xl font-bold`}>
             The <span className="text-[#d4a24c] italic">Menu</span>
           </h2>
         </motion.div>
 
-        {/* Main Category Tabs */}
+        {/* Tabs */}
         <div className="flex justify-center gap-3 mb-16">
           {Object.keys(mainCategoryMap).map((cat) => (
             <button
               key={cat}
-              onClick={() => setActiveMainCategory(cat as keyof typeof mainCategoryMap)}
-              className={`px-6 py-2.5 rounded-full text-sm transition ${
-                activeMainCategory === cat
+              onClick={() =>
+                setActiveMainCategory(cat as keyof typeof mainCategoryMap)
+              }
+              className={`px-6 py-2.5 rounded-full text-sm transition ${activeMainCategory === cat
                   ? "bg-[#d4a24c] text-black font-semibold"
                   : "bg-[#132e3b] text-white/70 hover:bg-[#193847] hover:text-white"
-              }`}
+                }`}
             >
               {cat}
             </button>
           ))}
         </div>
 
-        {/* Products grouped by granular category */}
-        {Object.entries(groupedProducts).map(([category, items]) => (
-          <motion.div key={category} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
+        {/* ✅ LOADING SKELETON */}
+        {loading && (
+          <div className="grid md:grid-cols-2 gap-x-16 gap-y-6">
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className="py-6 border-b border-white/10 flex gap-6 animate-pulse"
+              >
+                <div className="w-24 h-24 bg-white/10 rounded-lg" />
+
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-1/2 bg-white/10 rounded" />
+                  <div className="h-3 w-3/4 bg-white/10 rounded" />
+                  <div className="h-3 w-2/3 bg-white/10 rounded" />
+                </div>
+
+                <div className="flex flex-col items-end gap-2">
+                  <div className="h-4 w-12 bg-white/10 rounded" />
+                  <div className="h-6 w-16 bg-white/10 rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ✅ CONTENT */}
+        {!loading && Object.entries(groupedProducts).map(([category, items]) => (
+          <motion.div
+            key={category}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-12"
+          >
             <h3 className="text-xl font-semibold mb-4">{category}</h3>
+
             <div className="grid md:grid-cols-2 gap-x-16 gap-y-6">
               {items.map((item) => (
-                <div key={item.id} className="py-6 border-b border-white/10 flex items-start gap-6">
-                  {/* Image wrapper with fixed size */}
+                <div
+                  key={item.id}
+                  className="py-6 border-b border-white/10 flex items-start gap-6 hover:bg-white/5 transition px-2 rounded-lg"
+                >
+                  {/* Image */}
                   <div className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden">
                     <Image
                       src={getImageUrl(item.image)}
                       alt={item.name}
                       fill
                       className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      priority
                     />
                   </div>
 
-                  {/* Product details */}
+                  {/* Info */}
                   <div className="flex-1">
-                    <h4 className={`${playfair.className} text-lg md:text-xl font-semibold`}>{item.name}</h4>
-                    <p className="text-sm text-white/60 mt-1">{item.description}</p>
+                    <h4 className={`${playfair.className} text-lg font-semibold`}>
+                      {item.name}
+                    </h4>
+                    <p className="text-sm text-white/60 mt-1">
+                      {item.description}
+                    </p>
                   </div>
 
-                  {/* Price + Add to Cart */}
+                  {/* Price + Button */}
                   <div className="flex flex-col items-end gap-2">
-                    <span className="text-[#d4a24c] font-semibold text-lg whitespace-nowrap">₱{item.price}</span>
+                    <span className="text-[#d4a24c] font-semibold text-lg">
+                      ₱{item.price}
+                    </span>
+
                     <button
                       onClick={() => handleAddToCart(item)}
                       className="px-4 py-1.5 rounded-full bg-[#d4a24c] text-black text-xs font-semibold hover:brightness-110 transition"
                     >
-                      + Add to Cart
+                      + Add
                     </button>
                   </div>
                 </div>
@@ -166,7 +223,26 @@ export default function MenuPage() {
           </motion.div>
         ))}
 
-        {filteredProducts.length === 0 && <div className="text-center py-12 text-white/70">No items available in this category yet.</div>}
+        {/* ✅ EMPTY STATE (REDESIGNED) */}
+        {!loading && filteredProducts.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+
+            <div className="w-20 h-20 rounded-full bg-[#d4a24c]/10 flex items-center justify-center mb-6">
+              <span className="text-3xl">🍽️</span>
+            </div>
+
+            <h3 className={`${playfair.className} text-2xl font-semibold mb-2`}>
+              No Dishes Available
+            </h3>
+
+            <p className="text-white/60 max-w-md">
+              This category is currently being curated by our chefs.
+              Please check back soon for new offerings.
+            </p>
+
+            <div className="mt-6 h-[1px] w-24 bg-[#d4a24c]/30" />
+          </div>
+        )}
       </div>
     </section>
   )

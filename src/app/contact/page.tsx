@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { toast } from "@/hooks/use-toast"
-import { CheckCircle, AlertCircle } from "lucide-react"
+import { CheckCircle, AlertCircle, ChevronDown } from "lucide-react"
 import { Playfair_Display } from "next/font/google"
+import LumeLoaderMinimal from "@/components/oppa-loader"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -82,6 +83,41 @@ export default function Contact() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
+
+  const faqs = [
+    {
+      question: "Do you accept walk-in customers?",
+      answer: "Yes, we accept walk-ins depending on table availability. We recommend reservations during peak hours.",
+    },
+    {
+      question: "What are your operating hours?",
+      answer: "We are open daily. Mon–Fri: 7:00 AM – 12:00 AM, Saturday: 8:00 AM – 1:00 AM, Sunday: 8:00 AM – 11:00 PM.",
+    },
+    {
+      question: "Do you offer reservations?",
+      answer: "Yes, you can reserve a table through our reservation system or by contacting us directly.",
+    },
+    {
+      question: "Can I host private events?",
+      answer: "Absolutely. We offer private dining and event setups. Please contact us for arrangements and availability.",
+    },
+  ]
+
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 800) // adjust or remove if not needed
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (loading) {
+    return <LumeLoaderMinimal />
   }
 
   return (
@@ -194,6 +230,64 @@ export default function Contact() {
             </motion.form>
 
           </div>
+        </div>
+      </section>
+
+      <section className="py-24 border-t border-white/10">
+        <div className="container px-4 max-w-4xl mx-auto">
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <p className="text-[#d4a24c] tracking-[0.3em] uppercase text-sm mb-3">
+              FAQ
+            </p>
+            <h2 className={`${playfair.className} text-3xl md:text-4xl font-bold`}>
+              Frequently Asked <span className="text-[#d4a24c] italic">Questions</span>
+            </h2>
+          </motion.div>
+
+          <div className="space-y-4">
+            {faqs.map((faq, index) => {
+              const isOpen = openFaq === index
+
+              return (
+                <div
+                  key={index}
+                  className="border border-white/10 rounded-xl bg-[#0f2a33] overflow-hidden"
+                >
+                  <button
+                    onClick={() => setOpenFaq(isOpen ? null : index)}
+                    className="w-full flex items-center justify-between px-6 py-4 text-left"
+                  >
+                    <span className="font-medium text-white">
+                      {faq.question}
+                    </span>
+
+                    <ChevronDown
+                      className={`w-5 h-5 text-[#d4a24c] transition-transform duration-300 ${isOpen ? "rotate-180" : ""
+                        }`}
+                    />
+                  </button>
+
+                  {isOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="px-6 pb-4 text-sm text-white/70"
+                    >
+                      {faq.answer}
+                    </motion.div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
         </div>
       </section>
     </div>

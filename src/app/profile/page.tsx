@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { motion } from "framer-motion"
+import LumeLoaderMinimal from "@/components/oppa-loader"
 import { Playfair_Display } from "next/font/google"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
@@ -339,6 +340,12 @@ export default function ProfilePage() {
     setIsModalOpen(false)
     setEditingId(null)
     setEditingData(undefined)
+  }
+
+  if (loading) {
+    return (
+      <LumeLoaderMinimal />
+    )
   }
 
   if (!user) {
