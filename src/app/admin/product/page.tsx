@@ -439,9 +439,9 @@ export default function ProductsAdminPage() {
                 </DialogHeader>
 
                 {selectedProduct && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[360px]">
                     {/* LEFT - IMAGE */}
-                    <div className="relative bg-gray-100 h-64 sm:h-auto min-h-[200px]">
+                    <div className="relative w-full m-auto aspect-square bg-gray-100 rounded-lg overflow-hidden">
                       <Image
                         src={getImageUrl(selectedProduct.image)}
                         alt={selectedProduct.name}
@@ -579,15 +579,11 @@ export default function ProductsAdminPage() {
     return (
       <SidebarProvider defaultOpen={!isDesktop}>
         <div className="flex min-h-screen w-full bg-amber-50">
-
           <AppSidebar />
 
           <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
-
             <div className="flex items-center justify-center min-h-screen w-full">
-
               <div className="flex flex-col items-center gap-4 bg-[#162A3A] backdrop-blur-xl px-8 py-8 rounded-2xl border border-[#d4a24c]/70 shadow-2xl">
-
                 {/* Spinner */}
                 <div className="relative">
                   <Loader2 className="h-8 w-8 animate-spin text-[#d4a24c]" />
@@ -596,12 +592,8 @@ export default function ProductsAdminPage() {
 
                 {/* Text */}
                 <div className="text-center">
-                  <p className="text-lg font-semibold text-white">
-                    Loading Products
-                  </p>
-                  <p className="text-sm text-white/60">
-                    Please wait while we fetch the data...
-                  </p>
+                  <p className="text-lg font-semibold text-white">Loading Products</p>
+                  <p className="text-sm text-white/60">Please wait while we fetch the data...</p>
                 </div>
 
                 {/* Animated dots */}
@@ -610,11 +602,8 @@ export default function ProductsAdminPage() {
                   <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.15s]" />
                   <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce" />
                 </div>
-
               </div>
-
             </div>
-
           </div>
         </div>
       </SidebarProvider>
