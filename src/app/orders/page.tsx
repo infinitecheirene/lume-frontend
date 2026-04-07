@@ -228,10 +228,10 @@ const Orders = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0b1d26] flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-[#d4a24c] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-700 font-semibold text-lg">Loading your history...</p>
+          <p className="text-white font-semibold text-lg">Loading your history...</p>
         </div>
       </div>
     )
@@ -272,7 +272,7 @@ const Orders = () => {
   const currentData = activeTab === "orders" ? filteredOrders : activeTab === "events" ? filteredReservations : filteredReservations
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-[#0b1d26] via-[#0b1d26] to-[#000000] py-8 px-4">
+    <div className="min-h-screen pt-20 relative overflow-hidden bg-gradient-to-b from-[#0b1d26] via-[#0b1d26] to-[#000000] py-8 px-4">
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <AlertDialogContent className="max-w-md bg-white border-gray-200">
           <AlertDialogHeader>
@@ -312,13 +312,6 @@ const Orders = () => {
             <div>
               <h1 className="text-4xl md:text-5xl font-black text-white mb-2">History & Records</h1>
               <p className="text-white/70 text-lg">Track your orders and table bookings in one place</p>
-            </div>
-            <div className="flex items-center gap-3 bg-white px-6 py-3 rounded-2xl shadow-md border border-gray-200">
-              <User className="w-5 h-5 text-[#d4a24c]" />
-              <div>
-                <p className="text-xs text-gray-500">Welcome back,</p>
-                <p className="font-bold text-gray-900">{user.name}</p>
-              </div>
             </div>
           </div>
 
