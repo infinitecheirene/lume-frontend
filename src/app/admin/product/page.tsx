@@ -304,11 +304,11 @@ export default function ProductsAdminPage() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogTitle className="text-black">Are you sure?</AlertDialogTitle>
                   <AlertDialogDescription>This will permanently delete {Object.keys(rowSelection).length} product(s).</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="flex flex-col sm:flex-row gap-2">
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel className="text-black">Cancel</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={async () => {
                       // Map table row IDs to actual product IDs
@@ -333,6 +333,7 @@ export default function ProductsAdminPage() {
                         setRowSelection({}) // reset selection after deletion
                       }
                     }}
+                    className="bg-red-600"
                   >
                     Delete
                   </AlertDialogAction>
@@ -418,15 +419,16 @@ export default function ProductsAdminPage() {
         const product = row.original
         return (
           <div className="flex items-center gap-1">
-            {/* View Sheet */}
-            <Sheet>
-              <SheetTrigger asChild>
+            {/* View Dialog */}
+            <Dialog>
+              <DialogTrigger asChild>
                 <Button variant="ghost" size="sm" onClick={() => setSelectedProduct(product)} className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-2">
                   <Eye className="h-4 w-4" />
                   <span className="ml-1 sr-only sm:not-sr-only hidden sm:inline">View</span>
                 </Button>
-              </SheetTrigger>
-              <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+              </DialogTrigger>
+
+              <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                 {selectedProduct && (
                   <div className="space-y-6">
                     <div className="flex justify-center mb-6">
@@ -440,32 +442,36 @@ export default function ProductsAdminPage() {
                         />
                       </div>
                     </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-4">
                         <div>
                           <Label className="text-sm text-gray-500">Product Name</Label>
-                          <p className="text-lg font-semibold">{selectedProduct.name}</p>
+                          <p className="text-lg text-black font-semibold">{selectedProduct.name}</p>
                         </div>
+
                         <div>
                           <Label className="text-sm text-gray-500">Category</Label>
                           <Badge variant="outline" className="text-sm">
                             {selectedProduct.category}
                           </Badge>
                         </div>
+
                         <div>
                           <Label className="text-sm text-gray-500">Price</Label>
                           <p className="text-xl font-bold text-green-600">₱{formatPrice(selectedProduct.price)}</p>
                         </div>
                       </div>
                     </div>
+
                     <div>
                       <Label className="text-sm text-gray-500">Description</Label>
-                      <p className="text-sm mt-1 p-3 bg-gray-50 rounded-md whitespace-pre-wrap">{selectedProduct.description}</p>
+                      <p className="text-sm mt-1 p-3 text-black bg-gray-50 rounded-md whitespace-pre-wrap">{selectedProduct.description}</p>
                     </div>
                   </div>
                 )}
-              </SheetContent>
-            </Sheet>
+              </DialogContent>
+            </Dialog>
           </div>
         )
       },
@@ -498,12 +504,14 @@ export default function ProductsAdminPage() {
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogTitle className="text-black">Are you sure?</AlertDialogTitle>
                       <AlertDialogDescription>This action will permanently delete &apos;{product.name}&apos;.</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleDelete(product.id)}>Delete</AlertDialogAction>
+                      <AlertDialogCancel className="text-black">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleDelete(product.id)} className="bg-red-600">
+                        Delete
+                      </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -568,7 +576,7 @@ export default function ProductsAdminPage() {
 
   return (
     <SidebarProvider defaultOpen={!isDesktop}>
-      <div className="flex min-h-screen w-full bg-gradient-to-br from-red-50 to-red-50">
+      <div className="flex min-h-screen w-full bg-amber-50">
         <AppSidebar />
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
           {isDesktop && (
@@ -590,7 +598,7 @@ export default function ProductsAdminPage() {
               </div>
 
               <Card className="bg-white/70 backdrop-blur-sm shadow-xl p-0 pb-5 border-red-100">
-                <CardHeader className="p-3 bg-gradient-to-r from-red-500 to-red-500 text-white rounded-t-lg">
+                <CardHeader className="p-3 bg-[#0b1d26] text-white rounded-t-lg">
                   <div className="flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row gap-3 items-center sm:items-center justify-between">
                       {/* Add Product Button */}
@@ -598,7 +606,7 @@ export default function ProductsAdminPage() {
                         <DialogTrigger asChild>
                           <Button
                             size="sm"
-                            className="shrink-0 bg-white text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                            className="shrink-0 bg-white text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                           >
                             <Plus className="mr-2 h-4 w-4" />
                             <span className="hidden sm:inline">Add Product</span>
@@ -606,9 +614,9 @@ export default function ProductsAdminPage() {
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto mx-4 bg-gradient-to-br from-red-50 to-red-50">
-                          <DialogHeader className="bg-gradient-to-r from-red-500 to-red-500 text-white p-6 -m-6 mb-4 rounded-t-lg">
+                          <DialogHeader className="bg-[#0b1d26] text-white p-6 -m-6 mb-4 rounded-t-lg">
                             <DialogTitle className="text-xl font-bold">Add New Product</DialogTitle>
-                            <DialogDescription className="text-red-100">Fill in the details for your new menu item.</DialogDescription>
+                            <DialogDescription className="text-gray-100">Fill in the details for your new menu item.</DialogDescription>
                           </DialogHeader>
                           <form onSubmit={handleCreateSubmit} className="space-y-6 py-4">
                             <div className="grid grid-cols-1 gap-4">
@@ -624,7 +632,7 @@ export default function ProductsAdminPage() {
                                   required
                                   disabled={isCreating}
                                   placeholder="e.g., Kimchi Fried Rice"
-                                  className="mt-1 border-red-200 focus:border-red-400 focus:ring-red-400"
+                                  className="mt-1 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
                                 />
                               </div>
 
@@ -641,7 +649,7 @@ export default function ProductsAdminPage() {
                                   rows={3}
                                   disabled={isCreating}
                                   placeholder="Describe the dish, ingredients, and preparation..."
-                                  className="mt-1 resize-none border-red-200 focus:border-red-400 focus:ring-red-400"
+                                  className="mt-1 resize-none border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
                                 />
                               </div>
 
@@ -661,7 +669,7 @@ export default function ProductsAdminPage() {
                                     required
                                     disabled={isCreating}
                                     placeholder="0.00"
-                                    className="mt-1 border-red-200 focus:border-red-400 focus:ring-red-400"
+                                    className="mt-1 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
                                   />
                                 </div>
 
@@ -670,7 +678,7 @@ export default function ProductsAdminPage() {
                                     Category
                                   </Label>
                                   <Select value={newFormData.category} onValueChange={handleCategoryChange} disabled={isCreating}>
-                                    <SelectTrigger className="mt-1 border-red-200 focus:border-red-400 focus:ring-red-400">
+                                    <SelectTrigger className="mt-1 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400">
                                       <SelectValue placeholder="Select category" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -695,7 +703,7 @@ export default function ProductsAdminPage() {
                                     accept="image/*"
                                     onChange={handleImageSelect}
                                     disabled={isCreating}
-                                    className="flex-1 border-red-200 focus:border-red-400 focus:ring-red-400"
+                                    className="flex-1 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
                                   />
                                   <Button
                                     type="button"
@@ -703,7 +711,7 @@ export default function ProductsAdminPage() {
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={isCreating}
                                     size="sm"
-                                    className="border-red-300 text-red-600 hover:bg-red-50"
+                                    className="border-yellow-300 text-yellow-600 hover:bg-yellow-50"
                                   >
                                     <Upload className="w-4 h-4 mr-2" />
                                     Browse
@@ -711,7 +719,7 @@ export default function ProductsAdminPage() {
                                 </div>
                                 {imagePreview && (
                                   <div className="mt-3">
-                                    <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-red-200 shadow-md">
+                                    <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-yellow-200 shadow-md">
                                       <Image
                                         src={imagePreview || "/placeholder.svg"}
                                         alt="Preview"
@@ -734,14 +742,14 @@ export default function ProductsAdminPage() {
                                   resetForm()
                                 }}
                                 disabled={isCreating}
-                                className="flex-1 sm:flex-none border-red-300 text-red-600 hover:bg-red-50"
+                                className="flex-1 sm:flex-none border-yellow-300 text-yellow-600 hover:bg-yellow-50"
                               >
                                 Cancel
                               </Button>
                               <Button
                                 type="submit"
                                 disabled={isCreating}
-                                className="flex-1 sm:flex-none bg-gradient-to-r from-red-500 to-red-500 hover:from-red-600 hover:to-red-600 text-white font-semibold shadow-lg"
+                                className="flex-1 sm:flex-none bg-gradient-to-r from-yellow-500 to-yellow-500 hover:from-yellow-600 hover:to-yellow-600 text-white font-semibold shadow-lg"
                               >
                                 {isCreating ? (
                                   <>
@@ -766,12 +774,12 @@ export default function ProductsAdminPage() {
                       {/* Search Bar */}
                       <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
                         <div className="relative flex-1 max-w-sm">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-red-800" />
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-yellow-800" />
                           <Input
                             placeholder="Search products..."
                             value={globalFilter || ""}
                             onChange={(event) => setGlobalFilter(event.target.value)}
-                            className="pl-9 pr-3 py-2 w-full bg-red-100 border-red-800 text-red-800 placeholder:text-red-800 focus:bg-white/30 focus:border-red-500 transition-all duration-200"
+                            className="pl-9 pr-3 py-2 w-full bg-yellow-100 border-yellow-800 text-yellow-800 placeholder:text-yellow-800 focus:border-yellow-500 transition-all duration-200"
                           />
                         </div>
                       </div>
@@ -789,7 +797,7 @@ export default function ProductsAdminPage() {
                         Items per page:
                       </Label>
                       <Select value={itemsPerPage === -1 ? "all" : itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
-                        <SelectTrigger id="items-per-page" className="w-[100px] border-red-200 focus:border-red-400 focus:ring-red-400">
+                        <SelectTrigger id="items-per-page" className="w-[100px] border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -803,14 +811,14 @@ export default function ProductsAdminPage() {
                     </div>
                   </div>
                   <div className="w-full">
-                    <div className="rounded-lg border border-red-200 overflow-hidden shadow-lg">
+                    <div className="rounded-lg border border-slate-200 overflow-hidden shadow-lg">
                       <div className="overflow-x-auto">
                         <table className="w-full min-w-[600px]">
-                          <thead className="bg-gradient-to-r from-red-100 to-red-100 h-20">
-                            <tr className="border-b border-red-200">
+                          <thead className="bg-slate-700 h-20">
+                            <tr className="border-b border-slate-200">
                               {table.getHeaderGroups().map((headerGroup) =>
                                 headerGroup.headers.map((header) => (
-                                  <th key={header.id} className="text-left p-3 sm:p-4 text-sm font-semibold text-gray-700 tracking-wide">
+                                  <th key={header.id} className="text-left p-3 sm:p-4 text-sm font-semibold text-white tracking-wide">
                                     {header.isPlaceholder ? null : (
                                       <div className="flex items-center gap-2">
                                         {typeof header.column.columnDef.header === "function"
@@ -827,7 +835,7 @@ export default function ProductsAdminPage() {
                             {paginatedRows.map((row, index) => (
                               <tr
                                 key={row.id}
-                                className={`border-b border-red-100 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-50 transition-all duration-200 ${index % 2 === 0 ? "bg-white" : "bg-red-25"}`}
+                                className={`border-b border-slate-100 hover:bg-slate-50 transition-all duration-200 ${index % 2 === 0 ? "bg-white" : "bg-red-25"}`}
                               >
                                 {row.getVisibleCells().map((cell) => (
                                   <td key={cell.id} className="p-3 sm:p-4 text-sm">
@@ -843,9 +851,9 @@ export default function ProductsAdminPage() {
                       </div>
                     </div>
                     {table.getRowModel().rows.length === 0 && (
-                      <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-red-200 mt-4">
-                        <div className="bg-gradient-to-r from-red-100 to-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Search className="w-8 h-8 text-red-500" />
+                      <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-slate-200 mt-4">
+                        <div className="bg-gradient-to-r from-slate-100 to-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Search className="w-8 h-8 text-slate-500" />
                         </div>
                         <p className="text-lg font-medium text-gray-700">No products found</p>
                         {globalFilter && <p className="text-sm mt-1 text-gray-500">Try adjusting your search terms</p>}

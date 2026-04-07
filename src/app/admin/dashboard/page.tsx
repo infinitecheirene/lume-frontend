@@ -42,7 +42,7 @@ const statusColors = {
   cancelled: "#ef4444",
 }
 
-const paymentColors = ["#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16"]
+const paymentColors = ["#0b1d26", "#f97316", "#f59e0b", "#eab308", "#84cc16"]
 
 const MetricCard = ({
   title,
@@ -60,14 +60,14 @@ const MetricCard = ({
   trend?: "up" | "down" | "neutral"
 }) => (
   <Card className="group relative overflow-hidden border border-gray-200 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm">
-    <div className="absolute left-0 top-0 h-full w-[2px] bg-[#dc143c]/70" />
+    <div className="absolute left-0 top-0 h-full w-[2px] bg-[#0b1d26]/70" />
 
     <CardContent className="px-5">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-red-100 text-gray-700">
-          <Icon className="h-6 w-6 text-red-900" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-yellow-500 text-white">
+          <Icon className="h-6 w-6 text-yellow-600" />
         </div>
-        <p className="text-lg font-bold uppercase tracking-wider text-red-900">{title}</p>
+        <p className="text-lg font-bold uppercase tracking-wider text-yellow-700">{title}</p>
       </div>
 
       <div className="mt-4 flex items-center justify-center gap-2">
@@ -127,12 +127,12 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <SidebarProvider defaultOpen={!isDesktop}>
-        <div className="flex min-h-screen w-full bg-gradient-to-br from-red-50 to-red-50">
+        <div className="flex min-h-screen w-full bg-[#0b1d26]">
           <AppSidebar />
           <div className="flex-1 min-w-0 flex items-center justify-center">
-            <div className="flex items-center gap-3 bg-white px-8 py-6 rounded-2xl shadow-lg">
-              <Loader2 className="h-6 w-6 animate-spin text-red-500" />
-              <span className="text-gray-700 font-medium text-lg">Loading Dashboard...</span>
+            <div className="flex items-center gap-3 bg-[#0b1d26] px-8 py-6 rounded-2xl shadow-lg">
+              <Loader2 className="h-6 w-6 animate-spin text-white" />
+              <span className="text-white font-medium text-lg">Loading Dashboard...</span>
             </div>
           </div>
         </div>
@@ -146,15 +146,15 @@ export default function AdminDashboard() {
         <div className="flex min-h-screen w-full bg-gray-50">
           <AppSidebar />
           <div className="flex-1 min-w-0 flex items-center justify-center p-4">
-            <Card className="max-w-md w-full border-red-200">
+            <Card className="max-w-md w-full border-[#0b1d26]">
               <CardHeader>
-                <CardTitle className="text-red-600">Failed to Load Analytics</CardTitle>
+                <CardTitle className="text-white">Failed to Load Analytics</CardTitle>
                 <CardDescription>{error || "No data available"}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <button
                   onClick={() => window.location.reload()}
-                  className="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
+                  className="w-full px-4 py-2 bg-[#0b1d26] text-white rounded-lg hover:bg-[#0b1d26]/50 transition-colors font-medium"
                 >
                   Retry
                 </button>
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
 
   return (
     <SidebarProvider defaultOpen={!isDesktop}>
-      <div className="flex min-h-screen w-full bg-gradient-to-br from-red-50 to-red-50">
+      <div className="flex min-h-screen w-full bg-[#0b1d26]">
         <AppSidebar />
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
           {isDesktop && (
@@ -185,8 +185,8 @@ export default function AdminDashboard() {
             {/* Header */}
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-gray-600 mt-1">Restaurant analytics and insights</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-white">Dashboard</h1>
+                <p className="text-white mt-1">Restaurant analytics and insights</p>
               </div>
 
               {/* Period Selector */}
@@ -196,7 +196,7 @@ export default function AdminDashboard() {
                     key={p}
                     onClick={() => setPeriod(p as any)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition
-                      ${period === p ? "bg-red-600 text-white" : "bg-white border text-gray-600 hover:bg-gray-100"}`}
+                      ${period === p ? "bg-yellow-600 text-white" : "bg-white border text-gray-600 hover:bg-gray-100"}`}
                   >
                     {p.charAt(0).toUpperCase() + p.slice(1)}
                   </button>
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
               {/* Category Performance */}
               <Card className="border-0 shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold">Category Performance</CardTitle>
+                  <CardTitle className="text-xl text-yellow-600 font-bold">Category Performance</CardTitle>
                   <CardDescription>Orders & Revenue by Category</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -261,12 +261,12 @@ export default function AdminDashboard() {
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Bar dataKey="orders" name="Orders" fill="#ef4444" radius={[6, 6, 0, 0]} />
-                        <Bar dataKey="revenue" name="Revenue" fill="#f97316" radius={[6, 6, 0, 0]} />
+                        <Bar dataKey="orders" name="Orders" fill="#1f4152" radius={[6, 6, 0, 0]} />
+                        <Bar dataKey="revenue" name="Revenue" fill="#0b1d26" radius={[6, 6, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="h-[320px] flex items-center justify-center text-gray-400">No category data</div>
+                    <div className="h-[320px] flex items-center justify-center text-gray-600">No category data</div>
                   )}
                 </CardContent>
               </Card>
@@ -274,7 +274,7 @@ export default function AdminDashboard() {
               {/* Popular Products */}
               <Card className="border-0 shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold">Top Products</CardTitle>
+                  <CardTitle className="text-xl text-yellow-600 font-bold">Top Products</CardTitle>
                   <CardDescription>Best performing menu items</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -286,7 +286,7 @@ export default function AdminDashboard() {
                           className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors"
                         >
                           <div className="flex items-center gap-4">
-                            <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-red-500 to-red-500 text-white rounded-lg font-bold text-lg">
+                            <div className="flex items-center justify-center w-10 h-10 bg-[#0b1d26] text-white rounded-lg font-bold text-lg">
                               {index + 1}
                             </div>
                             <div>
@@ -295,18 +295,13 @@ export default function AdminDashboard() {
                                 <Badge variant="secondary" className="text-xs">
                                   {product.category}
                                 </Badge>
-                                {product.is_spicy && (
-                                  <Badge variant="outline" className="text-xs border-red-300 text-red-700">
-                                    🌶️ Spicy
-                                  </Badge>
-                                )}
                               </div>
                             </div>
                           </div>
                           <div className="text-right">
                             <div className="font-bold text-gray-900">{product.orders}</div>
                             <div className="text-sm text-gray-500">orders</div>
-                            <div className="text-sm font-medium text-red-600 mt-1">₱{product.revenue.toLocaleString()}</div>
+                            <div className="text-sm font-medium text-yellow-600 mt-1">₱{product.revenue.toLocaleString()}</div>
                           </div>
                         </div>
                       ))}
@@ -321,7 +316,7 @@ export default function AdminDashboard() {
             {/* Customer Map */}
             <Card className="border-0 shadow-sm">
               <CardHeader>
-                <CardTitle className="text-xl font-bold">Customer Map</CardTitle>
+                <CardTitle className="text-xl text-yellow-600 font-bold">Customer Map</CardTitle>
                 <CardDescription>Walk-in vs Online Reservations</CardDescription>
               </CardHeader>
               <CardContent>
@@ -336,7 +331,7 @@ export default function AdminDashboard() {
                     <XAxis dataKey="type" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="count" fill="#f97316" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="count" fill="#0b1d26" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -347,7 +342,7 @@ export default function AdminDashboard() {
               {/* Order Status */}
               <Card className="border-0 shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold">Order Status</CardTitle>
+                  <CardTitle className="text-xl text-yellow-600 font-bold">Order Status</CardTitle>
                   <CardDescription>Current order distribution</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center">
@@ -400,7 +395,7 @@ export default function AdminDashboard() {
               {/* Payment Method */}
               <Card className="border-0 shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold">Payment Methods</CardTitle>
+                  <CardTitle className="text-xl text-yellow-600 font-bold">Payment Methods</CardTitle>
                   <CardDescription>Preferred payment options</CardDescription>
                 </CardHeader>
                 <CardContent>

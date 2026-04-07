@@ -29,7 +29,7 @@ interface Product {
   updated_at: string
 }
 
-const categories = ["Appetizers", "Main Course", "Desserts", "Beverages", "Korean BBQ", "Noodles", "Rice Dishes", "Soups"]
+const categories = ["Appetizers", "Main Course", "Desserts", "Beverages", "Coffee"]
 
 const getImageUrl = (imagePath: string) => {
   if (!imagePath) return "/placeholder-food.jpg"
@@ -169,12 +169,12 @@ const handleSubmit = async (e: React.FormEvent) => {
   // --- UI Subcomponents ---
   const Loading = () => (
     <SidebarProvider defaultOpen={!isMobile}>
-      <div className="flex min-h-screen w-full bg-gradient-to-br from-orange-50 to-red-50">
+      <div className="flex min-h-screen w-full bg-gradient-to-br from-yellow-50 to-yellow-50">
         <AppSidebar />
         <div className={`flex-1 min-w-0 ${isMobile ? "ml-0" : "ml-72"}`}>
           <div className="flex items-center justify-center min-h-screen w-full">
             <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-xl shadow-lg">
-              <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+              <Loader2 className="h-6 w-6 animate-spin text-yellow-500" />
               <span className="text-gray-700 font-medium">Loading product details...</span>
             </div>
           </div>
@@ -185,7 +185,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   const NotFound = () => (
     <SidebarProvider defaultOpen={!isMobile}>
-      <div className="flex min-h-screen w-full bg-gradient-to-br from-orange-50 to-red-50">
+      <div className="flex min-h-screen w-full bg-gradient-to-br from-yellow-50 to-yellow-50">
         <AppSidebar />
         <div className={`flex-1 min-w-0 ${isMobile ? "ml-0" : "ml-72"}`}>
           <div className="flex items-center justify-center min-h-screen w-full">
@@ -193,7 +193,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               <h2 className="text-xl font-semibold mb-4 text-gray-800">Product not found</h2>
               <Button
                 onClick={() => router.push("/admin/product")}
-                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold shadow-lg"
+                className="bg-gradient-to-r from-yellow-500 to-yellow-500 hover:from-yellow-600 hover:to-yellow-600 text-white font-semibold shadow-lg"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Products
@@ -210,13 +210,13 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
-      <div className="flex min-h-screen w-full bg-gradient-to-br from-orange-50 to-red-50">
+      <div className="flex min-h-screen w-full bg-gradient-to-br from-yellow-50 to-yellow-50">
         <AppSidebar />
         <div className={`flex-1 min-w-0 ${isMobile ? "ml-0" : "ml-72"}`}>
           {isMobile && (
             <div className="sticky top-0 z-50 flex h-12 items-center gap-2 border-b bg-white/90 backdrop-blur-sm px-4 md:hidden shadow-sm">
               <SidebarTrigger className="-ml-1" />
-              <span className="text-sm font-semibold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Edit Product</span>
+              <span className="text-sm font-semibold bg-gradient-to-r from-yellow-600 to-yellow-600 bg-clip-text text-transparent">Edit Product</span>
             </div>
           )}
 
@@ -224,18 +224,18 @@ const handleSubmit = async (e: React.FormEvent) => {
             <div className="max-w-4xl mx-auto space-y-6">
               {/* Header */}
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                <div className="flex items-center gap-4 bg-white/70 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-orange-100">
+                <div className="flex items-center gap-4 bg-white/70 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-yellow-100">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => router.push("/admin/product")}
-                    className="shrink-0 hover:bg-orange-100 text-orange-600"
+                    className="shrink-0 hover:bg-yellow-100 text-yellow-600"
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back
                   </Button>
                   <div>
-                    <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                    <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-600 bg-clip-text text-transparent">
                       Edit Product
                     </h1>
                     <p className="text-sm sm:text-base text-gray-600">Update product information</p>
@@ -244,9 +244,9 @@ const handleSubmit = async (e: React.FormEvent) => {
               </div>
 
               {/* Product Form */}
-              <Card className="bg-white/70 backdrop-blur-sm shadow-xl border-orange-100">
-                <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-lg">
-                  <CardTitle className="flex items-center gap-2 text-xl font-bold">
+              <Card className="gap-0 p-0 bg-white/70 backdrop-blur-sm shadow-xl border-yellow-100">
+                <CardHeader className="bg-slate-800 text-white rounded-t-lg">
+                  <CardTitle className="flex py-2 items-center gap-2 text-xl font-bold">
                     <span>Product Details</span>
                     {(formData.is_spicy || formData.is_vegetarian || formData.is_featured) && (
                       <div className="flex gap-1 ml-auto">
@@ -304,7 +304,7 @@ const LeafBadge = () => (
 
 function ProductMeta({ product }: { product: Product }) {
   return (
-    <Card className="bg-gradient-to-r from-orange-100 to-red-100 border-orange-200 shadow-lg">
+    <Card className="bg-gradient-to-r from-yellow-100 to-yellow-100 border-yellow-200 shadow-lg">
       <CardContent className="pt-6">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
           <MetaItem label="Product ID" value={product.id.toString()} />
@@ -354,7 +354,7 @@ function ProductForm({
             Product Image
           </Label>
           <div className="mt-2 space-y-4">
-            <div className="w-full aspect-square max-w-xs mx-auto lg:mx-0 rounded-xl overflow-hidden border-2 border-dashed border-orange-300 bg-gradient-to-br from-orange-50 to-red-50 shadow-lg">
+            <div className="w-full aspect-square max-w-xs mx-auto lg:mx-0 rounded-xl overflow-hidden border-2 border-dashed border-yellow-300 bg-gradient-to-br from-yellow-50 to-yellow-50 shadow-lg">
               <Image
                 src={imagePreview || getImageUrl(product.image)}
                 alt={product.name}
@@ -370,12 +370,12 @@ function ProductForm({
                 variant="outline"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={saving}
-                className="w-full border-orange-300 text-orange-600 hover:bg-orange-50 font-medium shadow-md"
+                className="w-full border-yellow-300 text-yellow-600 hover:bg-yellow-50 font-medium shadow-md"
               >
                 <Upload className="w-4 h-4 mr-2" /> {selectedImage ? "Change Image" : "Upload New Image"}
               </Button>
               {selectedImage && (
-                <p className="text-xs text-gray-500 text-center bg-orange-50 p-2 rounded-lg">New image selected: {selectedImage.name}</p>
+                <p className="text-xs text-gray-500 text-center bg-yellow-50 p-2 rounded-lg">New image selected: {selectedImage.name}</p>
               )}
             </div>
           </div>
@@ -396,7 +396,7 @@ function ProductForm({
                 required
                 disabled={saving}
                 placeholder="e.g., Kimchi Fried Rice"
-                className="mt-1 border-orange-200 focus:border-orange-400 focus:ring-orange-400"
+                className="mt-1 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
               />
             </div>
 
@@ -415,7 +415,7 @@ function ProductForm({
                 required
                 disabled={saving}
                 placeholder="0.00"
-                className="mt-1 border-orange-200 focus:border-orange-400 focus:ring-orange-400"
+                className="mt-1 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
               />
             </div>
 
@@ -424,7 +424,7 @@ function ProductForm({
                 Category *
               </Label>
               <Select value={formData.category} onValueChange={handleCategoryChange} disabled={saving}>
-                <SelectTrigger className="mt-1 border-orange-200 focus:border-orange-400 focus:ring-orange-400">
+                <SelectTrigger className="mt-1 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -450,8 +450,8 @@ function ProductForm({
               required
               rows={4}
               disabled={saving}
-              placeholder="Describe the dish, ingredients, and preparation..."
-              className="mt-1 resize-none border-orange-200 focus:border-orange-400 focus:ring-orange-400"
+              placeholder="Describe the dish, ingyellowients, and preparation..."
+              className="mt-1 resize-none border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
             />
           </div>
 
@@ -459,20 +459,20 @@ function ProductForm({
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-orange-200">
+      <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-yellow-200">
         <Button
           type="button"
           variant="outline"
           onClick={() => router.push("/admin/product")}
           disabled={saving}
-          className="w-full sm:w-auto order-2 sm:order-1 border-orange-300 text-orange-600 hover:bg-orange-50"
+          className="w-full sm:w-auto order-2 sm:order-1 border-yellow-300 text-yellow-600 hover:bg-yellow-50"
         >
           Cancel
         </Button>
         <Button
           type="submit"
           disabled={saving}
-          className="w-full sm:w-auto sm:ml-auto order-1 sm:order-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold shadow-lg"
+          className="w-full sm:w-auto sm:ml-auto order-1 sm:order-2 bg-gradient-to-r from-yellow-500 to-yellow-500 hover:from-yellow-600 hover:to-yellow-600 text-white font-semibold shadow-lg"
         >
           {saving ? (
             <>
@@ -493,7 +493,7 @@ function ProductForm({
 function PropertySwitches({ formData, handleSwitchChange, saving }: any) {
   const switches = [
     { id: "is_featured", label: "Featured", icon: <Star className="w-4 h-4 text-yellow-500" /> },
-    { id: "is_spicy", label: "Spicy", icon: <Flame className="w-4 h-4 text-red-500" /> },
+    { id: "is_spicy", label: "Spicy", icon: <Flame className="w-4 h-4 text-yellow-500" /> },
     { id: "is_vegetarian", label: "Vegetarian", icon: <Leaf className="w-4 h-4 text-green-500" /> },
   ]
 
@@ -504,7 +504,7 @@ function PropertySwitches({ formData, handleSwitchChange, saving }: any) {
         {switches.map((s) => (
           <div
             key={s.id}
-            className="flex items-center space-x-3 p-3 border-2 border-orange-200 rounded-lg bg-gradient-to-r from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100 transition-all duration-200"
+            className="flex items-center space-x-3 p-3 border-2 border-yellow-200 rounded-lg bg-gradient-to-r from-yellow-50 to-yellow-50 hover:from-yellow-100 hover:to-yellow-100 transition-all duration-200"
           >
             <Switch id={s.id} checked={formData[s.id]} onCheckedChange={(checked) => handleSwitchChange(s.id, checked)} disabled={saving} />
             <Label htmlFor={s.id} className="flex items-center gap-2 cursor-pointer text-gray-700 font-medium">

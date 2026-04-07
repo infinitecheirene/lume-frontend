@@ -70,11 +70,11 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar collapsible="offcanvas" className="border-r border-red-100">
+    <Sidebar collapsible="offcanvas" className="border-r border-yellow-100">
       <SidebarContent className="bg-gradient-to-b from-red-50 via-amber-50 to-red-50">
         <SidebarGroup>
           {/* Header */}
-          <div className="px-4 py-6 bg-gradient-to-r from-red-700 to-red-800 text-white rounded-lg mx-3 mt-3 mb-4 shadow-lg">
+          <div className="px-4 py-6 bg-gradient-to-r from-yellow-700 to-yellow-800 text-white rounded-lg mx-3 mt-3 mb-4 shadow-lg">
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 overflow-hidden">
                 <Image
@@ -86,7 +86,7 @@ export function AppSidebar() {
               </div>
               <div>
                 <h2 className="font-semibold text-lg">Restaurant Admin</h2>
-                <p className="text-red-100 text-xs">Management Portal</p>
+                <p className="text-amber-100 text-xs">Management Portal</p>
               </div>
             </div>
           </div>
@@ -103,7 +103,7 @@ export function AppSidebar() {
                       <Collapsible defaultOpen={isParentActive}>
                         <CollapsibleTrigger asChild>
                           <SidebarMenuButton className="mx-1 rounded-lg">
-                            <item.icon className="h-5 w-5 text-red-700" />
+                            <item.icon className="h-5 w-5 text-yellow-700" />
                             <span>{item.title}</span>
                             <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
                           </SidebarMenuButton>
@@ -119,7 +119,7 @@ export function AppSidebar() {
                                   onClick={handleNavigate}
                                 >
                                   <Link href={sub.url} className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-red-500" />
+                                    <span className="w-2 h-2 rounded-full bg-[#0b1d26]" />
                                     {sub.title}
                                   </Link>
                                 </SidebarMenuSubButton>
@@ -136,7 +136,7 @@ export function AppSidebar() {
                         className="mx-1 rounded-lg"
                       >
                         <Link href={item.url!} className="flex items-center gap-3">
-                          <item.icon className="h-5 w-5 text-red-700" />
+                          <item.icon className="h-5 w-5 text-yellow-700" />
                           <span>{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
