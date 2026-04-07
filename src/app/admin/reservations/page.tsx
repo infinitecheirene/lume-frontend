@@ -7,10 +7,16 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, Loader2 } from "lucide-react"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import Image from "next/image"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 interface Reservation {
   id: number
@@ -346,7 +352,21 @@ export default function ReservationsAdmin() {
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   if (loading) {
-    return <div className="p-8">Loading...</div>
+    return (
+      <SidebarProvider defaultOpen={!isDesktop}>
+        <div className="flex min-h-screen w-full bg-gradient-to-br from-orange-50 to-blue-50">
+          <AppSidebar />
+          <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
+            <div className="flex items-center justify-center min-h-screen w-full">
+              <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-xl shadow-lg">
+                <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+                <span className="text-gray-700 font-medium">Loading reservations...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </SidebarProvider>
+    )
   }
 
   const reservationCustomerCount = reservations
@@ -369,27 +389,26 @@ export default function ReservationsAdmin() {
 
   return (
     <SidebarProvider defaultOpen={!isDesktop}>
-      <div className="flex min-h-screen w-full bg-gradient-to-br from-red-50 to-red-50">
+      <div className="flex min-h-screen w-full bg-amber-50">
         <AppSidebar />
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
           {isDesktop && (
-            <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-white px-4 shadow-sm">
+            <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-[#162A3A] px-4 shadow-sm">
               <SidebarTrigger className="-ml-1" />
               <Image
                 src="/logo.jpg"
-                alt="Lumè Logo"
+                alt="Lumè Bean and Bar Logo"
                 width={40}
                 height={40}
-                className="object-contain"
+                className="object-contain rounded-full"
               />
-              <h1 className="text-lg font-bold text-gray-900">Lumè Bean and Bar</h1>
+              <h1 className={`${playfair.className} text-lg font-semibold text-white`}>Lumè Bean and Bar</h1>
             </div>
           )}
 
           <main className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              {/* Left: Title */}
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
                   Reservation Management
@@ -399,7 +418,7 @@ export default function ReservationsAdmin() {
                 </p>
               </div>
 
-              {/* Right: Monthly Guest Counts */}
+              {/* Monthly Guest Counts */}
               <div className="flex flex-wrap items-center gap-6 text-sm bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg border shadow-sm">
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-full bg-green-500"></span>
@@ -423,29 +442,31 @@ export default function ReservationsAdmin() {
               </div>
             </div>
 
-            <div className="bg-white/70 backdrop-blur-sm shadow-xl p-0 pb-5 border-red-100 border mt-6 rounded-xl">
+            <div className="bg-white/70 backdrop-blur-sm shadow-xl p-0 pb-5 border-blue-100 border mt-6 rounded-xl">
 
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border rounded-t-xl p-6 md:mb-8 bg-red-200">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border rounded-t-xl p-6 md:mb-8 bg-[#162A3A] text-white">
                 <div className="flex items-center gap-2 sm:gap-4">
                   <h2 className="text-xl sm:text-2xl font-bold">{formatMonthYear(currentDate)}</h2>
-                  <Button variant="outline" size="sm" onClick={goToToday}>
-                    Today
-                  </Button>
+                  <div className="text-[#162A3A]">
+                    <Button variant="outline" size="sm" onClick={goToToday}>
+                      Today
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Navigation, New Reservation & Walk-In Guest */}
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <Button variant="outline" size="icon" onClick={previousMonth}>
-                    <ChevronLeft className="w-4 h-4" />
+                    <ChevronLeft className="w-4 h-4 text-[#162A3A]" />
                   </Button>
                   <Button variant="outline" size="icon" onClick={nextMonth}>
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="w-4 h-4 text-[#162A3A]" />
                   </Button>
-                  <Button onClick={() => setIsAddingReservation(true)} className="flex-1 sm:flex-none bg-red-800 text-white hover:bg-red-600">
+                  <Button onClick={() => setIsAddingReservation(true)} className="flex-1 sm:flex-none font-semibold bg-[#E5A834] text-[#162A3A] hover:bg-[#E5A834]/80">
                     <Plus className="w-4 h-4 mr-2" />
                     <span className="hidden sm:inline">New Reservation</span>
                   </Button>
-                  <Button onClick={() => setIsWalkInGuest(true)} className="flex-1 sm:flex-none bg-red-800 text-white hover:bg-red-600">
+                  <Button onClick={() => setIsWalkInGuest(true)} className="flex-1 sm:flex-none font-semibold bg-[#E5A834] text-[#162A3A] hover:bg-[#E5A834]/80">
                     <Plus className="w-4 h-4 mr-2" />
                     <span className="hidden sm:inline">Walk-In Guest</span>
                   </Button>
@@ -507,103 +528,107 @@ export default function ReservationsAdmin() {
                       {/* Guest Info */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="text-xs sm:text-sm font-medium text-gray-500">Name</label>
-                          <p className="text-base sm:text-lg font-semibold text-gray-900">{selectedReservation.name}</p>
+                          <label className="text-md font-bold text-gray-800">Name</label>
+                          <p className="text-md font-semibold text-gray-700">{selectedReservation.name}</p>
                         </div>
                         <div>
-                          <label className="text-xs sm:text-sm font-medium text-gray-500">Email</label>
-                          <p className="text-sm sm:text-base text-gray-700 break-all">{selectedReservation.email}</p>
+                          <label className="text-md font-bold text-gray-800">Email</label>
+                          <p className="text-md font-semibold text-gray-700">{selectedReservation.email}</p>
                         </div>
                         <div>
-                          <label className="text-xs sm:text-sm font-medium text-gray-500">Phone</label>
-                          <p className="text-sm sm:text-base text-gray-700">{selectedReservation.phone}</p>
+                          <label className="text-md font-bold text-gray-800">Phone</label>
+                          <p className="text-md font-semibold text-gray-700">{selectedReservation.phone}</p>
                         </div>
                         <div>
-                          <label className="text-xs sm:text-sm font-medium text-gray-500">Guests</label>
-                          <p className="text-sm sm:text-base text-gray-700">{selectedReservation.guests} people</p>
+                          <label className="text-md font-bold text-gray-800">Guests</label>
+                          <p className="text-md font-semibold text-gray-700">{selectedReservation.guests} people</p>
                         </div>
                       </div>
 
                       {/* Date & Time */}
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="text-xs sm:text-sm font-medium text-gray-500">Date</label>
-                          <p className="text-sm sm:text-base text-gray-700">{formatDate(selectedReservation.date)}</p>
+                          <label className="text-md font-bold text-gray-800">Date</label>
+                          <p className="text-md font-semibold text-gray-700">{formatDate(selectedReservation.date)}</p>
                         </div>
                         <div>
-                          <label className="text-xs sm:text-sm font-medium text-gray-500">Time</label>
-                          <p className="text-sm sm:text-base text-gray-700">{formatTime(selectedReservation.time)}</p>
+                          <label className="text-md font-bold text-gray-800">Time</label>
+                          <p className="text-md font-semibold text-gray-700">{formatTime(selectedReservation.time)}</p>
                         </div>
                       </div>
 
                       {/* Dining & Occasion */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="text-xs sm:text-sm font-medium text-gray-500">Dining Preference</label>
-                          <p className="text-sm sm:text-base text-gray-700">{selectedReservation.dining_preference}</p>
+                          <label className="text-md font-bold text-gray-800">Dining Preference</label>
+                          <p className="text-md font-semibold text-gray-700">
+                            {selectedReservation.dining_preference || "N/A"}
+                          </p>
                         </div>
-                        <div>
-                          <label className="text-xs sm:text-sm font-medium text-gray-500">Occasion Type</label>
-                          <p className="text-sm sm:text-base text-gray-700">{selectedReservation.occasion_type}</p>
-                        </div>
-                      </div>
 
-                      {/* Special Requests */}
-                      {selectedReservation.special_requests && (
                         <div>
-                          <label className="text-xs sm:text-sm font-medium text-gray-500">Special Requests</label>
-                          <p className="text-sm sm:text-base text-gray-700">{selectedReservation.special_requests}</p>
+                          <label className="text-md font-bold text-gray-800">Occasion Type</label>
+                          <p className="text-md font-semibold text-gray-700">
+                            {selectedReservation.occasion_type || "N/A"}
+                          </p>
                         </div>
-                      )}
 
-                      {/* Status */}
-                      <div>
-                        <label className="text-xs sm:text-sm font-medium text-gray-500 mb-1 block">Status</label>
-                        <Select
-                          value={selectedReservation.status}
-                          onValueChange={(value: ReservationStatus) =>
-                            handleStatusChange(selectedReservation.id, value)
-                          }
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue>
-                              {selectedReservation.status ? selectedReservation.status : "Select Status"}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Pending">Pending</SelectItem>
-                            <SelectItem value="Confirmed">Confirmed</SelectItem>
-                            <SelectItem value="Cancelled">Cancelled</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <div>
+                          <label className="text-md font-bold text-gray-800">Special Requests</label>
+                          <p className="text-md font-semibold text-gray-700">
+                            {selectedReservation.special_requests || "None"}
+                          </p>
+                        </div>
+
+                        {/* Status */}
+                        <div>
+                          <label className="text-md font-bold text-gray-800">Status</label>
+                          <Select
+                            value={selectedReservation.status}
+                            onValueChange={(value: ReservationStatus) =>
+                              handleStatusChange(selectedReservation.id, value)
+                            }
+                          >
+                            <SelectTrigger className="w-full text-gray-600">
+                              <SelectValue>
+                                {selectedReservation.status ? selectedReservation.status : "Select Status"}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Pending">Pending</SelectItem>
+                              <SelectItem value="Confirmed">Confirmed</SelectItem>
+                              <SelectItem value="Cancelled">Cancelled</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
 
                       {/* Payment Info */}
                       <div className="border-t border-gray-200 pt-4 space-y-2">
-                        <h3 className="text-sm font-semibold text-gray-600">Payment Info</h3>
+                        <h3 className="text-xl font-bold text-gray-800">Payment Info</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-700">
                           <div>
-                            <span className="font-medium">Status:</span>{" "}
+                            <span className="font-medium text-md">Status:</span>{" "}
                             {selectedReservation.reservation_fee_paid ? "Paid" : "Unpaid"}
                           </div>
                           {selectedReservation.reservation_fee && (
                             <div>
-                              <span className="font-medium">Fee:</span> ₱{selectedReservation.reservation_fee}
+                              <span className="font-medium text-md">Fee:</span> ₱{selectedReservation.reservation_fee}
                             </div>
                           )}
                           {selectedReservation.payment_method && (
                             <div>
-                              <span className="font-medium">Method:</span> {selectedReservation.payment_method}
+                              <span className="font-medium text-md">Method:</span> {selectedReservation.payment_method}
                             </div>
                           )}
                           {selectedReservation.payment_reference && (
                             <div>
-                              <span className="font-medium">Reference:</span> {selectedReservation.payment_reference}
+                              <span className="font-medium text-md">Reference:</span> {selectedReservation.payment_reference}
                             </div>
                           )}
                           {selectedReservation.payment_screenshot && (
                             <div className="col-span-1 sm:col-span-2">
-                              <span className="font-medium">Screenshot:</span>{" "}
+                              <span className="font-medium text-md">Screenshot:</span>{" "}
                               <a
                                 href={`/${selectedReservation.payment_screenshot}`}
                                 target="_blank"
@@ -632,183 +657,191 @@ export default function ReservationsAdmin() {
 
               {/* New Reservation Dialog */}
               <Dialog open={isAddingReservation} onOpenChange={setIsAddingReservation}>
-                <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl">
-                  <DialogHeader className="pb-2 border-b">
-                    <DialogTitle className="text-xl font-semibold text-gray-900">
+                <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-amber-50 border border-[#162A3A]/20 text-white">
+                  <DialogHeader className="pb-3 border-b border-[#d4a24c]/20">
+                    <DialogTitle className="text-2xl font-bold text-[#162A3A]">
                       Create New Reservation
                     </DialogTitle>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-blue-950">
                       Add a reservation manually for a guest
                     </p>
                   </DialogHeader>
 
                   <div className="space-y-5 pt-4">
+
                     {/* Guest Information */}
                     <div className="space-y-3">
-                      <h4 className="text-sm font-semibold text-gray-700">
+                      <h4 className="text-xl font-bold text-gray-800">
                         Guest Information
                       </h4>
 
+                      <span className="text-md font-semibold text-gray-800">Guest Name*</span>
                       <Input
                         placeholder="Full Name"
                         value={formData.name}
                         onChange={(e) =>
                           setFormData({ ...formData, name: e.target.value })
                         }
+                        className="bg-gray-100 border-gray-600 text-gray-800"
                       />
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <Input
-                          type="email"
-                          placeholder="Email Address"
-                          value={formData.email}
-                          onChange={(e) =>
-                            setFormData({ ...formData, email: e.target.value })
-                          }
-                        />
-                        <Input
-                          placeholder="Phone Number"
-                          value={formData.phone}
-                          onChange={(e) =>
-                            setFormData({ ...formData, phone: e.target.value })
-                          }
-                        />
+                        <div>
+                          <span className="text-md font-semibold text-gray-800">Email Address*</span>
+                          <Input
+                            type="email"
+                            placeholder="Email Address"
+                            value={formData.email}
+                            onChange={(e) =>
+                              setFormData({ ...formData, email: e.target.value })
+                            }
+                            className="bg-gray-100 border-gray-600 text-gray-800"
+                          />
+                        </div>
+                        <div>
+                          <span className="text-md font-semibold text-gray-800">Phone Number*</span>
+                          <Input
+                            placeholder="Phone Number"
+                            value={formData.phone}
+                            onChange={(e) =>
+                              setFormData({ ...formData, phone: e.target.value })
+                            }
+                            className="bg-gray-100 border-gray-600 text-gray-800"
+                          />
+                        </div>
                       </div>
                     </div>
 
                     {/* Reservation Details */}
                     <div className="space-y-3">
-                      <h4 className="text-sm font-semibold text-gray-700">
+                      <h4 className="text-xl font-bold text-gray-800">
                         Reservation Details
                       </h4>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <Input
-                          type="date"
-                          value={formData.date}
-                          onChange={(e) =>
-                            setFormData({ ...formData, date: e.target.value })
-                          }
-                        />
-                        <Input
-                          type="time"
-                          value={formData.time}
-                          onChange={(e) =>
-                            setFormData({ ...formData, time: e.target.value })
-                          }
-                        />
+                        <div>
+                          <span className="text-md font-semibold text-gray-800">Date*</span>
+                          <Input
+                            type="date"
+                            value={formData.date}
+                            onChange={(e) =>
+                              setFormData({ ...formData, date: e.target.value })
+                            }
+                            className="bg-gray-100 border-gray-600 text-gray-800"
+                          />
+                        </div>
+                        <div>
+                          <span className="text-md font-semibold text-gray-800">Time*</span>
+                          <Input
+                            type="time"
+                            value={formData.time}
+                            onChange={(e) =>
+                              setFormData({ ...formData, time: e.target.value })
+                            }
+                            className="bg-gray-100 border-gray-600 text-gray-800"
+                          />
+                        </div>
+                        <div>
+                          <span className="text-md font-semibold text-gray-800">Number of Guests*</span>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={20}
+                            placeholder="Number of Guests"
+                            value={formData.guests}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                guests: Number(e.target.value),
+                              })
+                            }
+                            className="bg-gray-100 border-gray-600 text-gray-800"
+                          />
+                        </div>
                       </div>
 
-                      <Input
-                        type="number"
-                        min={1}
-                        max={20}
-                        placeholder="Number of Guests"
-                        value={formData.guests}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            guests: Number(e.target.value),
-                          })
-                        }
-                      />
-                    </div>
+                      {/* Preferences */}
+                      <div className="space-y-3">
+                        <h4 className="text-xl font-bold text-gray-800">
+                          Preferences
+                        </h4>
 
-                    {/* Preferences */}
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-semibold text-gray-700">
-                        Preferences
-                      </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          <div>
+                            <span className="text-md font-semibold text-gray-800">Dining Preference*</span>
+                            <Select
+                              value={formData.dining_preference}
+                              onValueChange={(value: DiningPreference) =>
+                                setFormData({ ...formData, dining_preference: value })
+                              }
+                            >
+                              <SelectTrigger className="bg-gray-100 border-gray-600 text-gray-800">
+                                <SelectValue placeholder="Dining Preference" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-gray-100 text-gray-800">
+                                <SelectItem value="Main Dining">Main Dining</SelectItem>
+                                <SelectItem value="Private Tatami Room">Private Tatami Room</SelectItem>
+                                <SelectItem value="Chef's Counter">Chef&apos;s Counter</SelectItem>
+                                <SelectItem value="Window Seat">Window Seat</SelectItem>
+                                <SelectItem value="Celebration Area">Celebration Area</SelectItem>
+                                <SelectItem value="Family Seating">Family Seating</SelectItem>
+                                <SelectItem value="Group Dining">Group Dining</SelectItem>
+                              </SelectContent>
+                            </Select>
 
-                      <Select
-                        value={formData.dining_preference}
-                        onValueChange={(value: DiningPreference) =>
-                          setFormData({ ...formData, dining_preference: value })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Dining Preference" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Main Dining">Main Dining</SelectItem>
-                          <SelectItem value="Private Tatami Room">Private Tatami Room</SelectItem>
-                          <SelectItem value="Chef's Counter">Chef&apos;s Counter</SelectItem>
-                          <SelectItem value="Window Seat">Window Seat</SelectItem>
-                          <SelectItem value="Celebration Area">Celebration Area</SelectItem>
-                          <SelectItem value="Family Seating">Family Seating</SelectItem>
-                          <SelectItem value="Group Dining">Group Dining</SelectItem>
-                        </SelectContent>
-                      </Select>
+                          </div>
+                          <div>
+                            <span className="text-md font-semibold text-gray-800">Occasion Type*</span>
+                            <Select
+                              value={formData.occasion_type}
+                              onValueChange={(value: OccasionType) =>
+                                setFormData({ ...formData, occasion_type: value })
+                              }
+                            >
+                              <SelectTrigger className="bg-gray-100 border-gray-600 text-gray-800">
+                                <SelectValue placeholder="Occasion Type" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-gray-100 text-gray-800">
+                                <SelectItem value="Casual Dinner">Casual Dinner</SelectItem>
+                                <SelectItem value="Birthday">Birthday</SelectItem>
+                                <SelectItem value="Business Meeting">Business Meeting</SelectItem>
+                                <SelectItem value="Anniversary">Anniversary</SelectItem>
+                                <SelectItem value="Private Event">Private Event</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
 
-                      <Select
-                        value={formData.occasion_type}
-                        onValueChange={(value: OccasionType) =>
-                          setFormData({ ...formData, occasion_type: value })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Occasion Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Casual Dinner">Casual Dinner</SelectItem>
-                          <SelectItem value="Birthday">Birthday</SelectItem>
-                          <SelectItem value="Business Meeting">Business Meeting</SelectItem>
-                          <SelectItem value="Anniversary">Anniversary</SelectItem>
-                          <SelectItem value="Private Event">Private Event</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                        {/* Special Requests */}
+                        <div className="space-y-2">
+                          <h4 className="text-xl font-bold text-gray-800">
+                            Special Requests
+                          </h4>
+                          <Textarea
+                            placeholder="Optional notes or special requests"
+                            rows={3}
+                            value={formData.special_requests}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                special_requests: e.target.value,
+                              })
+                            }
+                            className="bg-gray-100 border-gray-600 text-gray-800"
+                          />
+                        </div>
 
-                    {/* Special Requests */}
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-semibold text-gray-700">
-                        Special Requests
-                      </h4>
-                      <Textarea
-                        placeholder="Optional notes or special requests"
-                        rows={3}
-                        value={formData.special_requests}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            special_requests: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-
-                    {/* Status */}
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-semibold text-gray-700">
-                        Reservation Status
-                      </h4>
-
-                      <Select
-                        value={formData.status}
-                        onValueChange={(value: ReservationStatus) =>
-                          setFormData({ ...formData, status: value })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Pending">Pending</SelectItem>
-                          <SelectItem value="Confirmed">Confirmed</SelectItem>
-                          <SelectItem value="Cancelled">Cancelled</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Action */}
-                    <div className="pt-2">
-                      <Button
-                        onClick={handleCreateReservation}
-                        className="w-full rounded-xl bg-red-600 hover:bg-red-700 text-white"
-                      >
-                        Create Reservation
-                      </Button>
+                        {/* Action */}
+                        <div className="pt-2">
+                          <Button
+                            onClick={handleCreateReservation}
+                            className="w-full rounded-md bg-[#d4a24c] text-gray-800 hover:bg-[#d4a24c]/70"
+                          >
+                            Create Reservation
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </DialogContent>
@@ -816,133 +849,192 @@ export default function ReservationsAdmin() {
 
               {/* Walk In Dialog */}
               <Dialog open={isWalkInGuest} onOpenChange={setIsWalkInGuest}>
-                <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl">
-                  <DialogHeader className="pb-2 border-b">
-                    <DialogTitle className="text-xl font-semibold text-gray-900">
+                <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-amber-50 border border-[#162A3A]/20 text-white">
+
+                  <DialogHeader className="pb-3 border-b border-[#d4a24c]/20">
+                    <DialogTitle className="text-2xl font-bold text-[#162A3A]">
                       Walk-In Guest
                     </DialogTitle>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-blue-950">
                       Add a guest who arrived without a prior reservation
                     </p>
                   </DialogHeader>
 
                   <div className="space-y-5 pt-4">
-                    {/* Personal Info */}
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-semibold text-gray-700">Guest Information</h4>
 
+                    {/* Guest Information */}
+                    <div className="space-y-3">
+                      <h4 className="text-xl font-bold text-gray-800">
+                        Guest Information
+                      </h4>
+
+                      <span className="text-md font-semibold text-gray-800">
+                        Guest Name*
+                      </span>
                       <Input
                         placeholder="Full Name"
                         value={formData.name}
                         onChange={(e) =>
                           setFormData({ ...formData, name: e.target.value })
                         }
+                        className="bg-gray-100 border-gray-600 text-gray-800"
                       />
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <Input
-                          type="email"
-                          placeholder="Email Address"
-                          value={formData.email}
-                          onChange={(e) =>
-                            setFormData({ ...formData, email: e.target.value })
-                          }
-                        />
-                        <Input
-                          placeholder="Phone Number"
-                          value={formData.phone}
-                          onChange={(e) =>
-                            setFormData({ ...formData, phone: e.target.value })
-                          }
-                        />
+                        <div>
+                          <span className="text-md font-semibold text-gray-800">
+                            Email Address*
+                          </span>
+                          <Input
+                            type="email"
+                            placeholder="Email Address"
+                            value={formData.email}
+                            onChange={(e) =>
+                              setFormData({ ...formData, email: e.target.value })
+                            }
+                            className="bg-gray-100 border-gray-600 text-gray-800"
+                          />
+                        </div>
+
+                        <div>
+                          <span className="text-md font-semibold text-gray-800">
+                            Phone Number*
+                          </span>
+                          <Input
+                            placeholder="Phone Number"
+                            value={formData.phone}
+                            onChange={(e) =>
+                              setFormData({ ...formData, phone: e.target.value })
+                            }
+                            className="bg-gray-100 border-gray-600 text-gray-800"
+                          />
+                        </div>
                       </div>
                     </div>
 
                     {/* Visit Details */}
                     <div className="space-y-3">
-                      <h4 className="text-sm font-semibold text-gray-700">Visit Details</h4>
+                      <h4 className="text-xl font-bold text-gray-800">
+                        Visit Details
+                      </h4>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <Input
-                          type="date"
-                          value={formData.date}
-                          onChange={(e) =>
-                            setFormData({ ...formData, date: e.target.value })
-                          }
-                        />
-                        <Input
-                          type="time"
-                          value={formData.time}
-                          onChange={(e) =>
-                            setFormData({ ...formData, time: e.target.value })
-                          }
-                        />
-                      </div>
+                        <div>
+                          <span className="text-md font-semibold text-gray-800">
+                            Date*
+                          </span>
+                          <Input
+                            type="date"
+                            value={formData.date}
+                            onChange={(e) =>
+                              setFormData({ ...formData, date: e.target.value })
+                            }
+                            className="bg-gray-100 border-gray-600 text-gray-800"
+                          />
+                        </div>
 
-                      <Input
-                        type="number"
-                        min={1}
-                        max={20}
-                        placeholder="Number of Guests"
-                        value={formData.guests}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            guests: Number(e.target.value),
-                          })
-                        }
-                      />
+                        <div>
+                          <span className="text-md font-semibold text-gray-800">
+                            Time*
+                          </span>
+                          <Input
+                            type="time"
+                            value={formData.time}
+                            onChange={(e) =>
+                              setFormData({ ...formData, time: e.target.value })
+                            }
+                            className="bg-gray-100 border-gray-600 text-gray-800"
+                          />
+                        </div>
+
+                        <div>
+                          <span className="text-md font-semibold text-gray-800">
+                            Number of Guests*
+                          </span>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={20}
+                            placeholder="Number of Guests"
+                            value={formData.guests}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                guests: Number(e.target.value),
+                              })
+                            }
+                            className="bg-gray-100 border-gray-600 text-gray-800"
+                          />
+                        </div>
+                      </div>
                     </div>
 
                     {/* Preferences */}
                     <div className="space-y-3">
-                      <h4 className="text-sm font-semibold text-gray-700">Preferences</h4>
+                      <h4 className="text-xl font-bold text-gray-800">
+                        Preferences
+                      </h4>
 
-                      <Select
-                        value={formData.dining_preference}
-                        onValueChange={(value: DiningPreference) =>
-                          setFormData({ ...formData, dining_preference: value })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Dining Preference" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Main Dining">Main Dining</SelectItem>
-                          <SelectItem value="Private Tatami Room">Private Tatami Room</SelectItem>
-                          <SelectItem value="Chef's Counter">Chef&apos;s Counter</SelectItem>
-                          <SelectItem value="Window Seat">Window Seat</SelectItem>
-                          <SelectItem value="Celebration Setup">Celebration Setup</SelectItem>
-                          <SelectItem value="Family Seating">Family Seating</SelectItem>
-                          <SelectItem value="Group Dining">Group Dining</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
 
-                      <Select
-                        value={formData.occasion_type}
-                        onValueChange={(value: OccasionType) =>
-                          setFormData({ ...formData, occasion_type: value })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Occasion Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Casual Dinner">Casual Dinner</SelectItem>
-                          <SelectItem value="Birthday">Birthday</SelectItem>
-                          <SelectItem value="Business Meeting">Business Meeting</SelectItem>
-                          <SelectItem value="Anniversary">Anniversary</SelectItem>
-                          <SelectItem value="Private Event">Private Event</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        <div>
+                          <span className="text-md font-semibold text-gray-800">
+                            Dining Preference*
+                          </span>
+                          <Select
+                            value={formData.dining_preference}
+                            onValueChange={(value: DiningPreference) =>
+                              setFormData({ ...formData, dining_preference: value })
+                            }
+                          >
+                            <SelectTrigger className="bg-gray-100 border-gray-600 text-gray-800">
+                              <SelectValue placeholder="Dining Preference" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-gray-100 text-gray-800">
+                              <SelectItem value="Main Dining">Main Dining</SelectItem>
+                              <SelectItem value="Private Tatami Room">Private Tatami Room</SelectItem>
+                              <SelectItem value="Chef's Counter">Chef&apos;s Counter</SelectItem>
+                              <SelectItem value="Window Seat">Window Seat</SelectItem>
+                              <SelectItem value="Celebration Area">Celebration Area</SelectItem>
+                              <SelectItem value="Family Seating">Family Seating</SelectItem>
+                              <SelectItem value="Group Dining">Group Dining</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <span className="text-md font-semibold text-gray-800">
+                            Occasion Type*
+                          </span>
+                          <Select
+                            value={formData.occasion_type}
+                            onValueChange={(value: OccasionType) =>
+                              setFormData({ ...formData, occasion_type: value })
+                            }
+                          >
+                            <SelectTrigger className="bg-gray-100 border-gray-600 text-gray-800">
+                              <SelectValue placeholder="Occasion Type" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-gray-100 text-gray-800">
+                              <SelectItem value="Casual Dinner">Casual Dinner</SelectItem>
+                              <SelectItem value="Birthday">Birthday</SelectItem>
+                              <SelectItem value="Business Meeting">Business Meeting</SelectItem>
+                              <SelectItem value="Anniversary">Anniversary</SelectItem>
+                              <SelectItem value="Private Event">Private Event</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                      </div>
                     </div>
 
                     {/* Special Requests */}
                     <div className="space-y-2">
-                      <h4 className="text-sm font-semibold text-gray-700">
+                      <h4 className="text-xl font-bold text-gray-800">
                         Special Requests
                       </h4>
+
                       <Textarea
                         placeholder="Optional notes or requests"
                         rows={3}
@@ -953,6 +1045,7 @@ export default function ReservationsAdmin() {
                             special_requests: e.target.value,
                           })
                         }
+                        className="bg-gray-100 border-gray-600 text-gray-800"
                       />
                     </div>
 
@@ -960,11 +1053,12 @@ export default function ReservationsAdmin() {
                     <div className="pt-2">
                       <Button
                         onClick={handleWalkInGuest}
-                        className="w-full rounded-xl bg-red-600 hover:bg-red-700 text-white"
+                        className="w-full rounded-md bg-[#d4a24c] text-gray-800 hover:bg-[#d4a24c]/70"
                       >
                         Add Walk-In Guest
                       </Button>
                     </div>
+
                   </div>
                 </DialogContent>
               </Dialog>
