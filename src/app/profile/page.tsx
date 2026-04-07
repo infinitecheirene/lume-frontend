@@ -20,6 +20,9 @@ import {
 } from "@/components/ui/alert-dialog"
 import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -58,6 +61,9 @@ export default function ProfilePage() {
   const [isLoadingAddress, setIsLoadingAddress] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [addressToDelete, setAddressToDelete] = useState<number | null>(null)
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false)
+  const [phoneInput, setPhoneInput] = useState("")
+  const [updatingPhone, setUpdatingPhone] = useState(false)
 
   useEffect(() => {
     const loadUserData = () => {
@@ -106,6 +112,47 @@ export default function ProfilePage() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleUpdatePhone = async () => {
+    if (!user?.token) return
+
+    try {
+      setUpdatingPhone(true)
+
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({ phone: phoneInput }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to update phone")
+      }
+
+      setUser((prev) => (prev ? { ...prev, phone: phoneInput } : prev))
+
+      toast({
+        title: "Success",
+        description: "Phone number updated successfully.",
+      })
+
+      setIsPhoneModalOpen(false)
+    } catch (error) {
+      console.error(error)
+      toast({
+        title: "Error",
+        description: "Failed to update phone number.",
+        variant: "destructive",
+      })
+    } finally {
+      setUpdatingPhone(false)
     }
   }
 
@@ -329,10 +376,24 @@ export default function ProfilePage() {
               <p className="text-lg font-semibold text-white">{user.email}</p>
             </div>
             <div>
-              <div className="flex items-center gap-2 text-sm text-white/70 uppercase tracking-wide mb-2">
-                <Phone className="h-4 w-4" />
-                PHONE NUMBER
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 text-sm text-white/70 uppercase tracking-wide">
+                  <Phone className="h-4 w-4" />
+                  PHONE NUMBER
+                </div>
+
+                <Button
+                  className="bg-[#d4a24c] hover:bg-[#d4a24c]/70 border-white/30 text-black "
+                  onClick={() => {
+                    setPhoneInput(user.phone || "")
+                    setIsPhoneModalOpen(true)
+                  }}
+                >
+                  <Edit className="h-4 w-4 mr-1.5" />
+                  Update Phone
+                </Button>
               </div>
+
               <p className="text-lg font-semibold text-white">{user.phone || "Not provided"}</p>
             </div>
           </div>
@@ -357,7 +418,7 @@ export default function ProfilePage() {
                   setEditingData(undefined)
                   setIsModalOpen(true)
                 }}
-                className="bg-white hover:bg-white/90 text-[#0c222b] shadow-md w-full sm:w-auto font-bold"
+                className="bg-[#d4a24c] hover:bg-[#d4a24c]/90 text-[#0c222b] shadow-md w-full sm:w-auto font-bold"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add New Address
@@ -381,32 +442,35 @@ export default function ProfilePage() {
               {addresses.map((address, index) => (
                 <Card
                   key={address.id}
-                  className={`overflow-hidden transition-all ${address.is_default
-                      ? "ring-2 ring-[#ff6b6b] shadow-2xl bg-[#0c222b] /90 backdrop-blur-sm border-white/50"
+                  className={`overflow-hidden transition-all ${
+                    address.is_default
+                      ? "ring-2 ring-[#d4a24c] shadow-2xl bg-[#0c222b] /90 backdrop-blur-sm border-white/50"
                       : "border-white/30 shadow-xl hover:shadow-2xl bg-[#0c222b] /70 backdrop-blur-sm"
-                    }`}
+                  }`}
                 >
                   {/* Address Content */}
                   <div className="p-4">
                     <div className="flex items-start gap-3 mb-4">
-                      <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#ff6b6b] to-[#8B0000] flex items-center justify-center flex-shrink-0 shadow-md">
+                      <div className="h-12 w-12 rounded-xl bg-[#d4a24c] flex items-center justify-center flex-shrink-0 shadow-md">
                         <span className="text-white text-xl font-bold">{index + 1}</span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-2">
-                          <h3 className="text-base font-bold text-white break-words leading-tight">
-                            {address.street}
-                          </h3>
+                          <h3 className="text-base font-bold text-white break-words leading-tight">{address.street}</h3>
                           {address.is_default && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-[#ff6b6b] to-[#8B0000] text-white text-xs font-semibold rounded-full shadow-sm flex-shrink-0">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#d4a24c]  text-white text-xs font-semibold rounded-full shadow-sm flex-shrink-0">
                               <Check className="h-3 w-3" />
                               Default
                             </span>
                           )}
                         </div>
                         <div className="space-y-0.5 text-sm text-white/70">
-                          <p>{address.city}, {address.state}</p>
-                          <p className="text-white/60">{address.postal_code}, {address.country}</p>
+                          <p>
+                            {address.city}, {address.state}
+                          </p>
+                          <p className="text-white/60">
+                            {address.postal_code}, {address.country}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -418,17 +482,17 @@ export default function ProfilePage() {
                           onClick={() => handleSetDefault(address.id)}
                           variant="outline"
                           size="sm"
-                          className="flex-1 min-w-[140px] border-white/30 text-white hover:bg-white/10 font-medium"
+                          className="bg-slate-700 flex-1 min-w-[140px] border-white/30 text-white hover:bg-white/10 font-medium"
                         >
                           <Check className="h-4 w-4 mr-1.5" />
-                          Set Default
+                          Set as Default
                         </Button>
                       )}
                       <Button
                         onClick={() => handleEditClick(address)}
                         variant="outline"
                         size="sm"
-                        className={`${!address.is_default ? 'flex-1 min-w-[100px]' : 'flex-1'} border-white/30 text-white hover:bg-white/10 font-medium`}
+                        className={`${!address.is_default ? "flex-1 min-w-[100px]" : "flex-1"} bg-slate-700 border-white/30 text-white hover:bg-white/10 font-medium`}
                         disabled={isLoadingAddress}
                       >
                         <Edit className="h-4 w-4 mr-1.5" />
@@ -438,7 +502,7 @@ export default function ProfilePage() {
                         onClick={() => confirmDelete(address.id)}
                         variant="outline"
                         size="sm"
-                        className={`${!address.is_default ? 'flex-1 min-w-[100px]' : 'flex-1'} border-red-300 text-red-300 hover:bg-red-500/20 font-medium`}
+                        className={`${!address.is_default ? "flex-1 min-w-[100px]" : "flex-1"} bg-transparent border-red-300 text-red-300 hover:bg-red-500/20 font-medium`}
                       >
                         <Trash2 className="h-4 w-4 mr-1.5" />
                         Delete
@@ -451,6 +515,50 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
+
+      {/* update phone number modal */}
+      <Dialog open={isPhoneModalOpen} onOpenChange={setIsPhoneModalOpen}>
+        <DialogContent className="bg-[#0c222b] border border-white/20 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-white">Update Phone Number</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <Label className="text-white/70">Phone Number</Label>
+            <Input
+              value={phoneInput}
+              type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={11}
+              onChange={(e) => {
+                const onlyNumbers = e.target.value.replace(/\D/g, "")
+                setPhoneInput(onlyNumbers)
+              }}
+              placeholder="Enter phone number"
+              className="bg-[#0b1d26] border-white/20 text-white"
+            />
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              className="bg-transparent border-white/30 text-white hover:bg-white/10"
+              onClick={() => setIsPhoneModalOpen(false)}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              onClick={handleUpdatePhone}
+              disabled={updatingPhone || !phoneInput.trim()}
+              className="bg-[#d4a24c] hover:bg-[#d4a24c]/90 text-[#0c222b] font-bold"
+            >
+              {updatingPhone ? "Updating..." : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Add/Edit Address Modal */}
       <AddAddressModal
@@ -465,17 +573,12 @@ export default function ProfilePage() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete this delivery address. This action cannot be undone.
-            </AlertDialogDescription>
+            <AlertDialogTitle className="text-black">Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>This will permanently delete this delivery address. This action cannot be undone.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => addressToDelete && handleDeleteAddress(addressToDelete)}
-              className="bg-red-600 hover:bg-red-700"
-            >
+            <AlertDialogCancel className="text-black">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => addressToDelete && handleDeleteAddress(addressToDelete)} className="bg-red-600 hover:bg-red-700">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
