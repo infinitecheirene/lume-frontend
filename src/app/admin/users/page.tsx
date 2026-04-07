@@ -35,6 +35,7 @@ import {
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import {
   Dialog,
+  DialogTrigger,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -66,6 +67,12 @@ import {
   getSortedRowModel,
 } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 // User data types
 interface User {
@@ -512,8 +519,8 @@ export default function UsersAdminPage() {
         const user = row.original
         return (
           <div className="flex items-center gap-1">
-            <Sheet>
-              <SheetTrigger asChild>
+            <Dialog>
+              <DialogTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -521,51 +528,79 @@ export default function UsersAdminPage() {
                   className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-2"
                 >
                   <Eye className="h-4 w-4" />
-                  <span className="ml-1 sr-only sm:not-sr-only hidden sm:inline">View</span>
+                  <span className="ml-1 sr-only sm:not-sr-only hidden sm:inline">
+                    View
+                  </span>
                 </Button>
-              </SheetTrigger>
-              <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+              </DialogTrigger>
+
+              <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl">
+
                 {selectedUser && (
                   <>
-                    <SheetHeader>
-                      <SheetTitle>User Details - {selectedUser.name}</SheetTitle>
-                      <SheetDescription>Complete information for this user</SheetDescription>
-                    </SheetHeader>
-                    <div className="mt-6 space-y-6">
+                    <DialogHeader className="bg-[#162A3A] text-white p-6 -m-6 mb-4 rounded-t-lg">
+                      <DialogTitle className="text-2xl font-bold">
+                        User Details
+                      </DialogTitle>
+                      <DialogDescription className="text-gray-400">
+                        Complete information for this user
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <div>
+
                       {/* User Info Card */}
                       <Card>
-                        <CardHeader className="pb-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-lg">
-                          <h3 className="font-semibold text-lg flex items-center gap-2">
+                        <CardHeader className="-mt-6 p-5 bg-[#E5A834] text-[#162A3A] rounded-t-lg">
+                          <h3 className="font-semibold text-xl flex items-center gap-2">
                             <UserCheck className="w-5 h-5" />
                             Personal Information
                           </h3>
                         </CardHeader>
-                        <CardContent className="space-y-4 pt-4">
+
+                        <CardContent className="space-y-4">
+
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <p className="text-sm font-medium text-gray-500">Full Name</p>
-                              <p className="font-medium">{selectedUser.name}</p>
+                              <p className="text-md font-semibold text-gray-800">
+                                Full Name
+                              </p>
+                              <p className="font-medium">
+                                {selectedUser.name}
+                              </p>
                             </div>
+
                             <div>
-                              <p className="text-sm font-medium text-gray-500">Role</p>
-                              <Badge variant="outline">{selectedUser.role}</Badge>
+                              <p className="text-md font-semibold text-gray-800">
+                                Role
+                              </p>
+                              <Badge variant="outline" className="text-sm">
+                                {selectedUser.role}
+                              </Badge>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <Mail className="w-4 h-4 text-gray-400" />
-                            <p>{selectedUser.email}</p>
-                          </div>
-                          {selectedUser.phone && (
-                            <div className="flex items-center gap-2 text-sm">
-                              <Phone className="w-4 h-4 text-gray-400" />
-                              <p>{selectedUser.phone}</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2">
+                            <div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <Mail className="w-5 h-5 text-gray-800" />
+                                <p className="text-sm font-medium">{selectedUser.email}</p>
+                              </div>
                             </div>
-                          )}
+
+                            <div>
+                              {selectedUser.phone && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Phone className="w-5 h-5 text-gray-800" />
+                                  <p className="text-sm font-medium">{selectedUser.phone}</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                           {selectedUser.address && (
                             <div className="flex items-start gap-2 text-sm">
-                              <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
+                              <MapPin className="w-5 h-5 text-gray-800 mt-0.5" />
                               <div>
-                                <p>{selectedUser.address}</p>
+                                <p className="text-sm font-medium">{selectedUser.address}</p>
                                 {selectedUser.city && selectedUser.zip_code && (
                                   <p className="text-gray-500">
                                     {selectedUser.city}, {selectedUser.zip_code}
@@ -574,24 +609,31 @@ export default function UsersAdminPage() {
                               </div>
                             </div>
                           )}
+
                           <div className="flex items-center gap-2 text-sm pt-2 border-t">
-                            <Calendar className="w-4 h-4 text-gray-400" />
-                            <p className="text-gray-600">
+                            <Calendar className="w-5 h-5 text-gray-800" />
+                            <p className="text-gray-500">
                               Joined on{" "}
-                              {new Date(selectedUser.created_at).toLocaleDateString("en-US", {
-                                month: "long",
-                                day: "2-digit",
-                                year: "numeric",
-                              })}
+                              {new Date(selectedUser.created_at).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "long",
+                                  day: "2-digit",
+                                  year: "numeric",
+                                }
+                              )}
                             </p>
                           </div>
+
                         </CardContent>
                       </Card>
+
                     </div>
                   </>
                 )}
-              </SheetContent>
-            </Sheet>
+
+              </DialogContent>
+            </Dialog>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -643,15 +685,43 @@ export default function UsersAdminPage() {
   if (loading) {
     return (
       <SidebarProvider defaultOpen={!isDesktop}>
-        <div className="flex min-h-screen w-full bg-gradient-to-br from-orange-50 to-red-50">
+        <div className="flex min-h-screen w-full bg-amber-50">
+
           <AppSidebar />
+
           <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
+
             <div className="flex items-center justify-center min-h-screen w-full">
-              <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-xl shadow-lg">
-                <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
-                <span className="text-gray-700 font-medium">Loading users...</span>
+
+              <div className="flex flex-col items-center gap-4 bg-[#162A3A] backdrop-blur-xl px-8 py-8 rounded-2xl border border-[#d4a24c]/70 shadow-2xl">
+
+                {/* Spinner */}
+                <div className="relative">
+                  <Loader2 className="h-8 w-8 animate-spin text-[#d4a24c]" />
+                  <div className="absolute inset-0 rounded-full border border-[#d4a24c]/20 blur-sm" />
+                </div>
+
+                {/* Text */}
+                <div className="text-center">
+                  <p className="text-lg font-semibold text-white">
+                    Loading Customers
+                  </p>
+                  <p className="text-sm text-white/60">
+                    Please wait while we fetch the data...
+                  </p>
+                </div>
+
+                {/* Animated dots */}
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce" />
+                </div>
+
               </div>
+
             </div>
+
           </div>
         </div>
       </SidebarProvider>
@@ -660,20 +730,20 @@ export default function UsersAdminPage() {
 
   return (
     <SidebarProvider defaultOpen={!isDesktop}>
-      <div className="flex min-h-screen w-full bg-gradient-to-br from-red-50 to-red-50">
+      <div className="flex min-h-screen w-full bg-amber-50">
         <AppSidebar />
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
           {isDesktop && (
-            <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-white px-4 shadow-sm">
+            <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-[#162A3A] px-4 shadow-sm">
               <SidebarTrigger className="-ml-1" />
               <Image
                 src="/logo.jpg"
                 alt="Lumè Bean and Bar Logo"
                 width={40}
                 height={40}
-                className="object-contain"
+                className="object-contain rounded-full"
               />
-              <h1 className="text-lg font-bold text-gray-900">Lumè Bean and Bar</h1>
+              <h1 className={`${playfair.className} text-lg font-semibold text-white`}>Lumè Bean and Bar</h1>
             </div>
           )}
 
@@ -696,8 +766,8 @@ export default function UsersAdminPage() {
               </div>
 
               {/* Filters and Search */}
-              <Card className="bg-white/70 backdrop-blur-sm shadow-xl p-0 pb-5 border-red-100">
-                <CardHeader className="p-3 bg-gradient-to-r from-red-500 to-red-500 text-white rounded-t-lg">
+              <Card className="bg-white/70 backdrop-blur-sm shadow-xl p-0 pb-5 border-blue-100">
+                <CardHeader className="p-3 bg-[#162A3A] text-white rounded-t-lg">
                   <div className="flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
                       <div className="relative flex-1 max-w-sm">
@@ -712,21 +782,21 @@ export default function UsersAdminPage() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="bg-white">
+                <CardContent>
                   <div className="text-sm text-gray-600 mb-4 font-medium">
                     Showing {table.getFilteredRowModel().rows.length} of {users.length} users
                   </div>
                   <div className="w-full">
-                    <div className="rounded-lg border border-orange-200 overflow-hidden shadow-lg">
+                    <div className="rounded-lg border border-blue-200 overflow-hidden shadow-lg">
                       <div className="overflow-x-auto">
                         <table className="w-full min-w-[800px]">
-                          <thead className="bg-gradient-to-r from-orange-100 to-red-100">
-                            <tr className="border-b border-orange-200">
+                          <thead className="bg-gradient-to-r from-blue-100 to-blue-100 h-10 text-gray-950 font-semibold">
+                            <tr className="border-b border-blue-200">
                               {table.getHeaderGroups().map((headerGroup) =>
                                 headerGroup.headers.map((header) => (
                                   <th
                                     key={header.id}
-                                    className="text-left p-2 sm:p-3 text-xs sm:text-sm font-semibold text-gray-700"
+                                    className="text-left p-2 sm:p-3 text-md font-semibold text-gray-700"
                                   >
                                     {header.isPlaceholder ? null : (
                                       <div>

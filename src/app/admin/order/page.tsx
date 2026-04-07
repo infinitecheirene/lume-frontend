@@ -892,15 +892,43 @@ export default function OrdersAdminPage() {
   if (loading) {
     return (
       <SidebarProvider defaultOpen={!isDesktop}>
-        <div className="flex min-h-screen w-full bg-gradient-to-br from-orange-50 to-blue-50">
+        <div className="flex min-h-screen w-full bg-amber-50">
+
           <AppSidebar />
+
           <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
+
             <div className="flex items-center justify-center min-h-screen w-full">
-              <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-xl shadow-lg">
-                <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
-                <span className="text-gray-700 font-medium">Loading orders...</span>
+
+              <div className="flex flex-col items-center gap-4 bg-[#162A3A] backdrop-blur-xl px-8 py-8 rounded-2xl border border-[#d4a24c]/70 shadow-2xl">
+
+                {/* Spinner */}
+                <div className="relative">
+                  <Loader2 className="h-8 w-8 animate-spin text-[#d4a24c]" />
+                  <div className="absolute inset-0 rounded-full border border-[#d4a24c]/20 blur-sm" />
+                </div>
+
+                {/* Text */}
+                <div className="text-center">
+                  <p className="text-lg font-semibold text-white">
+                    Loading Orders
+                  </p>
+                  <p className="text-sm text-white/60">
+                    Please wait while we fetch the data...
+                  </p>
+                </div>
+
+                {/* Animated dots */}
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce" />
+                </div>
+
               </div>
+
             </div>
+
           </div>
         </div>
       </SidebarProvider>
@@ -1030,11 +1058,11 @@ export default function OrdersAdminPage() {
                     <div className="rounded-lg border border-blue-200 overflow-hidden shadow-lg">
                       <div className="overflow-x-auto">
                         <table className="w-full min-w-[800px]">
-                          <thead className="bg-gradient-to-r from-blue-100 to-blue-100 h-20">
+                          <thead className="bg-gradient-to-r from-blue-100 to-blue-100 h-10 text-gray-950 font-semibold">
                             <tr className="border-b border-blue-200">
                               {table.getHeaderGroups().map((headerGroup) =>
                                 headerGroup.headers.map((header) => (
-                                  <th key={header.id} className="text-left p-2 sm:p-3 text-xs sm:text-sm font-semibold text-gray-700">
+                                  <th key={header.id} className="text-left p-2 sm:p-3 text-md font-semibold text-gray-700">
                                     {header.isPlaceholder ? null : (
                                       <div>
                                         {typeof header.column.columnDef.header === "function"
