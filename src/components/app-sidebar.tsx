@@ -43,17 +43,6 @@ const items = [
   { title: "Orders", url: "/admin/order", icon: ShoppingCart },
   { title: "Reservations", url: "/admin/reservations", icon: Calendar },
   { title: "Customers", url: "/admin/users", icon: Users },
-  { title: "Reports", url: "/admin/reports", icon: BarChart3 },
-  {
-    title: "Content Management",
-    icon: Megaphone,
-    items: [
-      { title: "Announcements", url: "/admin/announcements" },
-      { title: "Blog Posts", url: "/admin/blog" },
-      { title: "Testimonials", url: "/admin/testimonials" },
-    ],
-  },
-  { title: "Settings", url: "/admin/settings", icon: Settings },
 ]
 
 export function AppSidebar() {
