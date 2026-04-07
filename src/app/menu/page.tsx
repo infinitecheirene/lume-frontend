@@ -5,26 +5,34 @@ import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
 import { toast } from "@/hooks/use-toast"
 import { useCartStore } from "@/store/cartStore"
+import Image from "next/image"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 })
 
+interface Product {
+  id: number
+  name: string
+  description: string
+  category: string
+  price: number
+  image: string 
+}
+
 export default function MenuPage() {
-  const [products, setProducts] = useState<any[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [activeMainCategory, setActiveMainCategory] = useState<"Kitchen" | "Coffee" | "Bar">("Kitchen")
   const { addItem } = useCartStore()
 
-  // Map main categories to granular product categories
   const mainCategoryMap = {
     Kitchen: ["Appetizers", "Main Course", "Desserts", "Noodles", "Rice Dishes", "Soups", "Add-ons"],
     Coffee: ["Coffee"],
     Bar: ["Beverages"],
   }
 
-  // Fetch products from API
   const fetchProducts = async () => {
     try {
       setLoading(true)
@@ -51,18 +59,37 @@ export default function MenuPage() {
     fetchProducts()
   }, [])
 
-  // Filter and group products based on selected main category
-  const filteredProducts = products.filter((item) =>
-    mainCategoryMap[activeMainCategory].includes(item.category)
+  const getImageUrl = (imagePath: string): string => {
+    if (!imagePath) {
+      return "/placeholder-food.jpg"
+    }
+
+    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+      return imagePath
+    }
+
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+
+    let fullPath = imagePath
+    if (!imagePath.startsWith("images/products/")) {
+      fullPath = `images/products/${imagePath}`
+    }
+
+    return `${API_BASE_URL}/${fullPath}`
+  }
+
+  const filteredProducts = products.filter((item) => mainCategoryMap[activeMainCategory].includes(item.category))
+
+  const groupedProducts = filteredProducts.reduce(
+    (acc, item) => {
+      if (!acc[item.category]) acc[item.category] = []
+      acc[item.category].push(item)
+      return acc
+    },
+    {} as Record<string, Product[]>,
   )
 
-  const groupedProducts = filteredProducts.reduce((acc, item) => {
-    if (!acc[item.category]) acc[item.category] = []
-    acc[item.category].push(item)
-    return acc
-  }, {} as Record<string, typeof filteredProducts>)
-
-  const handleAddToCart = (item: any) => {
+  const handleAddToCart = (item: Product) => {
     addItem(item)
     toast({
       title: "Added to cart",
@@ -88,7 +115,9 @@ export default function MenuPage() {
               key={cat}
               onClick={() => setActiveMainCategory(cat as keyof typeof mainCategoryMap)}
               className={`px-6 py-2.5 rounded-full text-sm transition ${
-                activeMainCategory === cat ? "bg-[#d4a24c] text-black font-semibold" : "bg-[#132e3b] text-white/70 hover:bg-[#193847] hover:text-white"
+                activeMainCategory === cat
+                  ? "bg-[#d4a24c] text-black font-semibold"
+                  : "bg-[#132e3b] text-white/70 hover:bg-[#193847] hover:text-white"
               }`}
             >
               {cat}
@@ -98,20 +127,30 @@ export default function MenuPage() {
 
         {/* Products grouped by granular category */}
         {Object.entries(groupedProducts).map(([category, items]) => (
-          <motion.div
-            key={category}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-12"
-          >
+          <motion.div key={category} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
             <h3 className="text-xl font-semibold mb-4">{category}</h3>
             <div className="grid md:grid-cols-2 gap-x-16 gap-y-6">
               {items.map((item) => (
-                <div key={item.id} className="py-6 border-b border-white/10 flex justify-between items-start gap-6">
-                  <div>
+                <div key={item.id} className="py-6 border-b border-white/10 flex items-start gap-6">
+                  {/* Image wrapper with fixed size */}
+                  <div className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden">
+                    <Image
+                      src={getImageUrl(item.image)}
+                      alt={item.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      priority
+                    />
+                  </div>
+
+                  {/* Product details */}
+                  <div className="flex-1">
                     <h4 className={`${playfair.className} text-lg md:text-xl font-semibold`}>{item.name}</h4>
                     <p className="text-sm text-white/60 mt-1">{item.description}</p>
                   </div>
+
+                  {/* Price + Add to Cart */}
                   <div className="flex flex-col items-end gap-2">
                     <span className="text-[#d4a24c] font-semibold text-lg whitespace-nowrap">₱{item.price}</span>
                     <button
@@ -127,10 +166,7 @@ export default function MenuPage() {
           </motion.div>
         ))}
 
-        {/* Empty state */}
-        {filteredProducts.length === 0 && (
-          <div className="text-center py-12 text-white/70">No items available in this category yet.</div>
-        )}
+        {filteredProducts.length === 0 && <div className="text-center py-12 text-white/70">No items available in this category yet.</div>}
       </div>
     </section>
   )
