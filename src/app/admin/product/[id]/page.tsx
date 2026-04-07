@@ -29,7 +29,7 @@ interface Product {
   updated_at: string
 }
 
-const categories = ["Appetizers", "Main Course", "Desserts", "Beverages", "Coffee"]
+const categories = ["Appetizers", "Main Course", "Desserts", "Coffee", "Beverages", "Noodles", "Rice Dishes", "Soups", "Add-ons"]
 
 const getImageUrl = (imagePath: string) => {
   if (!imagePath) return "/placeholder-food.jpg"
@@ -127,44 +127,44 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     reader.readAsDataURL(file)
   }
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
-  setSaving(true)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
 
-  try {
-    console.log("Submitting form data...", formData)
-    if (selectedImage) console.log("Selected image:", selectedImage)
+    try {
+      console.log("Submitting form data...", formData)
+      if (selectedImage) console.log("Selected image:", selectedImage)
 
-    const fd = new FormData()
-    Object.entries(formData).forEach(([key, value]) => {
-      const val = typeof value === "boolean" ? (value ? "1" : "0") : (value as string)
-      fd.append(key, val)
-      console.log(`FormData append: ${key} = ${val}`)
-    })
-    if (selectedImage) fd.append("image", selectedImage)
+      const fd = new FormData()
+      Object.entries(formData).forEach(([key, value]) => {
+        const val = typeof value === "boolean" ? (value ? "1" : "0") : (value as string)
+        fd.append(key, val)
+        console.log(`FormData append: ${key} = ${val}`)
+      })
+      if (selectedImage) fd.append("image", selectedImage)
 
-    console.log(`Sending PUT request to /api/product/${productId}`)
-    const res = await fetch(`/api/product/${productId}`, {
-      method: "PUT",
-      body: fd,
-      credentials: "include", 
-    })
+      console.log(`Sending PUT request to /api/product/${productId}`)
+      const res = await fetch(`/api/product/${productId}`, {
+        method: "PUT",
+        body: fd,
+        credentials: "include",
+      })
 
-    console.log("Raw response status:", res.status, res.statusText)
-    const result = await res.json()
-    console.log("Response JSON:", result)
+      console.log("Raw response status:", res.status, res.statusText)
+      const result = await res.json()
+      console.log("Response JSON:", result)
 
-    if (!res.ok) throw new Error(result.message || "Failed to update product")
+      if (!res.ok) throw new Error(result.message || "Failed to update product")
 
-    toast({ title: "Success", description: "Product updated successfully!" })
-    router.push("/admin/product")
-  } catch (error: any) {
-    console.error("Error during form submission:", error)
-    toast({ variant: "destructive", title: "Error", description: error.message || "Error updating product" })
-  } finally {
-    setSaving(false)
+      toast({ title: "Success", description: "Product updated successfully!" })
+      router.push("/admin/product")
+    } catch (error: any) {
+      console.error("Error during form submission:", error)
+      toast({ variant: "destructive", title: "Error", description: error.message || "Error updating product" })
+    } finally {
+      setSaving(false)
+    }
   }
-}
 
   // --- UI Subcomponents ---
   const Loading = () => (
@@ -395,7 +395,7 @@ function ProductForm({
                 onChange={handleFormChange}
                 required
                 disabled={saving}
-                placeholder="e.g., Kimchi Fried Rice"
+                placeholder="e.g., Garlic Butter Shrimp"
                 className="mt-1 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
               />
             </div>
@@ -455,7 +455,7 @@ function ProductForm({
             />
           </div>
 
-          <PropertySwitches formData={formData} handleSwitchChange={handleSwitchChange} saving={saving} />
+         
         </div>
       </div>
 
@@ -489,31 +489,4 @@ function ProductForm({
   )
 }
 
-// Property switches
-function PropertySwitches({ formData, handleSwitchChange, saving }: any) {
-  const switches = [
-    { id: "is_featured", label: "Featured", icon: <Star className="w-4 h-4 text-yellow-500" /> },
-    { id: "is_spicy", label: "Spicy", icon: <Flame className="w-4 h-4 text-yellow-500" /> },
-    { id: "is_vegetarian", label: "Vegetarian", icon: <Leaf className="w-4 h-4 text-green-500" /> },
-  ]
 
-  return (
-    <div className="space-y-4">
-      <Label className="text-base font-medium text-gray-700">Properties</Label>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {switches.map((s) => (
-          <div
-            key={s.id}
-            className="flex items-center space-x-3 p-3 border-2 border-yellow-200 rounded-lg bg-gradient-to-r from-yellow-50 to-yellow-50 hover:from-yellow-100 hover:to-yellow-100 transition-all duration-200"
-          >
-            <Switch id={s.id} checked={formData[s.id]} onCheckedChange={(checked) => handleSwitchChange(s.id, checked)} disabled={saving} />
-            <Label htmlFor={s.id} className="flex items-center gap-2 cursor-pointer text-gray-700 font-medium">
-              {s.icon}
-              {s.label}
-            </Label>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}

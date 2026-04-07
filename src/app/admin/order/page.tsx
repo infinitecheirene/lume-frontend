@@ -123,7 +123,7 @@ const orderStatuses = [
   { value: "ready", label: "Ready", color: "bg-green-100 text-green-800", icon: CheckCircle },
   { value: "out_for_delivery", label: "Out for Delivery", color: "bg-purple-100 text-purple-800", icon: Truck },
   { value: "delivered", label: "Delivered", color: "bg-green-100 text-green-800", icon: Package },
-  { value: "cancelled", label: "Cancelled", color: "bg-red-100 text-red-800", icon: XCircle },
+  { value: "cancelled", label: "Cancelled", color: "bg-yellow-100 text-yellow-800", icon: XCircle },
 ]
 
 const paymentMethods = [
@@ -579,7 +579,7 @@ export default function OrdersAdminPage() {
 
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogTitle className="text-black">Are you sure?</AlertDialogTitle>
                   <AlertDialogDescription>
                     This will permanently delete {Object.keys(rowSelection).length} order
                     {Object.keys(rowSelection).length > 1 ? "s" : ""}.
@@ -587,8 +587,8 @@ export default function OrdersAdminPage() {
                 </AlertDialogHeader>
 
                 <AlertDialogFooter className="flex flex-col sm:flex-row gap-2">
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleBulkDelete}>Delete</AlertDialogAction>
+                  <AlertDialogCancel className="text-black">Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleBulkDelete} className="bg-red-600">Delete</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

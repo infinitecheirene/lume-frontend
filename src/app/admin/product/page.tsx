@@ -69,11 +69,7 @@ interface Product {
   updated_at: string
 }
 
-const categories = [
-  "Coffee",
-  "Kitchen",
-  "Bar",
-]
+const categories = ["Appetizers", "Main Course", "Desserts", "Coffee", "Beverages", "Noodles", "Rice Dishes", "Soups", "Add-ons"]
 
 const getImageUrl = (imagePath: string): string => {
   if (!imagePath) {
@@ -431,117 +427,65 @@ export default function ProductsAdminPage() {
           <div className="flex items-center gap-1">
             <Dialog>
               <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedProduct(product)}
-                  className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-2"
-                >
+                <Button variant="ghost" size="sm" onClick={() => setSelectedProduct(product)} className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-2">
                   <Eye className="h-4 w-4" />
-                  <span className="ml-1 sr-only sm:not-sr-only hidden sm:inline">
-                    View
-                  </span>
+                  <span className="ml-1 sr-only sm:not-sr-only hidden sm:inline">View</span>
                 </Button>
               </DialogTrigger>
 
-              <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader className="bg-[#162A3A] text-white p-6 -m-6 mb-4 rounded-t-lg">
-                  <DialogTitle className="text-2xl font-bold">Product Details</DialogTitle>
+              <DialogContent className="w-full max-w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="bg-[#162A3A] text-white p-4 sm:p-6 -m-4 sm:-m-6 mb-4 rounded-t-lg">
+                  <DialogTitle className="text-xl sm:text-2xl font-bold">Product Details</DialogTitle>
                 </DialogHeader>
 
                 {selectedProduct && (
-                  <div className="space-y-6">
-                    <div className="flex justify-center mb-6">
-                      <div className="w-32 h-32 rounded-lg overflow-hidden border-2 border-gray-200">
-                        <Image
-                          src={getImageUrl(selectedProduct.image)}
-                          alt={selectedProduct.name}
-                          width={128}
-                          height={128}
-                          className="object-cover w-full h-full"
-                        />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* LEFT - IMAGE */}
+                    <div className="relative bg-gray-100 h-64 sm:h-auto min-h-[200px]">
+                      <Image
+                        src={getImageUrl(selectedProduct.image)}
+                        alt={selectedProduct.name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        priority
+                      />
+
+                      {/* subtle overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
+
+                      {/* name overlay */}
+                      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-5">
+                        <p className="text-xs uppercase tracking-widest text-white/70">Product</p>
+                        <h2 className="text-lg sm:text-2xl font-semibold text-white leading-tight">{selectedProduct.name}</h2>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-4">
-                        <div>
-                          <Label className="text-gray-700 font-bold text-md">Product Name</Label>
-                          <p className="text-md text-gray-800">
-                            {selectedProduct.name}
-                          </p>
+                    {/* RIGHT - DETAILS */}
+                    <div className="flex flex-col p-4 sm:p-6">
+                      <div className="space-y-1">
+                        <p className="text-xs tracking-widest text-gray-500">Product Name</p>
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">{selectedProduct.name}</h3>
+                      </div>
+
+                      <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="rounded-xl border bg-white p-4">
+                          <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Category</p>
+                          <p className="mt-2 text-sm font-semibold text-gray-900 capitalize">{selectedProduct.category}</p>
                         </div>
 
-                        <div>
-                          <Label className="text-gray-700 font-bold text-md">Category</Label>
-                          <Badge variant="outline" className="my-2 text-md text-gray-800">
-                            {selectedProduct.category}
-                          </Badge>
-                        </div>
-
-                        <div>
-                          <Label className="text-gray-700 font-bold text-md">Price</Label>
-                          <p className="text-xl font-bold text-green-600">
-                            ₱{formatPrice(selectedProduct.price)}
-                          </p>
+                        <div className="rounded-xl border bg-white p-4">
+                          <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Price</p>
+                          <p className="mt-2 text-lg font-bold text-green-600">₱{formatPrice(selectedProduct.price)}</p>
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-gray-700 font-bold text-md">Properties</Label>
-                        <div className="flex">
-                          {selectedProduct.is_featured && (
-                            <Badge className="text-xs bg-yellow-100 text-yellow-800">
-                              <Star className="w-3 h-3 mr-1" /> Featured
-                            </Badge>
-                          )}
-
-                          {selectedProduct.is_spicy && (
-                            <Badge variant="destructive" className="text-xs">
-                              <Flame className="w-3 h-3 mr-1" /> Spicy
-                            </Badge>
-                          )}
-
-                          {selectedProduct.is_vegetarian && (
-                            <Badge className="text-xs bg-green-100 text-green-800">
-                              <Leaf className="w-3 h-3 mr-1" /> Vegetarian
-                            </Badge>
-                          )}
-
-                          {!selectedProduct.is_featured &&
-                            !selectedProduct.is_spicy &&
-                            !selectedProduct.is_vegetarian && (
-                              <span className="text-md text-gray-800">None</span>
-                            )}
-                        </div>
-
-                        <div>
-                          <Label className="text-gray-700 font-bold text-md">Created On</Label>
-                          <p className="text-md text-gray-800">
-                            {new Date(selectedProduct.created_at).toLocaleDateString(
-                              "en-US",
-                              { month: "long", day: "2-digit", year: "numeric" }
-                            )}
-                          </p>
-                        </div>
-
-                        <div>
-                          <Label className="text-gray-700 font-bold text-md">Last Updated</Label>
-                          <p className="text-md text-gray-800">
-                            {new Date(selectedProduct.updated_at).toLocaleDateString(
-                              "en-US",
-                              { month: "long", day: "2-digit", year: "numeric" }
-                            )}
-                          </p>
-                        </div>
+                      <div className="mt-5 rounded-xl border bg-gray-50 p-4 flex-1">
+                        <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Description</p>
+                        <p className="mt-2 text-sm sm:text-base text-gray-800 leading-relaxed whitespace-pre-wrap">
+                          {selectedProduct.description || "No description available."}
+                        </p>
                       </div>
-                    </div>
-
-                    <div>
-                      <Label className="text-gray-700 font-bold text-md">Description</Label>
-                      <p className="text-md text-gray-800 p-3 border rounded-md whitespace-pre-wrap">
-                        {selectedProduct.description}
-                      </p>
                     </div>
                   </div>
                 )}
@@ -580,13 +524,13 @@ export default function ProductsAdminPage() {
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle className="font-bold text-2xl text-gray-900">Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action will permanently delete &apos;{product.name}&apos;.
-                      </AlertDialogDescription>
+                      <AlertDialogDescription>This action will permanently delete &apos;{product.name}&apos;.</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel className="text-gray-900">Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleDelete(product.id)} className="text-red-100 bg-red-800 hover:bg-red-700">Delete</AlertDialogAction>
+                      <AlertDialogAction onClick={() => handleDelete(product.id)} className="text-red-100 bg-red-800 hover:bg-red-700">
+                        Delete
+                      </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -685,13 +629,7 @@ export default function ProductsAdminPage() {
           {isDesktop && (
             <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-[#162A3A] px-4 shadow-sm">
               <SidebarTrigger className="-ml-1" />
-              <Image
-                src="/logo.jpg"
-                alt="Lumè Bean and Bar Logo"
-                width={40}
-                height={40}
-                className="object-contain rounded-full"
-              />
+              <Image src="/logo.jpg" alt="Lumè Bean and Bar Logo" width={40} height={40} className="object-contain rounded-full" />
               <h1 className={`${playfair.className} text-lg font-semibold text-white`}>Lumè Bean and Bar</h1>
             </div>
           )}
@@ -725,9 +663,7 @@ export default function ProductsAdminPage() {
                         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto mx-4 bg-amber-50">
                           <DialogHeader className="bg-[#162A3A] text-white p-6 -m-6 mb-4 rounded-t-lg">
                             <DialogTitle className="text-2xl font-bold">Add New Product</DialogTitle>
-                            <DialogDescription className="text-amber-50">
-                              Fill in the details for your new menu item.
-                            </DialogDescription>
+                            <DialogDescription className="text-amber-50">Fill in the details for your new menu item.</DialogDescription>
                           </DialogHeader>
                           <form onSubmit={handleCreateSubmit} className="space-y-6">
                             <div className="grid grid-cols-1 gap-4">
@@ -788,11 +724,7 @@ export default function ProductsAdminPage() {
                                   <Label htmlFor="category" className="text-gray-700 font-bold text-md">
                                     Category
                                   </Label>
-                                  <Select
-                                    value={newFormData.category}
-                                    onValueChange={handleCategoryChange}
-                                    disabled={isCreating}
-                                  >
+                                  <Select value={newFormData.category} onValueChange={handleCategoryChange} disabled={isCreating}>
                                     <SelectTrigger className="mt-1 border-blue-950 focus:border-blue-700 focus:ring-blue-800">
                                       <SelectValue placeholder="Select category" />
                                     </SelectTrigger>
