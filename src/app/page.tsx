@@ -8,6 +8,8 @@ import CTASection from "@/components/sections/CTASection"
 import FeaturedMenu from "@/components/sections/FeaturedMenu"
 import TestimonialsSection from "@/components/sections/testimonials"
 import LumeLoaderMinimal from "@/components/oppa-loader"
+import BlogPreview from "@/components/sections/BlogPreview"
+import AnnouncementsSection from "@/components/sections/Announcements"
 
 export default function Home() {
   const [loading, setLoading] = useState(true)
@@ -32,6 +34,8 @@ export default function Home() {
       <HeroSection />
       <OfferSection />
       <FeaturedMenu />
+      <BlogPreview />
+      <AnnouncementsSection />
       <TestimonialsSection />
       <CTASection />
     </div>

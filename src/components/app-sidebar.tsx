@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, Package, Megaphone, Users, ShoppingCart, LogOut, ChevronDown, Calendar, Mail } from "lucide-react"
+import { Home, Package, Megaphone, Users, ShoppingCart, LogOut, ChevronDown, Calendar, Mail, Phone } from "lucide-react"
 
 import {
   Sidebar,
@@ -22,7 +22,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { useMemo } from "react"
 
 const items = [
   { title: "Dashboard", url: "/admin/dashboard", icon: Home },
@@ -31,6 +30,7 @@ const items = [
   { title: "Reservations", url: "/admin/reservations", icon: Calendar },
   { title: "Inquiries", url: "/admin/contacts", icon: Mail },
   { title: "Customers", url: "/admin/users", icon: Users },
+  { title: "Contact Inquiries", url: "/admin/contacts", icon: Phone },
     {
     title: "Content Management",
     icon: Megaphone,

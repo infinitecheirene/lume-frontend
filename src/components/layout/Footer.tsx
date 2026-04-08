@@ -113,7 +113,7 @@ const Footer = () => {
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-yellow-500/10 pt-6 flex flex-col justify-center items-center gap-4 text-sm text-white/50">
+        <div className="border-t border-yellow-500/10 py-6 flex flex-col justify-center items-center gap-4 text-sm text-white/50">
           <p>
             © {new Date().getFullYear()} Lumè Bean & Bar. All rights reserved.
           </p>

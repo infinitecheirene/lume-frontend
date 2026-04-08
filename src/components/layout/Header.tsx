@@ -18,6 +18,7 @@ const playfair = Playfair_Display({
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Menu", href: "/menu" },
+  { label: "Blog", href: "/blog" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ]
