@@ -2,11 +2,8 @@
 
 import type React from "react"
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react"
+import { motion } from "framer-motion"
+import { Mail, Lock, Eye, EyeOff, ArrowLeftCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { toast } from "sonner"
@@ -108,9 +105,62 @@ export default function LoginPage() {
           <div className="absolute bottom-20 right-10 w-40 h-40 bg-[#d4a24c]/10 blur-3xl rounded-full" />
         </div>
 
+        {/* Steam overlay */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          {[...Array(6)].map((_, i) => (
+            <motion.div
+              key={`steam1-${i}`}
+              initial={{ y: 100, opacity: 0 }}
+              animate={{
+                y: -800,
+                opacity: [0.4, 0.1, 0.4],
+                x: [0, 20, -20, 0],
+              }}
+              transition={{
+                duration: 6 + i * 1.5,
+                repeat: Infinity,
+                delay: i * 0.8,
+                ease: "easeInOut",
+              }}
+              className="absolute bottom-0 w-32 h-32 bg-white/40 rounded-full blur-2xl"
+              style={{ left: `${10 + i * 15}%` }}
+            />
+          ))}
+        </div>
+
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          {[...Array(6)].map((_, i) => (
+            <motion.div
+              key={`steam2-${i}`}
+              initial={{ y: 100, opacity: 0 }}
+              animate={{
+                y: -500,
+                opacity: [0.3, 0.1, 0.3],
+                x: [0, 20, 50, 0],
+              }}
+              transition={{
+                duration: 7 + i * 1.2,
+                repeat: Infinity,
+                delay: i * 0.6,
+                ease: "easeInOut",
+              }}
+              className="absolute bottom-0 w-28 h-28 bg-white/70 rounded-full blur-2xl"
+              style={{ left: `${5 + i * 15}%` }}
+            />
+          ))}
+        </div>
+
         {/* Card */}
         <div className="relative w-full max-w-md">
           <div className="bg-[#0f2a33] border border-[#d4a24c]/30 rounded-2xl p-8 shadow-[0_0_30px_rgba(212,162,76,0.25)] backdrop-blur">
+
+            {/* Back Button */}
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-2 text-white/60 hover:text-white/80 transition"
+            >
+              <ArrowLeftCircle className="w-6 h-6" />
+            </button>
 
             {/* Header */}
             <div className="text-center mb-8">
