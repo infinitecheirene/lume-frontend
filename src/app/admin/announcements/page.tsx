@@ -262,7 +262,7 @@ export default function AdminAnnouncementsPage() {
 
   return (
     <SidebarProvider defaultOpen={!isDesktop}>
-      <div className="flex min-h-screen w-full bg-gradient-to-br from-red-50 to-red-50">
+      <div className="flex min-h-screen w-full bg-gradient-to-br from-yellow-50 to-yellow-50">
         <AppSidebar />
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
           {isDesktop && (
@@ -291,14 +291,14 @@ export default function AdminAnnouncementsPage() {
                           setEditingAnnouncement(null)
                           setFormData({ title: "", content: "", isActive: true })
                         }}
-                        className="bg-red-600 hover:bg-orange-700 w-full md:w-auto"
+                        className="bg-yellow-600 hover:bg-orange-700 w-full md:w-auto"
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         New Announcement
                       </Button>
                     </DialogTrigger>
 
-                    <DialogContent>
+                    <DialogContent className="text-black">
                       <DialogHeader>
                         <DialogTitle>{editingAnnouncement ? "Edit Announcement" : "Create New Announcement"}</DialogTitle>
                         <DialogDescription>
@@ -338,7 +338,7 @@ export default function AdminAnnouncementsPage() {
                         <Button
                           onClick={editingAnnouncement ? handleUpdate : handleCreate}
                           disabled={isSubmitting}
-                          className="bg-orange-600 hover:bg-orange-700"
+                          className="bg-yellow-600 hover:bg-yellow-700"
                         >
                           {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                           {editingAnnouncement ? "Update" : "Create"}
@@ -369,8 +369,8 @@ export default function AdminAnnouncementsPage() {
                           <p className="text-sm text-gray-600">Inactive Announcements</p>
                           <h2 className="text-xl font-bold text-gray-900">{inactiveCount}</h2>
                         </div>
-                        <div className="p-3 bg-gray-100 rounded-full">
-                          <XCircle className="w-6 h-6 text-gray-600" />
+                        <div className="p-3 bg-red-100 rounded-full">
+                          <XCircle className="w-6 h-6 text-red-600" />
                         </div>
                       </CardContent>
                     </Card>
@@ -379,12 +379,12 @@ export default function AdminAnnouncementsPage() {
                   {/* Search Bar */}
                   <div className="flex items-center gap-3">
                     <div className="relative w-full">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-800" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-yellow-800" />
                       <Input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search announcements..."
-                        className="pl-9 bg-gray-100"
+                        className="pl-9 bg-gray-100 text-black"
                       />
                     </div>
                   </div>
@@ -410,9 +410,9 @@ export default function AdminAnnouncementsPage() {
                   </CardContent>
                 </Card>
               ) : (
-                announcements.map((announcement) => (
+                filteredAnnouncements.map((announcement) => (
                   <div key={announcement.id} className="">
-                    <Card className="h-full w-full">
+                    <Card className="overflow-hidden flex flex-col h-[220px]">
                       <CardHeader>
                         <div className="flex items-start justify-between">
                           <div className="flex-1 space-y-3">
@@ -478,7 +478,7 @@ export default function AdminAnnouncementsPage() {
 
                                     <AlertDialogFooter>
                                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction onClick={() => handleDelete(announcement.id)} className="bg-red-600 hover:bg-red-700">
+                                      <AlertDialogAction onClick={() => handleDelete(announcement.id)} className="bg-yellow-600 hover:bg-yellow-700">
                                         Yes, Delete
                                       </AlertDialogAction>
                                     </AlertDialogFooter>

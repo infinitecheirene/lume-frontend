@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { Trash2, Search, Plus, ChevronLeft, ChevronRight } from "lucide-react"
+import { Trash2, Search, Plus, ChevronLeft, ChevronRight, Eye, Edit } from "lucide-react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
@@ -36,7 +36,12 @@ export default function TestimonialsAdmin() {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<number | null>(null)
 
+  const [formOpen, setFormOpen] = useState(false)
+  const [viewOpen, setViewOpen] = useState(false)
+
+  const [viewTestimonial, setViewTestimonial] = useState<Testimonial | null>(null)
   const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null)
+
   const [formData, setFormData] = useState({
     client_name: "",
     client_email: "",
@@ -110,6 +115,35 @@ export default function TestimonialsAdmin() {
     }
   }
 
+  function openAddModal() {
+    setEditingTestimonial(null)
+    setFormData({
+      client_name: "",
+      client_email: "",
+      rating: 1,
+      message: "",
+      status: "pending",
+    })
+    setFormOpen(true)
+  }
+
+  function openEditModal(t: Testimonial) {
+    setEditingTestimonial(t)
+    setFormData({
+      client_name: t.client_name,
+      client_email: t.client_email,
+      rating: t.rating,
+      message: t.message,
+      status: t.status,
+    })
+    setFormOpen(true)
+  }
+
+  function openViewModal(t: Testimonial) {
+    setViewTestimonial(t)
+    setViewOpen(true)
+  }
+
   async function handleSave() {
     // Simple email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -142,7 +176,7 @@ export default function TestimonialsAdmin() {
       })
 
       setEditingTestimonial(null)
-      setAddOpen(false)
+      setFormOpen(false)
       fetchTestimonials()
     } catch (error: any) {
       toast({
@@ -204,94 +238,10 @@ export default function TestimonialsAdmin() {
                   />
                 </div>
 
-                {/* Add/Edit Modal */}
-                <Dialog open={addOpen} onOpenChange={setAddOpen}>
-                  <DialogTrigger asChild>
-                    <Button
-                      onClick={() => {
-                        setEditingTestimonial(null)
-                        setFormData({ client_name: "", client_email: "", rating: 1, message: "", status: "pending" })
-                        setAddOpen(true)
-                      }}
-                      className="bg-yellow-500 hover:bg-yellow-600"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      New Testimonial
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="text-black">
-                    <DialogHeader>
-                      <DialogTitle>{editingTestimonial ? "Edit Testimonial" : "New Testimonial"}</DialogTitle>
-                      <DialogDescription>
-                        {editingTestimonial ? "Update your testimonial details" : "Add a new testimonial from your client"}
-                      </DialogDescription>
-                    </DialogHeader>
-                    {/* Form fields here */}
-                    <div className="space-y-4 py-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="client_name">Client Name</Label>
-                        <Input
-                          id="client_name"
-                          value={formData.client_name}
-                          onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="client_email">Client Email</Label>
-                        <Input
-                          id="client_email"
-                          type="email"
-                          value={formData.client_email}
-                          onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
-                          required
-                          pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="rating">Rating</Label>
-                        <div className="flex items-center gap-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Button
-                              key={star}
-                              size="sm"
-                              onClick={() => setFormData({ ...formData, rating: star })}
-                              className={formData.rating >= star ? "bg-yellow-400 hover:bg-amber-500" : "bg-gray-200 hover:bg-yellow-400"}
-                            >
-                              ★
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="message">Message</Label>
-                        <Textarea
-                          id="message"
-                          rows={4}
-                          value={formData.message}
-                          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="status">Status</Label>
-                        <select
-                          id="status"
-                          value={formData.status}
-                          onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                          className="w-full border rounded-md p-2"
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="approved">Approved</option>
-                          <option value="rejected">Rejected</option>
-                        </select>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button onClick={handleSave} disabled={isSubmitting} className="bg-yellow-500 hover:bg-yellow-600">
-                        {editingTestimonial ? "Update" : "Create"}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                <Button onClick={openAddModal} className="bg-yellow-500 hover:bg-yellow-600">
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Testimonial
+                </Button>
               </CardHeader>
 
               <CardContent>
@@ -308,6 +258,7 @@ export default function TestimonialsAdmin() {
                           <th className="text-left py-3 px-4 font-semibold">Email</th>
                           <th className="text-left py-3 px-4 font-semibold">Rating</th>
                           <th className="text-left py-3 px-4 font-semibold">Message</th>
+                          <th className="text-left py-3 px-4 font-semibold">Status</th>
                           <th className="text-left py-3 px-4 font-semibold">Date</th>
                           <th className="text-left py-3 px-4 font-semibold">Actions</th>
                         </tr>
@@ -319,40 +270,21 @@ export default function TestimonialsAdmin() {
                             <td className="py-3 px-4 text-gray-600">{t.client_email}</td>
                             <td className="py-3 px-4 text-yellow-500">{"★".repeat(t.rating)}</td>
                             <td className="py-3 px-4 max-w-xs truncate">{t.message}</td>
+                            <td className="py-3 px-4 capitalize">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${t.status === "approved" ? "bg-green-100 text-green-800" : t.status === "rejected" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"}`}
+                              >
+                                {t.status}
+                              </span>
+                            </td> 
                             <td className="py-3 px-4 text-gray-600">{new Date(t.created_at).toLocaleDateString()}</td>
                             <td className="py-3 px-4 flex items-center gap-2">
-                              <Select
-                                value={rowStatuses[t.id]}
-                                onValueChange={(val: Testimonial["status"]) => setRowStatuses((prev) => ({ ...prev, [t.id]: val }))}
-                              >
-                                <SelectTrigger className="w-28">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="pending">Pending</SelectItem>
-                                  <SelectItem value="approved">Approved</SelectItem>
-                                  <SelectItem value="rejected">Rejected</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <Button size="sm" variant="outline" className="bg-transparent border-0" onClick={() => openViewModal(t)}>
+                                <Eye className="w-4 h-4" />
+                              </Button>
 
-                              <Button
-                                size="sm"
-                                onClick={async () => {
-                                  try {
-                                    const res = await fetch(`/api/testimonials/${t.id}`, {
-                                      method: "PUT",
-                                      headers: { "Content-Type": "application/json" },
-                                      body: JSON.stringify({ status: rowStatuses[t.id] }),
-                                    })
-                                    if (!res.ok) throw new Error("Failed to update")
-                                    toast({ title: "Updated", description: "Status updated" })
-                                    setTestimonials((prev) => prev.map((tt) => (tt.id === t.id ? { ...tt, status: rowStatuses[t.id] } : tt)))
-                                  } catch (error) {
-                                    toast({ title: "Error", description: "Failed to update", variant: "destructive" })
-                                  }
-                                }}
-                              >
-                                Save
+                              <Button size="sm" variant="outline" className="bg-transparent border-0" onClick={() => openEditModal(t)}>
+                                <Edit className="w-4 h-4" />
                               </Button>
 
                               <Button
@@ -374,6 +306,129 @@ export default function TestimonialsAdmin() {
                 )}
               </CardContent>
             </Card>
+
+            {/* view modal */}
+            <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+              <DialogContent className="text-black max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Testimonial Details</DialogTitle>
+                  <DialogDescription>View testimonial information.</DialogDescription>
+                </DialogHeader>
+
+                {viewTestimonial && (
+                  <div className="space-y-3 text-sm">
+                    <div>
+                      <p className="font-semibold">Client Name</p>
+                      <p className="text-gray-700">{viewTestimonial.client_name}</p>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold">Email</p>
+                      <p className="text-gray-700">{viewTestimonial.client_email}</p>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold">Rating</p>
+                      <p className="text-yellow-500">{"★".repeat(viewTestimonial.rating)}</p>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold">Message</p>
+                      <p className="text-gray-700 whitespace-pre-wrap">{viewTestimonial.message}</p>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold">Status</p>
+                      <p className="capitalize text-gray-700">{viewTestimonial.status}</p>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold">Date</p>
+                      <p className="text-gray-700">{new Date(viewTestimonial.created_at).toLocaleString()}</p>
+                    </div>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+
+            {/* add/edit modal */}
+            <Dialog open={formOpen} onOpenChange={setFormOpen}>
+              <DialogContent className="text-black">
+                <DialogHeader>
+                  <DialogTitle>{editingTestimonial ? "Update Testimonial" : "New Testimonial"}</DialogTitle>
+                  <DialogDescription>{editingTestimonial ? "Update testimonial details." : "Add a new testimonial."}</DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="client_name">Client Name</Label>
+                    <Input
+                      id="client_name"
+                      value={formData.client_name}
+                      onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="client_email">Client Email</Label>
+                    <Input
+                      id="client_email"
+                      type="email"
+                      value={formData.client_email}
+                      onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Rating</Label>
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Button
+                          key={star}
+                          type="button"
+                          size="sm"
+                          onClick={() => setFormData({ ...formData, rating: star })}
+                          className={formData.rating >= star ? "bg-yellow-400 hover:bg-amber-500" : "bg-gray-200 hover:bg-yellow-400"}
+                        >
+                          ★
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="message">Message</Label>
+                    <Textarea
+                      id="message"
+                      rows={4}
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="status">Status</Label>
+                    <Select value={formData.status} onValueChange={(val: Testimonial["status"]) => setFormData({ ...formData, status: val })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="approved">Approved</SelectItem>
+                        <SelectItem value="rejected">Rejected</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button onClick={handleSave} disabled={isSubmitting} className="bg-yellow-500 hover:bg-yellow-600">
+                    {editingTestimonial ? "Update" : "Create"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
             {/* Delete Confirmation Modal */}
             <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
