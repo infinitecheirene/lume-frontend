@@ -1,20 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import {
-  ChevronRight,
-  Users,
-  Calendar,
-  Clock,
-  Mail,
-  Phone,
-  User,
-  MessageSquare,
-  CheckCircle,
-  AlertCircle,
-} from "lucide-react"
-import { motion } from "framer-motion";
+import { ChevronRight, Users, Calendar, Clock, Mail, Phone, User, MessageSquare, CheckCircle, AlertCircle } from "lucide-react"
+import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
+import { useToast } from "@/hooks/use-toast"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -25,20 +15,19 @@ export default function ReservationsPage() {
   const [step, setStep] = useState(1)
   const [user, setUser] = useState<any>(null)
   const [formData, setFormData] = useState<{
-    date: string;
-    time: string;
-    guests: string;
-    dining_preference: string;
-    name: string;
-    email: string;
-    phone: string;
-    special_requests: string;
-    occasion_type: string;
-    occasion_instructions: string;
-    reservation_fee: string;
-    payment_method: string;
-    payment_reference: string;
-    payment_receipt: File | undefined;
+    date: string
+    time: string
+    guests: string
+    dining_preference: string
+    name: string
+    email: string
+    phone: string
+    occasion: string
+    special_requests: string
+    reservation_fee: string
+    payment_method: string
+    payment_reference: string
+    payment_receipt: File | undefined
   }>({
     date: "",
     time: "",
@@ -48,8 +37,7 @@ export default function ReservationsPage() {
     email: "",
     phone: "",
     special_requests: "",
-    occasion_type: "",
-    occasion_instructions: "",
+    occasion: "",
     reservation_fee: "",
     payment_method: "",
     payment_reference: "",
@@ -61,37 +49,38 @@ export default function ReservationsPage() {
   const [phoneError, setPhoneError] = useState("")
   const [dailyBookingsCount, setDailyBookingsCount] = useState(0)
   const [checkingBookings, setCheckingBookings] = useState(false)
+  const { toast } = useToast()
 
   const calculateReservationFee = (occasionType: string, guests: number) => {
-    let baseFee = 0;
+    let baseFee = 0
 
     switch (occasionType) {
       case "Birthday":
-        baseFee = 500; // base fee for birthday
-        break;
+        baseFee = 500 // base fee for birthday
+        break
       case "Anniversary":
-        baseFee = 700; // base fee for anniversary
-        break;
+        baseFee = 700 // base fee for anniversary
+        break
       case "Business Meeting":
-        baseFee = 1000; // base fee for business meetings
-        break;
+        baseFee = 1000 // base fee for business meetings
+        break
       case "Casual Dinner":
-        baseFee = 0; // no fee for casual dinner
-        break;
+        baseFee = 0 // no fee for casual dinner
+        break
       case "Other":
-        baseFee = 300; // generic fee
-        break;
+        baseFee = 300 // generic fee
+        break
       default:
-        baseFee = 0;
-        break;
+        baseFee = 0
+        break
     }
 
     // Add extra charge per guest above 4
-    const extraGuests = guests > 4 ? guests - 4 : 0;
-    const extraFeePerGuest = 200;
+    const extraGuests = guests > 4 ? guests - 4 : 0
+    const extraFeePerGuest = 200
 
-    return baseFee + extraGuests * extraFeePerGuest;
-  };
+    return baseFee + extraGuests * extraFeePerGuest
+  }
 
   useEffect(() => {
     const userData = localStorage.getItem("user_data")
@@ -187,13 +176,13 @@ export default function ReservationsPage() {
       return
     }
 
-    // Handle occasion_type or guests change to update reservation fee
-    if (name === "occasion_type" || name === "guests") {
+    // Handle occasion or guests change to update reservation fee
+    if (name === "occasion" || name === "guests") {
       setFormData((prev) => {
         const updated = { ...prev, [name]: value }
         const guestsNum = Number(updated.guests) || 1
         // Convert number to string to match formData type
-        updated.reservation_fee = calculateReservationFee(updated.occasion_type || "", guestsNum).toString()
+        updated.reservation_fee = calculateReservationFee(updated.occasion || "", guestsNum).toString()
         return updated
       })
       return
@@ -239,12 +228,7 @@ export default function ReservationsPage() {
     switch (step) {
       case 1:
         // Reservation Details
-        return (
-          formData.date.trim() !== "" &&
-          formData.time.trim() !== "" &&
-          formData.guests.trim() !== "" &&
-          formData.dining_preference.trim() !== ""
-        )
+        return formData.date.trim() !== "" && formData.time.trim() !== "" && formData.guests.trim() !== "" && formData.dining_preference.trim() !== ""
       case 2:
         // Guest Information
         const phoneDigits = formData.phone.replace(/\D/g, "")
@@ -259,7 +243,7 @@ export default function ReservationsPage() {
         )
       case 3:
         // Occasion Details
-        return formData.occasion_type && formData.occasion_type !== ""
+        return formData.occasion && formData.occasion !== ""
       case 4:
         if (isDailyLimitReached()) return false
         if (formData.reservation_fee && (isNaN(Number(formData.reservation_fee)) || Number(formData.reservation_fee) < 0)) return false
@@ -274,9 +258,11 @@ export default function ReservationsPage() {
 
   const handleSubmit = async () => {
     if (isDailyLimitReached()) {
-      setMessage(
-        "You have reached the maximum of 2 reservations per day. Please choose a different date."
-      )
+      toast({
+        title: "Daily limit reached",
+        description: "You have reached the maximum of 2 reservations per day. Please choose a different date.",
+        variant: "destructive",
+      })
       return
     }
 
@@ -290,61 +276,60 @@ export default function ReservationsPage() {
         return
       }
 
-      console.log("📝 Submitting reservation with data:", formData)
+      // Create FormData payload
+      const formPayload = new FormData()
 
-      // Prepare JSON payload (excluding file)
-      const payload: any = {
-        ...formData,
-        reservation_fee: Number(formData.reservation_fee) || 0,
+      for (const key in formData) {
+        const value = formData[key as keyof typeof formData]
+
+        if (key === "payment_receipt") {
+          if (value instanceof File) {
+            formPayload.append("payment_receipt", value)
+          }
+        } else {
+          formPayload.append(key, value?.toString() || "")
+        }
       }
-      delete payload.payment_receipt
 
       const response = await fetch("/api/reservations", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: formPayload,
       })
 
       const responseText = await response.text()
-      let data
+
+      let data: any
       try {
         data = JSON.parse(responseText)
-      } catch (e) {
-        console.error("Failed to parse response:", responseText)
-        setMessage("Server error: Invalid response format")
+      } catch {
+        toast({
+          title: "Server Error",
+          description: "Invalid response format from server.",
+          variant: "destructive",
+        })
         return
       }
 
       if (!response.ok) {
         const errorMsg = data.message || data.error || "Failed to create reservation"
-        setMessage(errorMsg)
+
+        toast({
+          title: "Reservation Failed",
+          description: errorMsg,
+          variant: "destructive",
+        })
+
         return
       }
 
-      console.log("✅ Reservation created successfully")
+      toast({
+        title: "Reservation Successful",
+        description: "Your reservation has been submitted successfully.",
+      })
 
-      // If you need to upload the file separately:
-      if (formData.payment_receipt) {
-        const fileForm = new FormData()
-        fileForm.append("receipt", formData.payment_receipt)
-
-        const fileResponse = await fetch(`/api/reservations/upload-receipt/${data.reservation_id}`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: fileForm,
-        })
-
-        if (!fileResponse.ok) {
-          console.warn("Receipt upload failed, please check backend handling")
-        }
-      }
-
-      // Trigger email confirmation
       setMessage("success")
 
       setTimeout(() => {
@@ -358,8 +343,7 @@ export default function ReservationsPage() {
           guests: "2",
           dining_preference: "Main Dining",
           special_requests: "",
-          occasion_type: "",
-          occasion_instructions: "",
+          occasion: "",
           reservation_fee: "",
           payment_method: "",
           payment_reference: "",
@@ -367,53 +351,21 @@ export default function ReservationsPage() {
         })
         setMessage("")
         setDailyBookingsCount(0)
-      }, 3000)
+
+        // Redirect after success
+        window.location.href = "/reservation-history"
+      }, 1500)
     } catch (error) {
       console.error("❌ Reservation error:", error)
-      setMessage(error instanceof Error ? error.message : "An error occurred")
+
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Something went wrong.",
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
-  }
-
-  if (message === "success") {
-    return (
-      <div className="min-h-screen py-24 bg-[#0b1d26] text-white">
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-          <div className="absolute top-20 left-10 w-64 h-64 bg-[#dc143c]/30 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-64 h-64 bg-[#dc143c]/30 rounded-full blur-3xl animate-pulse delay-700"></div>
-        </div>
-
-        <div className="text-center max-w-md relative z-10 animate-in zoom-in duration-500">
-          <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl animate-bounce">
-            <CheckCircle className="w-14 h-14 text-[#dc143c]" />
-          </div>
-          <h2 className="text-4xl font-black text-white mb-3 drop-shadow-lg">Reservation Confirmed!</h2>
-          <p className="text-xl text-white/90 mb-2">We&apos;re excited to see you at Ipponyari</p>
-          <p className="text-white/70 mb-6">Check your email for confirmation details</p>
-
-          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 mb-6">
-            <p className="text-sm text-white/80 mb-1">View your reservation</p>
-            <button
-              onClick={() => (window.location.href = "/orders")}
-              className="text-white font-semibold hover:text-[#d4a24c]  underline bg-transparent border-none cursor-pointer transition-colors"
-            >
-              Go to My Reservations
-            </button>
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={() => (window.location.href = "/menu")}
-              className="flex-1 px-6 py-3 border-2 border-white text-white font-semibold rounded-xl hover:bg-white/10 transition-all hover:scale-105"
-            >
-              Browse Menu
-            </button>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -427,15 +379,8 @@ export default function ReservationsPage() {
       <div className="max-w-2xl mx-auto relative z-10">
         {/* Header */}
         <div className="flex flex-col items-center">
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            className="text-center mb-6"
-          >
-            <p className="tracking-[0.3em] uppercase text-sm mb-3 text-[#d4a24c]">
-              Reservations
-            </p>
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} className="text-center mb-6">
+            <p className="tracking-[0.3em] uppercase text-sm mb-3 text-[#d4a24c]">Reservations</p>
 
             <h2 className={`${playfair.className} text-4xl md:text-5xl font-bold`}>
               Reserve Your <span className="text-[#d4a24c] italic">Moment</span>
@@ -478,10 +423,9 @@ export default function ReservationsPage() {
                 {[1, 2, 3, 4, 5].map((s) => (
                   <div
                     key={s}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 transform ${s <= step
-                      ? "bg-white text-[#0f4764] shadow-xl scale-110"
-                      : "bg-white/20 text-white/50"
-                      }`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 transform ${
+                      s <= step ? "bg-white text-[#0f4764] shadow-xl scale-110" : "bg-white/20 text-white/50"
+                    }`}
                   >
                     {s}
                   </div>
@@ -567,10 +511,10 @@ export default function ReservationsPage() {
                           min={1}
                           max={50} // optional, adjust max as needed
                           onChange={(e) => {
-                            const value = e.target.value;
+                            const value = e.target.value
                             // Allow only positive numbers
                             if (/^\d*$/.test(value)) {
-                              setFormData((prev) => ({ ...prev, guests: value }));
+                              setFormData((prev) => ({ ...prev, guests: value }))
                             }
                           }}
                           placeholder="Number of Guests"
@@ -653,10 +597,11 @@ export default function ReservationsPage() {
                         }}
                         required
                         placeholder="your@email.com"
-                        className={`w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none transition-all text-lg disabled:bg-white/5 disabled:text-white/50 text-white placeholder-white/40 bg-white/10 backdrop-blur-sm ${emailError
-                          ? "border-white focus:border-white focus:ring-2 focus:ring-white/30"
-                          : "border-white/20 focus:border-white focus:ring-2 focus:ring-white/30"
-                          } border`}
+                        className={`w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none transition-all text-lg disabled:bg-white/5 disabled:text-white/50 text-white placeholder-white/40 bg-white/10 backdrop-blur-sm ${
+                          emailError
+                            ? "border-white focus:border-white focus:ring-2 focus:ring-white/30"
+                            : "border-white/20 focus:border-white focus:ring-2 focus:ring-white/30"
+                        } border`}
                       />
                     </div>
                     {user?.email && <p className="text-xs text-white/50 mt-1">Using your account email</p>}
@@ -679,8 +624,9 @@ export default function ReservationsPage() {
                         onChange={handleChange}
                         required
                         placeholder="09123456789"
-                        className={`w-full pl-12 pr-4 py-3 border rounded-xl bg-white/10 backdrop-blur-sm focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white placeholder-white/40 ${phoneError ? "border-red-500" : "border-white/20"
-                          }`}
+                        className={`w-full pl-12 pr-4 py-3 border rounded-xl bg-white/10 backdrop-blur-sm focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white placeholder-white/40 ${
+                          phoneError ? "border-red-500" : "border-white/20"
+                        }`}
                       />
                     </div>
                     {phoneError && <p className="mt-2 text-sm text-[#d4a24c] ">{phoneError}</p>}
@@ -718,40 +664,18 @@ export default function ReservationsPage() {
                     <div className="relative">
                       <Calendar className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c]  pointer-events-none" />
                       <select
-                        name="occasion_type"
-                        value={formData.occasion_type || ""}
+                        name="occasion"
+                        value={formData.occasion || ""}
                         onChange={handleChange}
                         required
                         className="w-full pl-12 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg appearance-none text-white"
                       >
-                        {[
-                          "Select Occasion",
-                          "Birthday",
-                          "Anniversary",
-                          "Business Meeting",
-                          "Casual Dinner",
-                          "Other",
-                        ].map((option) => (
+                        {["Select Occasion", "Birthday", "Anniversary", "Business Meeting", "Casual Dinner", "Other"].map((option) => (
                           <option key={option} value={option} className="bg-blue-250 text-gray-900">
                             {option}
                           </option>
                         ))}
                       </select>
-                    </div>
-                  </div>
-
-                  <div className="relative">
-                    <label className="block text-sm font-semibold text-white mb-3">Special Instructions</label>
-                    <div className="relative">
-                      <MessageSquare className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c]  pointer-events-none" />
-                      <input
-                        type="text"
-                        name="occasion_instructions"
-                        value={formData.occasion_instructions || ""}
-                        onChange={handleChange}
-                        placeholder="Anything else we should know?"
-                        className="w-full pl-12 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white placeholder-white/40"
-                      />
                     </div>
                   </div>
                 </div>
@@ -787,7 +711,7 @@ export default function ReservationsPage() {
                       required
                       className="w-full pl-4 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg appearance-none text-white"
                     >
-                      {["GCash", "BPI", "Security Bank", "Other"].map((option) => (
+                      {["Select Payment Method","GCash", "BPI", "Security Bank", "Other"].map((option) => (
                         <option key={option} value={option} className="bg-blue-250 text-gray-900">
                           {option}
                         </option>
@@ -816,16 +740,14 @@ export default function ReservationsPage() {
                       accept="image/*"
                       required
                       onChange={(e) => {
-                        const file = e.target.files?.[0];
+                        const file = e.target.files?.[0]
                         if (file) {
-                          setFormData((prev) => ({ ...prev, payment_receipt: file }));
+                          setFormData((prev) => ({ ...prev, payment_receipt: file }))
                         }
                       }}
                       className="w-full pl-4 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white placeholder-white/40"
                     />
-                    {formData.payment_receipt && (
-                      <div className="mt-2 text-white text-xs">Selected: {formData.payment_receipt.name}</div>
-                    )}
+                    {formData.payment_receipt && <div className="mt-2 text-white text-xs">Selected: {formData.payment_receipt.name}</div>}
                   </div>
                 </div>
               </div>
@@ -836,25 +758,28 @@ export default function ReservationsPage() {
               <div className="space-y-8">
                 {/* Header */}
                 <div className="mb-4">
-                  <h2 className="text-3xl font-extrabold text-white mb-1">
-                    Review & Confirm
-                  </h2>
-                  <p className="text-white/70 text-md">
-                    Please review your reservation details before submitting.
-                  </p>
+                  <h2 className="text-3xl font-extrabold text-white mb-1">Review & Confirm</h2>
+                  <p className="text-white/70 text-md">Please review your reservation details before submitting.</p>
                 </div>
 
                 {/* Receipt Container */}
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-lg space-y-6">
-
                   {/* Reservation Details */}
                   <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-2">
                     <h3 className="text-lg font-semibold text-white mb-2">Reservation Details</h3>
                     <div className="grid grid-cols-2 gap-4 text-white/80">
-                      <span><span className="font-semibold">Date:</span> {formData.date}</span>
-                      <span><span className="font-semibold">Time:</span> {formData.time}</span>
-                      <span><span className="font-semibold">Guests:</span> {formData.guests}</span>
-                      <span><span className="font-semibold">Dining:</span> {formData.dining_preference}</span>
+                      <span>
+                        <span className="font-semibold">Date:</span> {formData.date}
+                      </span>
+                      <span>
+                        <span className="font-semibold">Time:</span> {formData.time}
+                      </span>
+                      <span>
+                        <span className="font-semibold">Guests:</span> {formData.guests}
+                      </span>
+                      <span>
+                        <span className="font-semibold">Dining:</span> {formData.dining_preference}
+                      </span>
                     </div>
                   </div>
 
@@ -862,9 +787,15 @@ export default function ReservationsPage() {
                   <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-2">
                     <h3 className="text-lg font-semibold text-white mb-2">Guest Information</h3>
                     <div className="flex flex-col gap-4 text-white/80">
-                      <span><span className="font-semibold">Name:</span> {formData.name}</span>
-                      <span><span className="font-semibold">Email:</span> {formData.email}</span>
-                      <span><span className="font-semibold">Phone:</span> {formData.phone}</span>
+                      <span>
+                        <span className="font-semibold">Name:</span> {formData.name}
+                      </span>
+                      <span>
+                        <span className="font-semibold">Email:</span> {formData.email}
+                      </span>
+                      <span>
+                        <span className="font-semibold">Phone:</span> {formData.phone}
+                      </span>
                     </div>
                   </div>
 
@@ -872,8 +803,9 @@ export default function ReservationsPage() {
                   <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-2">
                     <h3 className="text-lg font-semibold text-white mb-2">Occasion</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white/80">
-                      <span><span className="font-semibold">Type:</span> {formData.occasion_type}</span>
-                      <span><span className="font-semibold">Instructions:</span> {formData.occasion_instructions || '-'}</span>
+                      <span>
+                        <span className="font-semibold">Type:</span> {formData.occasion}
+                      </span>
                     </div>
                   </div>
 
@@ -881,11 +813,19 @@ export default function ReservationsPage() {
                   <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-2">
                     <h3 className="text-lg font-semibold text-white mb-2">Payment</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white/80">
-                      <span><span className="font-semibold">Reservation Fee:</span> ₱{formData.reservation_fee || '0.00'}</span>
-                      <span><span className="font-semibold">Payment Method:</span> {formData.payment_method}</span>
-                      <span><span className="font-semibold">Reference:</span> {formData.payment_reference || '-'}</span>
+                      <span>
+                        <span className="font-semibold">Reservation Fee:</span> ₱{formData.reservation_fee || "0.00"}
+                      </span>
+                      <span>
+                        <span className="font-semibold">Payment Method:</span> {formData.payment_method}
+                      </span>
+                      <span>
+                        <span className="font-semibold">Reference:</span> {formData.payment_reference || "-"}
+                      </span>
                       {formData.payment_receipt && (
-                        <span><span className="font-semibold">Receipt:</span> {formData.payment_receipt.name}</span>
+                        <span>
+                          <span className="font-semibold">Receipt:</span> {formData.payment_receipt.name}
+                        </span>
                       )}
                     </div>
                   </div>
@@ -934,6 +874,6 @@ export default function ReservationsPage() {
           </div>
         </div>
       </div>
-    </div >
+    </div>
   )
 }
