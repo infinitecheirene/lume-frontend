@@ -1,44 +1,74 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
-import { menuItems } from "@/data/menuData"
-import { useScroll, useTransform } from "framer-motion"
-import { useRef, useEffect, useState } from "react"
 import { Coffee } from "lucide-react"
+import Image from "next/image"
+import { toast } from "@/hooks/use-toast"
+import LumeLoaderMinimal from "@/components/oppa-loader"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 })
 
+interface Product {
+  id: number
+  name: string
+  description: string
+  category: string
+  price: number
+  image?: string | null
+  best_seller?: boolean
+}
+
 export default function BestSellerPage() {
-  const containerRef = useRef(null)
+  const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"],
-  })
+  const fetchBestSellers = async () => {
+    try {
+      setLoading(true)
 
-  const fillHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"])
-  const streamHeight = useTransform(scrollYProgress, [0, 1], ["0%", "120%"])
+      const res = await fetch("/api/product?best_seller=true&paginate=false")
+      const data = await res.json()
 
-  const bestSellers = menuItems.filter(
-    (item) => item.isBestSeller === true
-  )
+      if (!res.ok) throw new Error(data.message)
 
-  // Simulated loading (remove if using API later)
+      setProducts(data)
+    } catch (error) {
+      console.error(error)
+
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load best sellers",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 800)
-    return () => clearTimeout(timer)
+    fetchBestSellers()
   }, [])
 
+  const getImageUrl = (imagePath?: string | null) => {
+    if (!imagePath) return "/placeholder-food.jpg"
+
+    if (imagePath.startsWith("http")) return imagePath
+
+    const base =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+
+    return `${base}/images/products/${imagePath}`
+  }
+
+  if (loading) return <LumeLoaderMinimal />
+
   return (
-    <section
-      ref={containerRef}
-      className="relative py-24 bg-[#0c222b] text-white overflow-hidden"
-    >
+    <section className="relative py-24 bg-[#0c222b] text-white overflow-hidden">
       <div className="container mx-auto px-4 max-w-6xl">
 
         {/* Heading */}
@@ -56,70 +86,52 @@ export default function BestSellerPage() {
           </h2>
         </motion.div>
 
-        {/* ✅ LOADING STATE */}
-        {loading && (
-          <div className="grid md:grid-cols-2 gap-x-16 gap-y-6">
-            {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="py-6 border-b border-white/10 animate-pulse"
-              >
-                <div className="flex justify-between items-start gap-6">
-
-                  <div className="space-y-2 w-full">
-                    <div className="h-4 w-1/2 bg-white/10 rounded" />
-                    <div className="h-3 w-3/4 bg-white/10 rounded" />
-                    <div className="h-3 w-1/3 bg-white/10 rounded" />
-                  </div>
-
-                  <div className="h-4 w-12 bg-white/10 rounded" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
         {/* ✅ CONTENT */}
-        {!loading && bestSellers.length > 0 && (
+        {products.length > 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="grid md:grid-cols-2 gap-x-16"
+            className="grid md:grid-cols-2 gap-x-16 gap-y-6"
           >
-            {bestSellers.map((item, i) => (
+            {products.map((item) => (
               <div
-                key={item.id ?? i}
-                className="py-6 border-b border-white/10 hover:bg-white/5 transition px-3 rounded-lg"
+                key={item.id}
+                className="py-6 border-b border-white/10 flex items-start gap-6 hover:bg-white/5 transition px-3 rounded-lg"
               >
-                <div className="flex justify-between items-start gap-6">
+                {/* Image */}
+                <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden">
+                  <Image
+                    src={getImageUrl(item.image)}
+                    alt={item.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
 
-                  {/* Left */}
-                  <div>
-                    <h3 className={`${playfair.className} text-lg md:text-xl font-semibold`}>
-                      {item.name}
-                    </h3>
+                {/* Info */}
+                <div className="flex-1">
+                  <h3 className={`${playfair.className} text-lg font-semibold`}>
+                    {item.name}
+                  </h3>
 
-                    <p className="text-sm text-white/60 mt-1">
-                      {item.description}
-                    </p>
+                  <p className="text-sm text-white/60 mt-1">
+                    {item.description}
+                  </p>
 
-                    <span className="inline-block mt-2 text-xs px-3 py-1 rounded-full bg-[#d4a24c]/20 text-[#d4a24c]">
-                      Best Seller
-                    </span>
-                  </div>
+                  <span className="inline-block mt-2 text-xs px-3 py-1 rounded-full bg-[#d4a24c]/20 text-[#d4a24c]">
+                    {item.category}
+                  </span>
+                </div>
 
-                  {/* Price */}
-                  <div className="text-[#d4a24c] font-semibold text-lg whitespace-nowrap">
-                    ₱{item.price}
-                  </div>
+                {/* Price */}
+                <div className="text-[#d4a24c] font-semibold text-lg whitespace-nowrap">
+                  ₱{item.price}
                 </div>
               </div>
             ))}
           </motion.div>
-        )}
-
-        {/* ✅ EMPTY STATE (REDESIGNED) */}
-        {!loading && bestSellers.length === 0 && (
+        ) : (
+          /* ✅ EMPTY STATE */
           <div className="flex flex-col items-center justify-center py-20 text-center">
 
             <div className="w-16 h-16 rounded-full bg-[#d4a24c]/10 flex items-center justify-center mb-6">

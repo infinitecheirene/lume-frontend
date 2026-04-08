@@ -37,6 +37,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Playfair_Display } from "next/font/google"
 
 const playfair = Playfair_Display({
@@ -57,6 +63,7 @@ const Orders = () => {
   const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null)
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [orderToCancel, setOrderToCancel] = useState<Order | null>(null)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
 
   useEffect(() => {
     const checkAuthAndFetchData = async () => {
@@ -283,7 +290,7 @@ const Orders = () => {
               This action cannot be undone and you will need to place a new order if you change your mind.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-0">
+          <AlertDialogFooter className="gap-2">
             <AlertDialogCancel className="mt-0 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900">
               Keep Order
             </AlertDialogCancel>
@@ -320,11 +327,10 @@ const Orders = () => {
                     setActiveTab("orders")
                     setActiveFilter("all")
                   }}
-                  className={`flex-1 min-w-fit p-2 rounded-2xl font-bold text-lg transition-all ${
-                    activeTab === "orders"
-                      ? "bg-[#d4a24c] text-white shadow-lg scale-105"
-                      : "bg-white text-gray-600 hover:bg-gray-50 shadow-md border border-gray-200"
-                  }`}
+                  className={`flex-1 min-w-fit p-2 rounded-2xl font-bold text-lg transition-all ${activeTab === "orders"
+                    ? "bg-[#d4a24c] text-white shadow-lg scale-105"
+                    : "bg-white text-gray-600 hover:bg-gray-50 shadow-md border border-gray-200"
+                    }`}
                 >
                   <Package className="w-5 h-5 inline-block mr-2 mb-1" />
                   Orders ({orders.length})
@@ -340,9 +346,8 @@ const Orders = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <button
                     onClick={() => setActiveFilter("all")}
-                    className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
-                      activeFilter === "all" ? "bg-[#d4a24c] text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
+                    className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${activeFilter === "all" ? "bg-[#d4a24c] text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
                   >
                     All ({getStatusCount("all")})
                   </button>
@@ -350,41 +355,36 @@ const Orders = () => {
                     <>
                       <button
                         onClick={() => setActiveFilter("pending")}
-                        className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
-                          activeFilter === "pending" ? "bg-amber-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
+                        className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${activeFilter === "pending" ? "bg-amber-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          }`}
                       >
                         Pending ({getStatusCount("pending")})
                       </button>
                       <button
                         onClick={() => setActiveFilter("confirmed")}
-                        className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
-                          activeFilter === "confirmed" ? "bg-blue-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
+                        className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${activeFilter === "confirmed" ? "bg-blue-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          }`}
                       >
                         Confirmed ({getStatusCount("confirmed")})
                       </button>
                       <button
                         onClick={() => setActiveFilter("preparing")}
-                        className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
-                          activeFilter === "preparing" ? "bg-blue-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
+                        className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${activeFilter === "preparing" ? "bg-blue-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          }`}
                       >
                         Preparing ({getStatusCount("preparing")})
                       </button>
                       <button
                         onClick={() => setActiveFilter("delivered")}
-                        className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
-                          activeFilter === "delivered" ? "bg-emerald-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
+                        className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${activeFilter === "delivered" ? "bg-emerald-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          }`}
                       >
                         Delivered ({getStatusCount("delivered")})
                       </button>
                       <button
                         onClick={() => setActiveFilter("cancelled")}
-                        className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
-                          activeFilter === "cancelled" ? "bg-red-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
+                        className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${activeFilter === "cancelled" ? "bg-red-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          }`}
                       >
                         Cancelled ({getStatusCount("cancelled")})
                       </button>
@@ -393,25 +393,22 @@ const Orders = () => {
                     <>
                       <button
                         onClick={() => setActiveFilter("pending")}
-                        className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
-                          activeFilter === "pending" ? "bg-amber-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
+                        className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${activeFilter === "pending" ? "bg-amber-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          }`}
                       >
                         Pending ({getStatusCount("pending")})
                       </button>
                       <button
                         onClick={() => setActiveFilter("confirmed")}
-                        className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
-                          activeFilter === "confirmed" ? "bg-emerald-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
+                        className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${activeFilter === "confirmed" ? "bg-emerald-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          }`}
                       >
                         Confirmed ({getStatusCount("confirmed")})
                       </button>
                       <button
                         onClick={() => setActiveFilter("cancelled")}
-                        className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
-                          activeFilter === "cancelled" ? "bg-red-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
+                        className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${activeFilter === "cancelled" ? "bg-red-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          }`}
                       >
                         Cancelled ({getStatusCount("cancelled")})
                       </button>
@@ -442,57 +439,185 @@ const Orders = () => {
                 </div>
               )}
 
-              {/* Orders & Reservations Grid - light cards */}
+              {/* View Order */}
+              <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+                <DialogContent className="max-w-2xl bg-white text-gray-900">
+                  {selectedOrder && (
+                    <>
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center justify-between">
+                          <span>Order #{selectedOrder.order_number}</span>
+                          <Badge className={getStatusColor(selectedOrder.order_status)}>
+                            {getStatusIcon(selectedOrder.order_status)}
+                            <span className="ml-1 capitalize">
+                              {selectedOrder.order_status.replace("_", " ")}
+                            </span>
+                          </Badge>
+                        </DialogTitle>
+                      </DialogHeader>
+
+                      <div className="space-y-4 mt-4">
+                        {/* Customer Info */}
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p className="text-gray-500">Customer</p>
+                            <p className="font-semibold">{selectedOrder.customer_name}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Email</p>
+                            <p className="font-semibold">{selectedOrder.customer_email}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Phone</p>
+                            <p className="font-semibold">{selectedOrder.customer_phone}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Date</p>
+                            <p className="font-semibold">
+                              {new Date(selectedOrder.created_at).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Items */}
+                        <div>
+                          <p className="text-gray-700 font-semibold mb-2">Order Items</p>
+                          <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                            {selectedOrder.order_items?.map((item: any, index: number) => (
+                              <div
+                                key={index}
+                                className="flex justify-between items-center border rounded-lg p-3"
+                              >
+                                <div>
+                                  <p className="font-medium">{item.name}</p>
+                                  <p className="text-xs text-gray-500">
+                                    Qty: {item.quantity}
+                                  </p>
+                                </div>
+                                <p className="font-semibold text-[#d4a24c]">
+                                  ₱{(item.price * item.quantity).toFixed(2)}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Total */}
+                        <div className="flex justify-between border-t pt-4 font-bold text-lg">
+                          <span>Total</span>
+                          <span className="text-[#d4a24c]">
+                            ₱{Number(selectedOrder.total_amount).toFixed(2)}
+                          </span>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex justify-end items-end gap-2 pt-4">
+                          {canCancelOrder(selectedOrder) && (
+                            <Button
+                              variant="outline"
+                              className="border-red-500 text-red-500 hover:bg-red-50"
+                              onClick={() => {
+                                setSelectedOrder(null)
+                                handleCancelClick(selectedOrder)
+                              }}
+                            >
+                              Cancel Order
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </DialogContent>
+              </Dialog>
+
+              {/* Orders - light cards */}
               {activeTab === "orders" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredOrders.map((order) => (
-                    <Card key={order.id} className="bg-white border-gray-200 hover:border-[#d4a24c] hover:shadow-lg transition-all cursor-pointer">
-                      <CardContent className="p-6">
+                    <Card
+                      key={order.id}
+                      onClick={() => setSelectedOrder(order)}
+                      className="bg-white border-gray-200 hover:border-[#d4a24c] hover:shadow-lg transition-all cursor-pointer"
+                    >
+                      <CardContent className="p-6 flex flex-col h-full">
+
+                        {/* Header */}
                         <div className="flex justify-between items-start mb-4">
                           <div>
                             <p className="text-xs text-gray-500">Order Number</p>
                             <p className="font-bold text-gray-900">{order.order_number}</p>
                           </div>
+
                           <Badge className={getStatusColor(order.order_status)}>
                             {getStatusIcon(order.order_status)}
-                            <span className="ml-1 capitalize">{order.order_status.replace("_", " ")}</span>
+                            <span className="ml-1 capitalize">
+                              {order.order_status.replace("_", " ")}
+                            </span>
                           </Badge>
                         </div>
 
-                        <div className="space-y-2 text-sm">
+                        {/* Details */}
+                        <div className="space-y-2 text-sm flex-1">
                           <div className="flex justify-between">
                             <span className="text-gray-500">Date</span>
-                            <span className="text-gray-900">{new Date(order.created_at).toLocaleDateString()}</span>
+                            <span className="text-gray-900">
+                              {new Date(order.created_at).toLocaleDateString()}
+                            </span>
                           </div>
+
                           <div className="flex justify-between">
                             <span className="text-gray-500">Items</span>
-                            <span className="text-gray-900">{order.order_items?.length || 0} items</span>
+                            <span className="text-gray-900">
+                              {order.order_items?.length || 0} items
+                            </span>
                           </div>
+
                           <div className="flex justify-between font-semibold border-t pt-2 mt-2">
                             <span className="text-gray-700">Total</span>
-                            <span className="text-[#d4a24c]">₱{Number(order.total_amount).toFixed(2)}</span>
+                            <span className="text-[#d4a24c]">
+                              ₱{Number(order.total_amount).toFixed(2)}
+                            </span>
                           </div>
                         </div>
 
-                        {canCancelOrder(order) && (
+                        {/* Actions */}
+                        <div className="flex flex-col gap-2 mt-4">
+
+                          {/* View Details */}
                           <Button
-                            variant="outline"
-                            size="sm"
+                            className="w-full bg-[#d4a24c] text-white hover:bg-[#c8953f]"
                             onClick={(e) => {
                               e.stopPropagation()
-                              handleCancelClick(order)
+                              setSelectedOrder(order)
                             }}
-                            disabled={cancellingOrderId === order.id}
-                            className="w-full mt-4 border-[#d4a24c] text-[#d4a24c] hover:bg-[#d4a24c]/10"
                           >
-                            {cancellingOrderId === order.id ? "Cancelling..." : "Cancel Order"}
+                            View Details
                           </Button>
-                        )}
+
+                          {/* Cancel Button */}
+                          {canCancelOrder(order) && (
+                            <Button
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleCancelClick(order)
+                              }}
+                              disabled={cancellingOrderId === order.id}
+                              className="w-full border-red-950 bg-transparent hover:bg-transparent text-red-800"
+                            >
+                              {cancellingOrderId === order.id
+                                ? "Cancelling..."
+                                : "Cancel Order"}
+                            </Button>
+                          )}
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
                 </div>
               )}
+
             </div>
           </div>
         </div>

@@ -43,6 +43,7 @@ const Checkout = () => {
   const [isLoadingUser, setIsLoadingUser] = useState(true)
   const [copiedGcash, setCopiedGcash] = useState(false)
   const [copiedBank, setCopiedBank] = useState(false)
+  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false)
 
   const [checkoutInfo, setCheckoutInfo] = useState<ExtendedCheckoutInfo>({
     name: "",
@@ -58,90 +59,86 @@ const Checkout = () => {
 
   useEffect(() => {
     const checkAuthAndFillForm = async () => {
-      const token = localStorage.getItem("auth_token")
-      const userData = localStorage.getItem("user_data")
+      setIsLoadingUser(true)
 
-      if (token && userData) {
-        try {
-          const response = await fetch("/api/orders?page=1&per_page=1", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          })
+      try {
+        const token = localStorage.getItem("auth_token")
+        const userData = localStorage.getItem("user_data")
 
-          if (response.ok) {
-            const parsedUserData = JSON.parse(userData)
-            setUserInfo(parsedUserData)
-
-            const addressesResponse = await fetch("/api/addresses", {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            })
-
-            if (addressesResponse.ok) {
-              const addressesData = await addressesResponse.json()
-              const addresses: Address[] = addressesData.addresses || []
-
-              const defaultAddress = addresses.find((addr) => addr.is_default)
-
-              if (defaultAddress) {
-                setCheckoutInfo((prev) => ({
-                  ...prev,
-                  name: parsedUserData.name || "",
-                  email: parsedUserData.email || "",
-                  phone: parsedUserData.phone || "",
-                  address: defaultAddress.street,
-                  city: defaultAddress.city,
-                  zipCode: defaultAddress.postal_code,
-                }))
-
-                toast({
-                  title: "Welcome back!",
-                  description: "Your default address has been loaded.",
-                })
-              } else {
-                setCheckoutInfo((prev) => ({
-                  ...prev,
-                  name: parsedUserData.name || "",
-                  email: parsedUserData.email || "",
-                  phone: parsedUserData.phone || "",
-                  address: parsedUserData.address || "",
-                  city: parsedUserData.city || "",
-                  zipCode: parsedUserData.zip_code || "",
-                }))
-
-                toast({
-                  title: "Welcome back!",
-                  description: "Your information has been automatically filled.",
-                })
-              }
-            } else {
-              setCheckoutInfo((prev) => ({
-                ...prev,
-                name: parsedUserData.name || "",
-                email: parsedUserData.email || "",
-                phone: parsedUserData.phone || "",
-                address: parsedUserData.address || "",
-                city: parsedUserData.city || "",
-                zipCode: parsedUserData.zip_code || "",
-              }))
-            }
-          } else {
-            localStorage.removeItem("auth_token")
-            localStorage.removeItem("user_data")
-          }
-        } catch (error) {
-          console.error("Error checking auth:", error)
-          localStorage.removeItem("auth_token")
-          localStorage.removeItem("user_data")
+        if (!token || !userData) {
+          setIsLoadingUser(false)
+          return
         }
+
+        const parsedUserData = JSON.parse(userData)
+        setUserInfo(parsedUserData)
+
+        // Load addresses
+        setIsLoadingAddresses(true)
+
+        const addressesResponse = await fetch("/api/addresses", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (addressesResponse.ok) {
+          const addressesData = await addressesResponse.json()
+          const addresses: Address[] = addressesData.addresses || []
+
+          const defaultAddress = addresses.find((addr) => addr.is_default)
+
+          if (defaultAddress) {
+            setCheckoutInfo((prev) => ({
+              ...prev,
+              name: parsedUserData.name || "",
+              email: parsedUserData.email || "",
+              phone: parsedUserData.phone || "",
+              address: defaultAddress.street,
+              city: defaultAddress.city,
+              zipCode: defaultAddress.postal_code,
+            }))
+
+            toast({
+              title: "Welcome back!",
+              description: "Your default address has been loaded.",
+            })
+          } else {
+            setCheckoutInfo((prev) => ({
+              ...prev,
+              name: parsedUserData.name || "",
+              email: parsedUserData.email || "",
+              phone: parsedUserData.phone || "",
+              address: parsedUserData.address || "",
+              city: parsedUserData.city || "",
+              zipCode: parsedUserData.zip_code || "",
+            }))
+          }
+        } else {
+          setCheckoutInfo((prev) => ({
+            ...prev,
+            name: parsedUserData.name || "",
+            email: parsedUserData.email || "",
+            phone: parsedUserData.phone || "",
+            address: parsedUserData.address || "",
+            city: parsedUserData.city || "",
+            zipCode: parsedUserData.zip_code || "",
+          }))
+        }
+
+      } catch (error) {
+        console.error("Error checking auth:", error)
+        localStorage.removeItem("auth_token")
+        localStorage.removeItem("user_data")
+      } finally {
+        setIsLoadingAddresses(false)
+        setIsLoadingUser(false)
       }
-      setIsLoadingUser(false)
     }
 
     checkAuthAndFillForm()
   }, [])
+
 
   useEffect(() => {
     if (total > 1000 && checkoutInfo.paymentMethod === "cash") {
@@ -317,12 +314,120 @@ const Checkout = () => {
     return null
   }
 
+  const handlePlaceOrder = async () => {
+    if (!checkoutInfo.paymentMethod) {
+      toast({
+        title: "Payment method required",
+        description: "Please select a payment method",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (cart.length === 0) {
+      toast({
+        title: "Cart is empty",
+        description: "Please add items before placing an order",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsProcessing(true)
+
+    try {
+      const orderData = {
+        items: cart.map((item) => ({
+          name: item.name,
+          description: item.description || "",
+          price: item.price,
+          quantity: item.quantity,
+          category: item.category || "",
+          is_spicy: Boolean(item.isSpicy),
+          is_vegetarian: Boolean(item.isVegetarian),
+          image_url: typeof item.image === "string" ? item.image : "",
+        })),
+        total,
+        payment_method: checkoutInfo.paymentMethod,
+        customer_name: checkoutInfo.name,
+        customer_email: checkoutInfo.email,
+        customer_phone: checkoutInfo.phone,
+        address: checkoutInfo.address,
+        city: checkoutInfo.city,
+        zip_code: checkoutInfo.zipCode,
+        notes: checkoutInfo.notes,
+      }
+
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        },
+        body: JSON.stringify(orderData),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to place order")
+      }
+
+      // ✅ Clear cart
+      clearCart()
+
+      // ✅ Show success screen
+      setIsOrderComplete(true)
+
+      toast({
+        title: "Order placed successfully",
+        description: "Your order has been confirmed",
+      })
+
+    } catch (error) {
+      console.error(error)
+      toast({
+        title: "Order failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  if (isOrderComplete) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0b1d26] text-white px-4">
+        <div className="text-center max-w-md bg-[#0f2a33] p-10 rounded-2xl border border-[#d4a24c]/30 shadow-xl">
+
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#d4a24c] flex items-center justify-center">
+            <Check className="w-8 h-8 text-black" />
+          </div>
+
+          <h1 className="text-2xl font-bold mb-3">
+            Order Successful 🎉
+          </h1>
+
+          <p className="text-white/70 mb-6">
+            Your order has been placed successfully. A confirmation email has been sent to your inbox.
+          </p>
+
+          <Button asChild className="bg-[#d4a24c] text-black rounded-full px-6">
+            <Link href="/orders">View My Orders</Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   if (isLoadingUser) {
     return (
       <div className="min-h-screen py-24 bg-[#0b1d26] text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-[#ff6b6b] border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white/70">Loading checkout...</p>
+        <div className="text-center space-y-4">
+          <div className="w-10 h-10 border-2 border-[#d4a24c] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-white/70">Preparing checkout...</p>
+          <p className="text-xs text-white/40">
+            Loading your account and address
+          </p>
         </div>
       </div>
     )
@@ -380,7 +485,7 @@ const Checkout = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card className="shadow-2xl p-0 bg-[#0b1d26]/70 backdrop-blur-sm border-white/30 hover:border-white/50 rounded-2xl overflow-hidden">
-              <div className="border-b border-white/20 bg-blue-950/30 text-white px-6 py-4">
+              <div className="border-b border-white/20 bg-[#d4a24c] text-[#0b1d26]/90 px-6 py-4">
                 <h2 className="text-2xl font-bold">Delivery & Payment Information</h2>
               </div>
               <CardContent>
@@ -639,11 +744,11 @@ const Checkout = () => {
                   </div>
 
                   <Button
-                    type="submit"
+                    onClick={handlePlaceOrder}
                     disabled={isProcessing}
-                    className="mb-4 w-full bg-white hover:bg-white/90 text-[#0b1d26] py-6 tracking-wider shadow-lg hover:shadow-xl transition-all duration-300 font-bold"
+                    className="mb-4 w-full bg-[#d4a24c] text-black rounded-full py-5 text-lg hover:bg-[#c8953f] transition-all"
                   >
-                    {isProcessing ? "Processing..." : `Place Order • ₱${formatPrice(total)}`}
+                    {isProcessing ? "Processing..." : "Place Order"}
                   </Button>
                 </form>
               </CardContent>
@@ -651,7 +756,7 @@ const Checkout = () => {
 
             {/* Order Summary */}
             <Card className="h-fit sticky top-24 shadow-2xl p-0 bg-[#0b1d26]/70 backdrop-blur-sm border-white/30 hover:border-white/50 rounded-2xl overflow-hidden">
-              <div className="border-b border-white/20 bg-blue-950/30 text-white px-6 py-4">
+              <div className="border-b border-white/20 bg-[#d4a24c] text-[#0b1d26]/90 px-6 py-4">
                 <h2 className="text-2xl font-bold flex items-center gap-2">
                   <Package className="w-6 h-6" />
                   Order Summary

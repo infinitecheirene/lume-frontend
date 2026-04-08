@@ -97,7 +97,7 @@ export default function Cart() {
               <Button
                 variant="outline"
                 onClick={handleClear}
-                className="border-white/30 text-white hover:bg-white/10"
+                className="bg-[#d4a24c] hover:bg-[#d4a24c]/60 text-gray-900 border-none"
               >
                 Clear
               </Button>
@@ -132,7 +132,7 @@ export default function Cart() {
                         {/* Top */}
                         <div className="flex justify-between">
                           <div>
-                            <h3 className="font-semibold">{item.name}</h3>
+                            <h3 className="font-bold text-gray-200 text-2xl">{item.name}</h3>
                             <p className="text-sm text-white/60 line-clamp-2">
                               {item.description}
                             </p>
@@ -149,16 +149,16 @@ export default function Cart() {
                         </div>
 
                         {/* Bottom */}
-                        <div className="flex justify-between items-center mt-3">
+                        <div className="flex justify-between items-center">
 
-                          <Badge className="bg-white/10 border-white/20">
+                          <Badge className="inline-block text-sm px-3 py-1 rounded-full bg-[#d4a24c]/20 text-[#d4a24c]">
                             {item.category}
                           </Badge>
 
                           <div className="flex items-center gap-4">
 
                             {/* Qty */}
-                            <div className="flex items-center bg-white/10 rounded-full px-2">
+                            <div className="flex items-center text-white bg-white/10 rounded-full px-2">
                               <button
                                 onClick={() =>
                                   handleQuantityChange(
@@ -168,7 +168,7 @@ export default function Cart() {
                                 }
                                 className="p-1"
                               >
-                                <Minus size={14} />
+                                <Minus size={22} />
                               </button>
 
                               <span className="px-2">
@@ -184,16 +184,16 @@ export default function Cart() {
                                 }
                                 className="p-1"
                               >
-                                <Plus size={14} />
+                                <Plus size={22} />
                               </button>
                             </div>
 
                             {/* Price */}
                             <div className="text-right">
-                              <p className="text-xs text-white/60">
+                              <p className="text-md text-gray-400">
                                 ₱{formatPrice(price)}
                               </p>
-                              <p className="font-semibold">
+                              <p className="border-t border-white/20 font-bold text-xl text-gray-200">
                                 ₱{formatPrice(subtotal)}
                               </p>
                             </div>
@@ -213,33 +213,51 @@ export default function Cart() {
             <Card className="sticky top-24 bg-[#0f2a33] border border-[#d4a24c]/30 rounded-2xl">
               <CardContent className="p-6 space-y-4">
 
-                <h2 className="text-xl font-semibold">Order Summary</h2>
+                <h2 className="text-2xl font-bold text-[#d4a24c]">
+                  Order Summary
+                </h2>
 
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/60">Subtotal</span>
-                  <span>₱{formatPrice(total)}</span>
+                {/* Items Summary */}
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                  {items.map((item) => {
+                    const price = Number(item.price) || 0
+                    const subtotal = price * item.quantity
+
+                    return (
+                      <div
+                        key={item.id}
+                        className="grid grid-cols-3 text-md text-white/70"
+                      >
+                        <span>
+                          {item.name}
+                        </span>
+                        <span className="flex justify-center items-center">
+                          x{item.quantity}
+                        </span>
+                        <span className="flex justify-end items-end">
+                          ₱{formatPrice(subtotal)}
+                        </span>
+                      </div>
+                    )
+                  })}
                 </div>
 
-                <div className="flex justify-between font-semibold text-lg">
+                {/* Divider */}
+                <div className="h-[1px] bg-white/10" />
+
+                {/* Total */}
+                <div className="flex justify-between font-semibold text-lg text-white">
                   <span>Total</span>
                   <span>₱{formatPrice(total)}</span>
                 </div>
 
+                {/* Buttons */}
                 <Button
                   asChild
-                  className="w-full bg-[#d4a24c] text-black rounded-full"
+                  className="w-full bg-[#d4a24c] hover:bg-[#d4a24c]/80 text-black rounded-full"
                 >
                   <Link href="/checkout">Checkout</Link>
                 </Button>
-
-                <Button
-                  asChild
-                  variant="outline"
-                  className="w-full border-white/20 text-white"
-                >
-                  <Link href="/menu">Continue Shopping</Link>
-                </Button>
-
               </CardContent>
             </Card>
           </div>

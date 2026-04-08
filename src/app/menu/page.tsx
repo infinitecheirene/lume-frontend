@@ -20,6 +20,7 @@ interface Product {
   category: string
   price: number
   image?: string | null
+  best_seller?: boolean
 }
 
 export default function MenuPage() {
@@ -80,7 +81,6 @@ export default function MenuPage() {
       .includes(item.category.toLowerCase())
   )
 
-
   const groupedProducts = filteredProducts.reduce((acc, item) => {
     if (!acc[item.category]) acc[item.category] = []
     acc[item.category].push(item)
@@ -96,11 +96,7 @@ export default function MenuPage() {
     })
   }
 
-  if (loading) {
-    return (
-      <LumeLoaderMinimal />
-    )
-  }
+  if (loading) return <LumeLoaderMinimal />
 
   return (
     <section className="py-24 bg-[#0b1d26] text-white">
@@ -128,25 +124,25 @@ export default function MenuPage() {
               onClick={() =>
                 setActiveMainCategory(cat as keyof typeof mainCategoryMap)
               }
-              className={`px-6 py-2.5 rounded-full text-sm transition ${activeMainCategory === cat
-                ? "bg-[#d4a24c] text-black font-semibold"
-                : "bg-[#132e3b] text-white/70 hover:bg-[#193847] hover:text-white"
-                }`}
+              className={`px-6 py-2.5 rounded-full text-sm transition ${
+                activeMainCategory === cat
+                  ? "bg-[#d4a24c] text-black font-semibold"
+                  : "bg-[#132e3b] text-white/70 hover:bg-[#193847] hover:text-white"
+              }`}
             >
               {cat}
             </button>
           ))}
         </div>
 
-        {/* ✅ CONTENT */}
-        {!loading && Object.entries(groupedProducts).map(([category, items]) => (
+        {/* CONTENT */}
+        {Object.entries(groupedProducts).map(([category, items]) => (
           <motion.div
             key={category}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-12"
           >
-
             <div className="grid md:grid-cols-2 gap-x-16 gap-y-6">
               {items.map((item) => (
                 <div
@@ -165,9 +161,16 @@ export default function MenuPage() {
 
                   {/* Info */}
                   <div className="flex-1">
-                    <h4 className={`${playfair.className} text-lg font-semibold`}>
+                    <h4 className={`${playfair.className} text-lg font-semibold flex items-center gap-2`}>
                       {item.name}
+
+                      {item.best_seller && (
+                        <span className="text-[12px] px-2 py-0.5 rounded-full bg-[#d4a24c]/20 text-[#d4a24c]">
+                          Best Seller
+                        </span>
+                      )}
                     </h4>
+
                     <p className="text-sm text-white/60 mt-1">
                       {item.description}
                     </p>
@@ -192,10 +195,9 @@ export default function MenuPage() {
           </motion.div>
         ))}
 
-        {/* ✅ EMPTY STATE (REDESIGNED) */}
-        {!loading && filteredProducts.length === 0 && (
+        {/* EMPTY STATE */}
+        {filteredProducts.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-
             <div className="w-20 h-20 rounded-full bg-[#d4a24c]/10 flex items-center justify-center mb-6">
               <span className="text-3xl">🍽️</span>
             </div>
