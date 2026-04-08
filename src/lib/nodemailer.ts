@@ -1,54 +1,49 @@
 // ===== FINAL lib/nodemailer.ts =====
-// Includes logo.png + 🍜 Izakaya Tori Ichizu in header
-// All text centered for clean, consistent layout
+// Lumè Bean & Bar themed email template
 
 import nodemailer from 'nodemailer'
 
-// Create transporter - UPDATED to match your .env names
 export const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: process.env.SMTP_SECURE === 'true', // false for 587, true for 465
+  secure: process.env.SMTP_SECURE === 'true',
   auth: {
-    user: process.env.SMTP_USER,     // matches SMTP_USER in your .env
-    pass: process.env.SMTP_PASS,     // matches SMTP_PASS in your .env
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
   debug: false,
   logger: false,
 })
 
-// Verify transporter configuration
 export async function verifyEmailConfig() {
   try {
     await transporter.verify()
     return true
-  } catch (error) {
+  } catch {
     return false
   }
 }
 
-// Generate verification token
 export function generateVerificationToken(): string {
   return Math.random().toString(36).substring(2) + Date.now().toString(36)
 }
 
-// Send verification email
 export async function sendVerificationEmail(
   email: string,
   name: string,
   verificationToken: string
 ) {
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    throw new Error('SMTP credentials are not configured. Please check SMTP_USER and SMTP_PASS in .env.local')
+    throw new Error('SMTP credentials are not configured.')
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   const verificationUrl = `${appUrl}/verify-email?token=${verificationToken}`
 
   const mailOptions = {
-    from: process.env.SMTP_FROM || `"Izakaya Tori Ichizu" <${process.env.SMTP_USER}>`,
+    from: process.env.SMTP_FROM || `"Lumè Bean & Bar" <${process.env.SMTP_USER}>`,
     to: email,
-    subject: 'Verify Your Email - Izakaya Tori Ichizu',
+    subject: 'Verify Your Email - Lumè Bean & Bar',
     html: `
       <!DOCTYPE html>
       <html>
@@ -56,80 +51,80 @@ export async function sendVerificationEmail(
           <style>
             body {
               font-family: Arial, sans-serif;
-              line-height: 1.6;
-              color: #333;
-              max-width: 600px;
-              margin: 0 auto;
-              padding: 20px;
-              background: #f7f7f7;
+              background: #0b1d26;
+              margin: 0;
+              padding: 0;
               text-align: center;
+              color: #ffffff;
             }
             .container {
-              background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
-              border-radius: 10px;
+              max-width: 600px;
+              margin: 40px auto;
+              background: #0b1d26;
+              border-radius: 12px;
               padding: 30px;
-              text-align: center;
             }
             .logo img {
-              width: 120px;
-              height: auto;
+              width: 100px;
               margin-bottom: 10px;
             }
             .brand {
               font-size: 26px;
               font-weight: bold;
-              color: white;
+              letter-spacing: 1px;
               margin-bottom: 20px;
+              color: #e5a834;
+              font-family: 'Playfair Display', serif;
             }
             .content {
-              background: white;
-              border-radius: 8px;
+              background: #ffffff;
+              color: #333;
+              border-radius: 10px;
               padding: 30px;
-              margin-top: 20px;
-              text-align: center;
             }
-            .content h2 {
-              color: #ff6b35;
+            .content h1 {
+              color: #6b4f4f;
               margin-bottom: 10px;
-            }
-            .content p {
-              margin: 10px 0;
             }
             .button {
               display: inline-block;
-              padding: 15px 40px;
-              background: linear-gradient(135deg, #f7931e 0%, #ff6b35 100%);
-              color: white;
+              padding: 14px 32px;
+              margin-top: 20px;
+              background: #0b1d26;
+              color: #e5a834;
               text-decoration: none;
-              border-radius: 5px;
+              border-radius: 6px;
               font-weight: bold;
-              margin: 20px auto;
             }
             .footer {
               margin-top: 20px;
               font-size: 12px;
-              color: #666;
-              text-align: center;
+              color: #777;
             }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="logo">
-              <img src="${appUrl}/logonew.png" alt="Izakaya Tori Ichizu Logo" />
+              <img src="${appUrl}/logo.jpg" alt="Lumè Bean & Bar Logo" />
             </div>
-            <div class="brand">🍜 Izakaya Tori Ichizu</div>
+
+            <div class="brand">Lumè Bean & Bar</div>
+
             <div class="content">
-              <h2>Welcome, ${name}!</h2>
-              <p>Thank you for registering with <strong>Izakaya Tori Ichizu</strong>.</p>
-              <p>Please verify your email address by clicking the button below:</p>
-              <a href="${verificationUrl}" class="button">Verify Email Address</a>
-              <p style="margin-top: 30px; font-size: 14px; color: #666;">
-                Or copy and paste this link into your browser:<br>
+              <h1>Welcome, ${name}!</h1>
+              <p>Thank you for joining <strong>Lumè Bean & Bar</strong>.</p>
+              <p>Please verify your email to continue:</p>
+
+              <a href="${verificationUrl}" class="button">Verify Email</a>
+
+              <p style="margin-top: 25px; font-size: 13px; color: #666;">
+                Or copy and paste this link:<br>
                 <span style="word-break: break-all;">${verificationUrl}</span>
               </p>
+
               <div class="footer">
-                <p>If you didn't create an account, please ignore this email.</p>
+                <p>If you didn’t sign up, you can ignore this email.</p>
                 <p>This link will expire in 24 hours.</p>
               </div>
             </div>
@@ -138,14 +133,14 @@ export async function sendVerificationEmail(
       </html>
     `,
     text: `
-      Welcome to Izakaya Tori Ichizu, ${name}!
+      Welcome to Lumè Bean & Bar, ${name}!
 
-      Thank you for registering. Please verify your email address by clicking the link below:
+      Please verify your email:
 
       ${verificationUrl}
 
-      If you didn't create an account, please ignore this email.
-      This link will expire in 24 hours.
+      If you didn't create an account, ignore this email.
+      This link expires in 24 hours.
     `,
   }
 
@@ -155,13 +150,13 @@ export async function sendVerificationEmail(
   } catch (error) {
     if (error instanceof Error) {
       if (error.message.includes('Invalid login')) {
-        throw new Error('Invalid email credentials. Please check SMTP_USER and SMTP_PASS')
+        throw new Error('Invalid email credentials.')
       }
       if (error.message.includes('ECONNREFUSED')) {
-        throw new Error('Cannot connect to email server. Please check SMTP_HOST and SMTP_PORT')
+        throw new Error('Cannot connect to email server.')
       }
       if (error.message.includes('EAUTH')) {
-        throw new Error('Authentication failed. Please verify your Gmail App Password')
+        throw new Error('Authentication failed. Check your Gmail App Password.')
       }
     }
     throw error
