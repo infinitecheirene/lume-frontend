@@ -1,6 +1,12 @@
 "use client"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 export default function LumeLoaderMinimal() {
   const [loading, setLoading] = useState(true)
@@ -48,14 +54,14 @@ export default function LumeLoaderMinimal() {
           </div>
         </div>
         {/* Brand */}
-        <h1 className="text-3xl md:text-4xl font-semibold text-white tracking-wide">
+        <h1 className={`${playfair.className} text-4xl font-semibold text-white tracking-wide`}>
           Lumè
         </h1>
-        <p className="text-[#d4a24c] text-xs tracking-[0.4em] mt-1">
+        <p className="text-[#d4a24c] text-lg  tracking-[0.4em] mt-1">
           BEAN AND BAR
         </p>
         {/* Loading text */}
-        <p className="text-white/50 text-xs mt-4 tracking-widest">
+        <p className="text-white/50 text-md mt-4 tracking-widest">
           Brewing your experience...
         </p>
       </div>

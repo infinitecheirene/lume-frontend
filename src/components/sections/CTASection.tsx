@@ -36,7 +36,7 @@ export default function CTASection() {
           </p>
 
           <Link
-            href="/reserve"
+            href="/reservations"
             className="inline-block rounded-full bg-[#d4a24c] px-10 py-4 font-semibold text-black hover:brightness-110 transition text-lg"
           >
             Book Your Table

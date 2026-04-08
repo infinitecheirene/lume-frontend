@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { toast } from "@/hooks/use-toast"
-import { CheckCircle, AlertCircle, ChevronDown } from "lucide-react"
+import { CheckCircle, AlertCircle, ChevronDown, Pi } from "lucide-react"
 import { Playfair_Display } from "next/font/google"
+import { MapPin, Phone, Mail, Clock } from "lucide-react"
 import LumeLoaderMinimal from "@/components/oppa-loader"
 
 const playfair = Playfair_Display({
@@ -137,42 +138,13 @@ export default function Contact() {
             </h1>
           </motion.div>
 
-          <div className="grid lg:grid-cols-2 gap-16 max-w-5xl mx-auto">
-            {/* Info */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="space-y-8"
-            >
-              <div>
-                <h3 className={`${playfair.className} font-heading text-2xl font-semibold mb-2`}>Visit Us</h3>
-                <p className="text-muted-foreground text-md">42 Crescent Lane, Downtown</p>
-              </div>
-              <div>
-                <h3 className={`${playfair.className} font-heading text-2xl font-semibold mb-2`}>Call Us</h3>
-                <p className="text-muted-foreground text-md">(555) 234-5678</p>
-              </div>
-              <div>
-                <h3 className={`${playfair.className} font-heading text-2xl font-semibold mb-2`}>Email Us</h3>
-                <p className="text-muted-foreground text-md">hello@crescentcoffee.com</p>
-              </div>
-              <div>
-                <h3 className={`${playfair.className} font-heading text-2xl font-semibold mb-2`}>Hours</h3>
-                <div className="text-muted-foreground space-y-1 text-md">
-                  <p>Mon–Fri: 7:00 AM – 12:00 AM</p>
-                  <p>Saturday: 8:00 AM – 1:00 AM</p>
-                  <p>Sunday: 8:00 AM – 11:00 PM</p>
-                </div>
-              </div>
-            </motion.div>
-
+          <div className="max-w-5xl mx-auto">
             {/* Form */}
             <motion.form
               onSubmit={handleSubmit}
               className="bg-[#0f2a33] rounded-2xl p-10 border border-[#a47015]/60 transition shadow-[0_0_25px_rgba(212,162,76,0.25)] backdrop-blur"
             >
-              <div className="grid gap-6">
+              <div className="grid grid-cols-2 gap-6 my-2">
 
                 {/* Name */}
                 <div>
@@ -203,6 +175,39 @@ export default function Contact() {
                   />
                 </div>
 
+                {/* Phone */}
+                <div>
+                  <label className="text-sm text-white/60 mb-2 block">
+                    Phone (optional)
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange("phone", e.target.value)}
+                    className="w-full rounded-lg bg-[#0b1d26] border border-white/10 px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#d4a24c]/40"
+                    placeholder="Your phone number"
+                  />
+                </div>
+
+                {/* Inquiry Type */}
+                <div>
+                  <label className="text-sm text-white/60 mb-2 block">
+                    Inquiry Type
+                  </label>
+                  <select
+                    value={formData.inquiryType}
+                    onChange={(e) => handleInputChange("inquiryType", e.target.value)}
+                    className="w-full rounded-lg bg-[#0b1d26] border border-white/10 p-3 text-gray-200 focus:outline-none focus:ring-2 focus:ring-[#d4a24c]/40"
+                  >
+                    <option value="general">General Inquiry</option>
+                    <option value="reservation">Reservation</option>
+                    <option value="complaint">Complaint</option>
+                    <option value="suggestion">Suggestion</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid gap-6 my-2">
                 {/* Message */}
                 <div>
                   <label className="text-sm text-white/60 mb-2 block">
@@ -228,7 +233,27 @@ export default function Contact() {
                 </button>
               </div>
             </motion.form>
+          </div>
 
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-5 mt-20">
+            <div className="text-center">
+              <Phone className="mx-auto mb-3 text-[#d4a24c]" />
+              <h2 className={`${playfair.className} text-2xl font-bold`}>Call Us</h2>
+              <p className="text-white/60"> Mon-Sat from 9am - 10pm </p>
+              <p className="text-white/60 font-bold"> (555) 234-5678 </p>
+            </div>
+            <div className="text-center border-x-2 border-white/30">
+              <MapPin className="mx-auto mb-3 text-[#d4a24c]" />
+              <h2 className={`${playfair.className} text-2xl font-bold`}>Our Location</h2>
+              <p className="text-white/60"> Come say hello!</p>
+              <p className="text-white/60 font-bold"> (555) 234-5678 </p>
+            </div>
+            <div className="text-center">
+              <Mail className="mx-auto mb-3 text-[#d4a24c]" />
+              <h2 className={`${playfair.className} text-2xl font-bold`}>Email Us</h2>
+              <p className="text-white/60"> Drop us an email anytime! </p>
+              <p className="text-white/60 font-bold"> info@lumebeanandbar.com </p>
+            </div>
           </div>
         </div>
       </section>

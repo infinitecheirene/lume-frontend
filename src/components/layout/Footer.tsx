@@ -5,6 +5,12 @@ import { usePathname } from "next/navigation"
 import Image from "next/image"
 import { Instagram, Facebook, Twitter } from "lucide-react"
 import logo from "@/assets/logo.jpg"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 const Footer = () => {
   const pathname = usePathname()
@@ -29,7 +35,7 @@ const Footer = () => {
                 height={42}
                 className="rounded-full object-cover"
               />
-              <span className="text-xl font-semibold text-[#d4a24c]">
+              <span className={`${playfair.className} text-xl font-semibold text-[#d4a24c]`}>
                 Lumè Bean & Bar
               </span>
             </Link>

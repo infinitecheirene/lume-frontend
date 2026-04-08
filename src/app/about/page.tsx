@@ -61,16 +61,18 @@ const About = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-[#0f2a33]/70 via-[#0f2a33]/60 to-[#0f2a33]" />
 
         {/* Title */}
-        <div className={`${playfair.className} relative z-10 text-center px-4`}>
+        <div className="relative z-10 text-center px-4">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="font-heading text-5xl md:text-7xl font-bold"
+            className="text-center font-heading"
           >
-            Our{" "}
-            <span className="text-[#d4a24c] italic">
-              Story
-            </span>
+            <p className=" text-[#d4a24c] tracking-[0.3em] uppercase text-sm mb-3">
+              Lumè Bean & Bar
+            </p>
+            <h1 className={`${playfair.className} font-heading text-6xl font-bold`}>
+              Our <span className=" text-[#d4a24c] italic">Story</span>
+            </h1>
           </motion.h1>
         </div>
       </section>
@@ -107,7 +109,7 @@ const About = () => {
       </section>
 
       {/* Values */}
-      <section className="py-24 bg-[#0c222b]">
+      <section className="py-24 bg-[#0b1d26]">
         <div className="max-w-5xl mx-auto px-6">
 
           <motion.div
@@ -131,9 +133,9 @@ const About = () => {
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.15 }}
-                className="bg-[#0c222b] rounded-2xl p-8 border border-[#a47015]/60 text-center hover:border-[#d4a24c]/40 transition shadow-[0_0_20px_rgba(212,162,76,0.35)]"
+                className="bg-[#0c222b]/10 rounded-2xl p-8 border border-[#a47015]/60 text-center hover:border-[#d4a24c]/40 transition shadow-[0_0_20px_rgba(212,162,76,0.35)]"
               >
-                <h3 className={`${playfair.className} font-heading text-xl font-semibold mb-3`}>
+                <h3 className={`${playfair.className} font-heading text-2xl font-semibold mb-3`}>
                   {v.title}
                 </h3>
 
