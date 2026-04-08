@@ -12,6 +12,17 @@ import { Trash2, Edit2, Plus, X, Search, Underline } from "lucide-react"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Label } from "@/components/ui/label"
 
 interface BlogPost {
   id: number
@@ -31,6 +42,8 @@ export default function BlogPostsAdmin() {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [search, setSearch] = useState("")
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState<number | null>(null)
 
   const [isDesktop, setIsDesktop] = useState(false)
   useEffect(() => {
@@ -114,10 +127,14 @@ export default function BlogPostsAdmin() {
     setIsDialogOpen(true)
   }
 
-  async function handleDelete(id: number) {
-    if (!confirm("Delete this post?")) return
-    await fetch(`/api/blog-posts/${id}`, { method: "DELETE" })
+  async function handleDelete() {
+    if (!deleteId) return
+
+    await fetch(`/api/blog-posts/${deleteId}`, { method: "DELETE" })
     fetchPosts()
+
+    setDeleteOpen(false)
+    setDeleteId(null)
   }
 
   const getImageUrl = (imagePath?: string): string => {
@@ -151,7 +168,7 @@ export default function BlogPostsAdmin() {
 
   return (
     <SidebarProvider defaultOpen={!isDesktop}>
-      <div className="flex min-h-screen w-full bg-red-50">
+      <div className="flex min-h-screen w-full bg-yellow-50">
         <AppSidebar />
 
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
@@ -168,7 +185,7 @@ export default function BlogPostsAdmin() {
               {/* Header */}
               <div className="flex flex-col md:flex-row justify-between gap-4">
                 <div>
-                  <h1 className="text-3xl font-bold">Blog Management</h1>
+                  <h1 className="text-3xl text-black font-bold">Blog Management</h1>
                   <p className="text-gray-600">Manage restaurant&apos;s kitchen blog posts</p>
                 </div>
 
@@ -193,38 +210,66 @@ export default function BlogPostsAdmin() {
                       </Button>
                     </DialogTrigger>
 
-                    <DialogContent>
+                    <DialogContent className="text-black">
                       <DialogHeader>
                         <DialogTitle>{editingId ? "Edit Post" : "Create Post"}</DialogTitle>
                       </DialogHeader>
                       <form onSubmit={handleSubmit} className="space-y-4">
-                        <Input
-                          placeholder="Title"
-                          value={formData.title}
-                          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                          required
-                        />
-                        <Input
-                          placeholder="Author"
-                          value={formData.author}
-                          onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                          required
-                        />
-                        <Textarea
-                          placeholder="Excerpt"
-                          value={formData.excerpt}
-                          onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                          rows={3}
-                          required
-                        />
-                        <Textarea
-                          placeholder="Content"
-                          value={formData.content}
-                          onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                          rows={6}
-                          required
-                        />
-                        <Input type="file" accept="image/*" onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] || null })} />
+                        <div className="space-y-2">
+                          <Label htmlFor="title">Title</Label>
+                          <Input
+                            id="title"
+                            placeholder="Enter title"
+                            value={formData.title}
+                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="author">Author</Label>
+                          <Input
+                            id="author"
+                            placeholder="Enter author"
+                            value={formData.author}
+                            onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="excerpt">Excerpt</Label>
+                          <Textarea
+                            id="excerpt"
+                            placeholder="Enter excerpt"
+                            value={formData.excerpt}
+                            onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                            rows={3}
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="content">Content</Label>
+                          <Textarea
+                            id="content"
+                            placeholder="Enter content"
+                            value={formData.content}
+                            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                            rows={6}
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="image">Upload Image</Label>
+                          <Input
+                            id="image"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] || null })}
+                          />
+                        </div>
                       </form>
                       <DialogFooter>
                         <Button type="button" onClick={handleSubmit}>
@@ -237,12 +282,12 @@ export default function BlogPostsAdmin() {
                   {/* Search Bar */}
                   <div className="flex items-center gap-3">
                     <div className="relative w-full">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-800" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-yellow-800" />
                       <Input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search blog post..."
-                        className="pl-9 bg-gray-100"
+                        className="pl-9 bg-gray-100 text-black"
                       />
                     </div>
                   </div>
@@ -250,39 +295,73 @@ export default function BlogPostsAdmin() {
               </div>
 
               {/* Posts List */}
-              <div className="space-y-4 grid grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-                {posts.map((post) => (
-                  <Card key={post.id} className="overflow-hidden gap-0 p-0">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+                {filteredPosts.map((post) => (
+                  <Card key={post.id} className="overflow-hidden p-0 flex flex-col h-[360px]">
                     <Image
                       src={getImageUrl(post.image_url) || "/placeholder.png"}
                       alt={post.title}
                       width={400}
                       height={200}
-                      className="w-full h-48 object-cover"
+                      className="w-full h-48 object-cover flex-shrink-0"
                     />
-                    <CardContent className="p-4 flex flex-col gap-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-lg font-bold">{post.title}</h3>
-                          <p className="text-sm text-gray-500">
-                            Author: <u>{post.author}</u>
-                          </p>
+
+                    <CardContent className="p-4 flex flex-col gap-3 flex-1">
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="min-w-0">
+                          <h3 className="text-lg font-bold truncate">{post.title}</h3>
+                          <p className="text-sm text-gray-500">Author: {post.author}</p>
                         </div>
-                        <div className="flex gap-2">
+
+                        <div className="flex gap-2 flex-shrink-0">
                           <Button size="sm" variant="outline" onClick={() => handleEdit(post)}>
                             <Edit2 className="w-4 h-4" />
                           </Button>
-                          <Button size="sm" variant="destructive" onClick={() => handleDelete(post.id)}>
+
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              setDeleteId(post.id)
+                              setDeleteOpen(true)
+                            }}
+                          >
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
-                      <p className="text-md text-gray-700">{post.excerpt}</p>
+
+                      <p className="text-md text-gray-700 line-clamp-2">{post.excerpt}</p>
                     </CardContent>
                   </Card>
                 ))}
               </div>
             </div>
+
+            {/* delete dialog */}
+            <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+              <AlertDialogContent className="text-black">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete this post?</AlertDialogTitle>
+                  <AlertDialogDescription>This action cannot be undone. This will permanently delete the post.</AlertDialogDescription>
+                </AlertDialogHeader>
+
+                <AlertDialogFooter>
+                  <AlertDialogCancel
+                    onClick={() => {
+                      setDeleteId(null)
+                      setDeleteOpen(false)
+                    }}
+                  >
+                    Cancel
+                  </AlertDialogCancel>
+
+                  <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={handleDelete}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </main>
         </div>
       </div>
