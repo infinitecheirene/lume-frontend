@@ -130,7 +130,7 @@ export default function Header() {
               href="/cart"
               className="relative text-white/70 hover:text-[#d4a24c]"
             >
-              <ShoppingCart size={20} />
+              <ShoppingCart size={22} />
 
               {itemCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-[#d4a24c] text-black text-xs font-bold px-1.5 rounded-full min-w-[18px] text-center">
@@ -142,12 +142,12 @@ export default function Header() {
 
           {/* USER MENU */}
           {user ? (
-            <div ref={dropdownRef} className="relative">
+            <div ref={dropdownRef} className="relative -mb-2">
               <button
                 onClick={() => setUserMenuOpen((p) => !p)}
                 className="text-white/70 hover:text-[#d4a24c]"
               >
-                <User size={20} />
+                <User size={22} />
               </button>
 
               {userMenuOpen && (

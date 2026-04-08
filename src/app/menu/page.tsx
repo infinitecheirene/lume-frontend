@@ -19,7 +19,7 @@ interface Product {
   description: string
   category: string
   price: number
-  image: string
+  image?: string | null
 }
 
 export default function MenuPage() {
@@ -31,17 +31,9 @@ export default function MenuPage() {
   const { addItem } = useCartStore()
 
   const mainCategoryMap = {
-    Kitchen: [
-      "Appetizers",
-      "Main Course",
-      "Desserts",
-      "Noodles",
-      "Rice Dishes",
-      "Soups",
-      "Add-ons",
-    ],
-    Coffee: ["Coffee"],
-    Bar: ["Beverages"],
+    Kitchen: ["food"],
+    Coffee: ["coffee"],
+    Bar: ["bar"],
   }
 
   const fetchProducts = async () => {
@@ -71,7 +63,7 @@ export default function MenuPage() {
     fetchProducts()
   }, [])
 
-  const getImageUrl = (imagePath: string) => {
+  const getImageUrl = (imagePath?: string | null) => {
     if (!imagePath) return "/placeholder-food.jpg"
 
     if (imagePath.startsWith("http")) return imagePath
@@ -83,8 +75,11 @@ export default function MenuPage() {
   }
 
   const filteredProducts = products.filter((item) =>
-    mainCategoryMap[activeMainCategory].includes(item.category)
+    mainCategoryMap[activeMainCategory]
+      .map((c) => c.toLowerCase())
+      .includes(item.category.toLowerCase())
   )
+
 
   const groupedProducts = filteredProducts.reduce((acc, item) => {
     if (!acc[item.category]) acc[item.category] = []
@@ -134,39 +129,14 @@ export default function MenuPage() {
                 setActiveMainCategory(cat as keyof typeof mainCategoryMap)
               }
               className={`px-6 py-2.5 rounded-full text-sm transition ${activeMainCategory === cat
-                  ? "bg-[#d4a24c] text-black font-semibold"
-                  : "bg-[#132e3b] text-white/70 hover:bg-[#193847] hover:text-white"
+                ? "bg-[#d4a24c] text-black font-semibold"
+                : "bg-[#132e3b] text-white/70 hover:bg-[#193847] hover:text-white"
                 }`}
             >
               {cat}
             </button>
           ))}
         </div>
-
-        {/* ✅ LOADING SKELETON */}
-        {loading && (
-          <div className="grid md:grid-cols-2 gap-x-16 gap-y-6">
-            {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className="py-6 border-b border-white/10 flex gap-6 animate-pulse"
-              >
-                <div className="w-24 h-24 bg-white/10 rounded-lg" />
-
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 w-1/2 bg-white/10 rounded" />
-                  <div className="h-3 w-3/4 bg-white/10 rounded" />
-                  <div className="h-3 w-2/3 bg-white/10 rounded" />
-                </div>
-
-                <div className="flex flex-col items-end gap-2">
-                  <div className="h-4 w-12 bg-white/10 rounded" />
-                  <div className="h-6 w-16 bg-white/10 rounded-full" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* ✅ CONTENT */}
         {!loading && Object.entries(groupedProducts).map(([category, items]) => (
@@ -176,7 +146,6 @@ export default function MenuPage() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-12"
           >
-            <h3 className="text-xl font-semibold mb-4">{category}</h3>
 
             <div className="grid md:grid-cols-2 gap-x-16 gap-y-6">
               {items.map((item) => (

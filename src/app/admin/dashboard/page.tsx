@@ -200,7 +200,7 @@ export default function AdminDashboard() {
 
   return (
     <SidebarProvider defaultOpen={!isDesktop}>
-      <div className="flex min-h-screen w-full bg-[#0b1d26]">
+      <div className="flex min-h-screen w-full bg-amber-50">
         <AppSidebar />
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
           {isDesktop && (
@@ -215,8 +215,8 @@ export default function AdminDashboard() {
             {/* Header */}
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-white">Dashboard</h1>
-                <p className="text-white mt-1">Restaurant analytics and insights</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Dashboard</h1>
+                <p className="text-gray-600 mt-1">Restaurant analytics and insights</p>
               </div>
 
               {/* Period Selector */}
@@ -239,7 +239,7 @@ export default function AdminDashboard() {
               {analytics.keyMetrics?.averageOrderValue != null && (
                 <MetricCard
                   title="Average Order Value"
-                  value={`$${analytics.keyMetrics.averageOrderValue.toFixed(2)}`}
+                  value={`₱${analytics.keyMetrics.averageOrderValue.toFixed(2)}`}
                   icon={TrendingUp}
                   subtitle="Average revenue per order"
                   trend="up"
@@ -257,7 +257,7 @@ export default function AdminDashboard() {
               {analytics.keyMetrics?.totalRevenue != null && (
                 <MetricCard
                   title="Total Revenue"
-                  value={`$${analytics.keyMetrics.totalRevenue.toFixed(2)}`}
+                  value={`₱${analytics.keyMetrics.totalRevenue.toFixed(2)}`}
                   icon={TrendingUp}
                   subtitle="Total income generated"
                   trend="up"

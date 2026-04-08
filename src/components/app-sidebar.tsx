@@ -25,7 +25,6 @@ import { usePathname, useRouter } from "next/navigation"
 import { useMemo } from "react"
 
 const items = [
-  { title: "Home", url: "/", icon: Home },
   { title: "Dashboard", url: "/admin/dashboard", icon: Home },
   { title: "Products", url: "/admin/product", icon: Package },
   { title: "Orders", url: "/admin/order", icon: ShoppingCart },

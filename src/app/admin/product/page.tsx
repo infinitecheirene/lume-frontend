@@ -62,14 +62,12 @@ interface Product {
   price: number | string
   image: string
   category: string
-  is_spicy?: boolean
-  is_vegetarian?: boolean
-  is_featured?: boolean
+  best_seller?: boolean
   created_at: string
   updated_at: string
 }
 
-const categories = ["Appetizers", "Main Course", "Desserts", "Coffee", "Beverages", "Noodles", "Rice Dishes", "Soups", "Add-ons"]
+const categories = ["Coffee", "Bar", "Food"]
 
 const getImageUrl = (imagePath: string): string => {
   if (!imagePath) {
@@ -120,9 +118,7 @@ export default function ProductsAdminPage() {
     description: "",
     price: "",
     category: "",
-    is_spicy: false,
-    is_vegetarian: false,
-    is_featured: false,
+    best_seller: false,
   })
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -170,9 +166,7 @@ export default function ProductsAdminPage() {
       formData.append("description", newFormData.description)
       formData.append("price", newFormData.price)
       formData.append("category", newFormData.category)
-      formData.append("is_spicy", newFormData.is_spicy.toString())
-      formData.append("is_vegetarian", newFormData.is_vegetarian.toString())
-      formData.append("is_featured", newFormData.is_featured.toString())
+        formData.append("best_seller", newFormData.best_seller.toString())
 
       if (selectedImage) {
         formData.append("image", selectedImage)
@@ -214,9 +208,7 @@ export default function ProductsAdminPage() {
       description: "",
       price: "",
       category: "",
-      is_spicy: false,
-      is_vegetarian: false,
-      is_featured: false,
+      best_seller: false,
     })
     setSelectedImage(null)
     setImagePreview(null)

@@ -1,5 +1,7 @@
 "use client"
+
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -8,253 +10,241 @@ import { useCartStore } from "@/store/cartStore"
 import { toast } from "@/hooks/use-toast"
 
 const getImageUrl = (imagePath: string): string => {
-  if (!imagePath) {
-    return "/placeholder.svg"
-  }
+  if (!imagePath) return "/placeholder.svg"
 
-  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-    return imagePath
-  }
+  if (imagePath.startsWith("http")) return imagePath
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-  let fullPath = imagePath
-  if (!imagePath.startsWith("images/products/")) {
-    fullPath = `images/products/${imagePath}`
-  }
-
-  return `${API_BASE_URL}/${fullPath}`
+  const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+  return `${base}/images/products/${imagePath}`
 }
 
-const formatPrice = (price: number): string => {
-  return price.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
+const formatPrice = (price: number): string =>
+  price.toLocaleString("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
 
-const Cart = () => {
-  const { items, updateQuantity, removeItem, getTotal, clearCart } = useCartStore()
+export default function Cart() {
+  const { items, updateQuantity, removeItem, getTotal, clearCart } =
+    useCartStore()
+
   const total = getTotal()
 
-  const handleQuantityChange = (itemId: string | number, newQuantity: number) => {
-    if (newQuantity < 1) {
-      removeItem(itemId)
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
+
+  const handleQuantityChange = (id: string | number, qty: number) => {
+    if (qty < 1) {
+      removeItem(id)
       toast({
         title: "Item removed",
-        description: "Item has been removed from your cart.",
+        description: "Item removed from cart.",
       })
     } else {
-      updateQuantity(itemId, newQuantity)
+      updateQuantity(id, qty)
     }
   }
 
-  const handleRemoveItem = (itemId: string | number, itemName: string) => {
-    removeItem(itemId)
+  const handleRemove = (id: string | number, name: string) => {
+    removeItem(id)
     toast({
-      title: "Item removed",
-      description: `${itemName} has been removed from your cart.`,
+      title: "Removed",
+      description: `${name} removed.`,
     })
   }
 
-  const handleClearCart = () => {
+  const handleClear = () => {
     clearCart()
     toast({
       title: "Cart cleared",
-      description: "All items have been removed from your cart.",
+      description: "All items removed.",
     })
   }
 
+  /* ================= EMPTY ================= */
   if (items.length === 0) {
     return (
-      <div className="min-h-screen py-24 bg-[#0b1d26] text-white">
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#d4a24c]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-[#0b1d26] text-white px-4">
+        <div className="text-center max-w-md bg-[#0f2a33] p-10 rounded-2xl border border-[#d4a24c]/30 shadow-xl">
+          <ShoppingBag className="w-20 h-20 mx-auto text-[#d4a24c] mb-6" />
+          <h1 className="text-2xl font-bold mb-3">Your Cart is Empty</h1>
+          <p className="text-white/60 mb-6">
+            Start adding delicious items from our menu 🍽️
+          </p>
 
-        <div className="relative z-10 py-8">
-          <div className="container mx-auto px-4">
-            <div className="text-center py-16">
-              <div className="bg-[#d4a24c]/70 backdrop-blur-sm border-white/30 rounded-3xl p-12 max-w-md mx-auto shadow-2xl">
-                <div className="relative">
-                  <ShoppingBag className="w-24 h-24 text-[#0b1d26] mx-auto mb-6" />
-                </div>
-                <h1 className="text-3xl font-bold mb-4 text-white text-balance">Your Cart is Empty</h1>
-                <p className="text-xl text-white/70 mb-8 text-pretty">
-                  Looks like you haven&apos;t added any delicious Japanese dishes yet!
-                </p>
-                <Button
-                  asChild
-                  size="lg"
-                  className="bg-white hover:bg-white/90 text-[#0b1d26] font-bold px-8 py-6 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-                >
-                  <Link href="/menu">Browse Our Menu</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
+          <Button asChild className="bg-[#d4a24c] text-black rounded-full px-6">
+            <Link href="/menu">Browse Menu</Link>
+          </Button>
         </div>
       </div>
     )
   }
 
+  /* ================= MAIN ================= */
   return (
     <div className="min-h-screen py-24 bg-[#0b1d26] text-white">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#d4a24c]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
-      </div>
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col lg:flex-row gap-8">
 
-      <div className="relative z-10 py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row gap-8">
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <h1 className="text-3xl font-bold text-white text-balance">
-                    Your Cart ({items.map((item) => item.quantity).reduce((a, b) => a + b, 0)} {items.length === 1 ? "item" : "items"})
-                  </h1>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={handleClearCart}
-                  className="text-white border-white/30 hover:bg-white/10 hover:border-white/50 bg-transparent hover:text-white"
-                >
-                  Clear Cart
-                </Button>
-              </div>
+          {/* LEFT */}
+          <div className="flex-1">
 
-              <div className="space-y-4">
-                {items.map((item) => {
-                  const itemPrice = Number(item.price) || 0
-                  const itemTotal = itemPrice * item.quantity
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl md:text-3xl font-bold">
+                Cart ({totalItems} {totalItems === 1 ? "item" : "items"})
+              </h1>
 
-                  return (
-                    <Card
-                      key={item.id}
-                      className="group hover:shadow-2xl transition-all duration-300 bg-[#0b1d26]/70 backdrop-blur-sm border-white/30 hover:border-white/50 rounded-2xl overflow-hidden"
-                    >
-                      <CardContent className="p-6">
-                        <div className="flex flex-col sm:flex-row gap-4">
-                          <div className="relative w-full sm:w-24 h-24 rounded-xl overflow-hidden bg-black/50 shadow-md border border-white/20">
-                            <img
-                              src={getImageUrl(item.image) || "/placeholder.svg?height=96&width=96&query=Japanese food"}
-                              alt={item.name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement
-                                target.src = "/japanese-food.jpg"
-                              }}
-                            />
+              <Button
+                variant="outline"
+                onClick={handleClear}
+                className="border-white/30 text-white hover:bg-white/10"
+              >
+                Clear
+              </Button>
+            </div>
+
+            {/* Items */}
+            <div className="space-y-4">
+              {items.map((item) => {
+                const price = Number(item.price) || 0
+                const subtotal = price * item.quantity
+
+                return (
+                  <Card
+                    key={item.id}
+                    className="bg-[#0f2a33] border-white/10 rounded-xl"
+                  >
+                    <CardContent className="p-5 flex gap-4">
+
+                      {/* Image */}
+                      <div className="relative w-24 h-24 rounded-lg overflow-hidden">
+                        <Image
+                          src={getImageUrl(item.image)}
+                          alt={item.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 flex flex-col justify-between">
+
+                        {/* Top */}
+                        <div className="flex justify-between">
+                          <div>
+                            <h3 className="font-semibold">{item.name}</h3>
+                            <p className="text-sm text-white/60 line-clamp-2">
+                              {item.description}
+                            </p>
                           </div>
 
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <h3 className="font-semibold text-lg text-white">{item.name}</h3>
-                                <p className="text-sm text-white/70 line-clamp-2">{item.description}</p>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleRemoveItem(item.id, item.name)}
-                                className="text-white/70 hover:text-[#ff6b6b] hover:bg-white/10 rounded-full"
+                          <button
+                            onClick={() =>
+                              handleRemove(item.id, item.name)
+                            }
+                            className="text-white/50 hover:text-red-400"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+
+                        {/* Bottom */}
+                        <div className="flex justify-between items-center mt-3">
+
+                          <Badge className="bg-white/10 border-white/20">
+                            {item.category}
+                          </Badge>
+
+                          <div className="flex items-center gap-4">
+
+                            {/* Qty */}
+                            <div className="flex items-center bg-white/10 rounded-full px-2">
+                              <button
+                                onClick={() =>
+                                  handleQuantityChange(
+                                    item.id,
+                                    item.quantity - 1
+                                  )
+                                }
+                                className="p-1"
                               >
-                                <X className="h-4 w-4" />
-                              </Button>
+                                <Minus size={14} />
+                              </button>
+
+                              <span className="px-2">
+                                {item.quantity}
+                              </span>
+
+                              <button
+                                onClick={() =>
+                                  handleQuantityChange(
+                                    item.id,
+                                    item.quantity + 1
+                                  )
+                                }
+                                className="p-1"
+                              >
+                                <Plus size={14} />
+                              </button>
                             </div>
 
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Badge
-                                  variant="outline"
-                                  className="text-xs bg-white/10 border-white/30 text-white"
-                                >
-                                  {item.category}
-                                </Badge>
-                              </div>
-
-                              <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-2 bg-white/10 rounded-full p-1 border border-white/30">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                                    className="h-8 w-8 p-0 rounded-full hover:bg-white/20 text-white hover:text-white"
-                                  >
-                                    <Minus className="h-3 w-3" />
-                                  </Button>
-                                  <span className="w-8 text-center font-medium text-white">{item.quantity}</span>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                                    className="h-8 w-8 p-0 rounded-full hover:bg-white/20 text-white hover:text-white"
-                                  >
-                                    <Plus className="h-3 w-3" />
-                                  </Button>
-                                </div>
-
-                                <div className="text-right">
-                                  <div className="text-sm text-white/70">₱{formatPrice(itemPrice)} each</div>
-                                  <div className="font-semibold text-lg text-white">₱{formatPrice(itemTotal)}</div>
-                                </div>
-                              </div>
+                            {/* Price */}
+                            <div className="text-right">
+                              <p className="text-xs text-white/60">
+                                ₱{formatPrice(price)}
+                              </p>
+                              <p className="font-semibold">
+                                ₱{formatPrice(subtotal)}
+                              </p>
                             </div>
+
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  )
-                })}
-              </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </div>
+          </div>
 
-            <div className="lg:w-96">
-              <Card className="sticky top-24 backdrop-blur-sm overflow-hidden bg-[#0c222b] rounded-2xl p-8 border border-[#a47015]/60 text-center hover:border-[#d4a24c]/40 transition shadow-[0_0_20px_rgba(212,162,76,0.35)]">
-                  <h2 className="text-2xl font-semibold flex items-center gap-2 text-white">Order Summary</h2>
-                <CardContent className="space-y-4 p-6">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/70">Subtotal</span>
-                      <span className="text-white">₱{formatPrice(total)}</span>
-                    </div>
-                    <hr className="my-2 border-white/20" />
-                    <div className="flex justify-between font-semibold text-lg">
-                      <span className="text-white">Total</span>
-                      <span className="text-white">₱{formatPrice(total)}</span>
-                    </div>
-                  </div>
+          {/* RIGHT */}
+          <div className="lg:w-96">
+            <Card className="sticky top-24 bg-[#0f2a33] border border-[#d4a24c]/30 rounded-2xl">
+              <CardContent className="p-6 space-y-4">
 
-                  <Button
-                    asChild
-                    className="w-full bg-white hover:bg-white/90 text-[#0c222b] rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 font-bold"
-                    size="lg"
-                  >
-                    <Link href="/checkout">Proceed to Checkout</Link>
-                  </Button>
+                <h2 className="text-xl font-semibold">Order Summary</h2>
 
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="w-full border-white/30 hover:bg-white/10 hover:border-white/50 rounded-xl bg-transparent text-white hover:text-white"
-                    size="lg"
-                  >
-                    <Link href="/menu">Continue Shopping</Link>
-                  </Button>
+                <div className="flex justify-between text-sm">
+                  <span className="text-white/60">Subtotal</span>
+                  <span>₱{formatPrice(total)}</span>
+                </div>
 
-                  <div className="text-xs text-white/50 text-center bg-white/5 rounded-lg p-2 border border-white/10">
-                    Secure checkout • Lumè Bean and Bar
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                <div className="flex justify-between font-semibold text-lg">
+                  <span>Total</span>
+                  <span>₱{formatPrice(total)}</span>
+                </div>
+
+                <Button
+                  asChild
+                  className="w-full bg-[#d4a24c] text-black rounded-full"
+                >
+                  <Link href="/checkout">Checkout</Link>
+                </Button>
+
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full border-white/20 text-white"
+                >
+                  <Link href="/menu">Continue Shopping</Link>
+                </Button>
+
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
     </div>
   )
 }
-
-export default Cart
