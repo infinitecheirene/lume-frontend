@@ -4,21 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import {
-  Clock,
-  CheckCircle,
-  XCircle,
-  User,
-  LogIn,
-  Calendar,
-  Users,
-  Mail,
-  Phone,
-  ChefHat,
-  MessageSquare,
-  Filter,
-  Plus,
-} from "lucide-react"
+import { Clock, CheckCircle, XCircle, User, LogIn, Calendar, Users, Mail, Phone, ChefHat, MessageSquare, Filter, Plus } from "lucide-react"
 import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
 import { useAuthStore } from "@/store/authStore"
@@ -73,9 +59,7 @@ const ReservationsHistory = () => {
           console.log("Authenticated:", reservationsData.debug?.authenticated)
           console.log("Count:", reservationsData.debug?.total_count || reservationsData.data?.length)
 
-          const resData = Array.isArray(reservationsData)
-            ? reservationsData
-            : reservationsData.data || []
+          const resData = Array.isArray(reservationsData) ? reservationsData : reservationsData.data || []
 
           console.log("✅ Reservations loaded:", resData.length)
           setReservations(resData)
@@ -236,7 +220,6 @@ const ReservationsHistory = () => {
             </div>
           </div>
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-3 backdrop-blur-sm px-6 py-3 bg-[#0c222b] rounded-2xl p-8 border border-[#a47015]/60 text-center hover:border-[#d4a24c]/40 transition shadow-[0_0_20px_rgba(212,162,76,0.35)]">
@@ -251,48 +234,42 @@ const ReservationsHistory = () => {
             <div className="backdrop-blur-sm h-fit lg:top-6 bg-[#0c222b] rounded-2xl p-8 border border-[#a47015]/60 text-center hover:border-[#d4a24c]/40 transition shadow-[0_0_20px_rgba(212,162,76,0.35)]">
               <div className="flex items-center gap-2 mb-2">
                 <Filter className="w-4 h-4 text-[#d4a24c]" />
-                <span className="text-xs font-semibold text-white uppercase tracking-wide">
-                  Status
-                </span>
+                <span className="text-xs font-semibold text-white uppercase tracking-wide">Status</span>
               </div>
 
               <div className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
                 <button
                   onClick={() => setActiveFilter("all")}
-                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${activeFilter === "all"
-                    ? "bg-white text-[#0c222b] shadow"
-                    : "bg-white/10 text-white hover:bg-white/20"
-                    }`}
+                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                    activeFilter === "all" ? "bg-white text-[#0c222b] shadow" : "bg-white/10 text-white hover:bg-white/20"
+                  }`}
                 >
                   All ({getStatusCount("all")})
                 </button>
 
                 <button
                   onClick={() => setActiveFilter("confirmed")}
-                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${activeFilter === "confirmed"
-                    ? "bg-blue-500 text-white shadow"
-                    : "bg-white/10 text-white hover:bg-white/20"
-                    }`}
+                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                    activeFilter === "confirmed" ? "bg-blue-500 text-white shadow" : "bg-white/10 text-white hover:bg-white/20"
+                  }`}
                 >
                   Confirmed ({getStatusCount("confirmed")})
                 </button>
 
                 <button
                   onClick={() => setActiveFilter("completed")}
-                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${activeFilter === "completed"
-                    ? "bg-emerald-500 text-white shadow"
-                    : "bg-white/10 text-white hover:bg-white/20"
-                    }`}
+                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                    activeFilter === "completed" ? "bg-emerald-500 text-white shadow" : "bg-white/10 text-white hover:bg-white/20"
+                  }`}
                 >
                   Completed ({getStatusCount("completed")})
                 </button>
 
                 <button
                   onClick={() => setActiveFilter("cancelled")}
-                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${activeFilter === "cancelled"
-                    ? "bg-red-500 text-white shadow"
-                    : "bg-white/10 text-white hover:bg-white/20"
-                    }`}
+                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                    activeFilter === "cancelled" ? "bg-red-500 text-white shadow" : "bg-white/10 text-white hover:bg-white/20"
+                  }`}
                 >
                   Cancelled ({getStatusCount("cancelled")})
                 </button>
@@ -300,10 +277,7 @@ const ReservationsHistory = () => {
             </div>
 
             <div className="mt-5 text-center">
-              <Button
-                asChild
-                className="bg-white hover:bg-white/90 text-[#0c222b] font-bold text-md shadow-lg rounded-2xl"
-              >
+              <Button asChild className="bg-white hover:bg-white/90 text-[#0c222b] font-bold text-md shadow-lg rounded-2xl">
                 <Link href="/reservations">
                   <Plus className="w-4 h-4 mr-2" /> Make New Reservation
                 </Link>
@@ -359,14 +333,11 @@ const ReservationsHistory = () => {
 
                       {/* Title */}
                       <div>
-                        <h2 className="text-white font-bold text-xl leading-tight">
-                          {reservation.occasion_type || "Reservation"}
-                          <span className="text-white/50 font-medium ml-2">
-                            #{reservation.id}
-                          </span>
-                        </h2>
-
-                        <p className="text-white/60 text-sm mt-1">
+                        <div className="flex">
+                          <h2 className="text-white font-black text-2xl">{reservation.occasion}&nbsp;</h2>
+                          <h3 className="text-white font-semnibold text-lg">- Reservation #{reservation.id}</h3>
+                        </div>
+                        <p className="text-white/70 text-sm">
                           {new Date(reservation.created_at).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
@@ -466,15 +437,7 @@ const ReservationsHistory = () => {
                           <Calendar className="w-4 h-4 text-white/60" />
                           <span className="text-white/60 text-sm">Occasion:</span>
                           <span className="text-white text-sm">
-                            {reservation.occasion_type || "-"}
-                          </span>
-                        </div>
-
-                        <div className="flex items-start gap-2">
-                          <MessageSquare className="w-4 h-4 text-white/60 mt-0.5" />
-                          <span className="text-white/60 text-sm">Notes:</span>
-                          <span className="text-white text-sm">
-                            {reservation.occasion_instructions || "-"}
+                            {reservation.occasion || "-"}
                           </span>
                         </div>
                       </div>
