@@ -30,7 +30,7 @@ export default function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.name || !formData.email || !formData.message) {
+    if (!formData.name || !formData.email || !formData.message || !formData.subject) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields.",
@@ -42,7 +42,7 @@ export default function Contact() {
     setIsSubmitting(true)
 
     try {
-      const res = await fetch("/api/contact", {
+      const res = await fetch("/api/contacts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -53,9 +53,7 @@ export default function Contact() {
       if (data.success) {
         toast({
           title: "Message Sent!",
-          description:
-            data.message ||
-            "Thank you for contacting us. We'll get back to you within 24 hours.",
+          description: data.message || "Thank you for contacting us. We'll get back to you within 24 hours.",
           action: <CheckCircle className="h-5 w-5 text-green-500" />,
         })
 
@@ -125,14 +123,8 @@ export default function Contact() {
     <div className="min-h-screen bg-[#0b1d26]">
       <section className="py-24">
         <div className="container px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-16"
-          >
-            <p className=" text-[#d4a24c] tracking-[0.3em] uppercase text-sm mb-3">
-              Get In Touch
-            </p>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
+            <p className=" text-[#d4a24c] tracking-[0.3em] uppercase text-sm mb-3">Get In Touch</p>
             <h1 className={`${playfair.className} font-heading text-4xl md:text-5xl font-bold`}>
               Contact <span className=" text-[#d4a24c] italic">Us</span>
             </h1>
@@ -145,12 +137,9 @@ export default function Contact() {
               className="bg-[#0f2a33] rounded-2xl p-10 border border-[#a47015]/60 transition shadow-[0_0_25px_rgba(212,162,76,0.25)] backdrop-blur"
             >
               <div className="grid grid-cols-2 gap-6 my-2">
-
                 {/* Name */}
                 <div>
-                  <label className="text-sm text-white/60 mb-2 block">
-                    Name
-                  </label>
+                  <label className="text-sm text-white/60 mb-2 block">Name</label>
                   <input
                     required
                     value={formData.name}
@@ -162,9 +151,7 @@ export default function Contact() {
 
                 {/* Email */}
                 <div>
-                  <label className="text-sm text-white/60 mb-2 block">
-                    Email
-                  </label>
+                  <label className="text-sm text-white/60 mb-2 block">Email</label>
                   <input
                     required
                     type="email"
@@ -177,9 +164,7 @@ export default function Contact() {
 
                 {/* Phone */}
                 <div>
-                  <label className="text-sm text-white/60 mb-2 block">
-                    Phone (optional)
-                  </label>
+                  <label className="text-sm text-white/60 mb-2 block">Phone (optional)</label>
                   <input
                     type="tel"
                     value={formData.phone}
@@ -191,14 +176,13 @@ export default function Contact() {
 
                 {/* Inquiry Type */}
                 <div>
-                  <label className="text-sm text-white/60 mb-2 block">
-                    Inquiry Type
-                  </label>
+                  <label className="text-sm text-white/60 mb-2 block">Inquiry Type</label>
                   <select
-                    value={formData.inquiryType}
-                    onChange={(e) => handleInputChange("inquiryType", e.target.value)}
+                    value={formData.subject}
+                    onChange={(e) => handleInputChange("subject", e.target.value)}
                     className="w-full rounded-lg bg-[#0b1d26] border border-white/10 p-3 text-gray-200 focus:outline-none focus:ring-2 focus:ring-[#d4a24c]/40"
                   >
+                    <option value="">Select an option</option>
                     <option value="general">General Inquiry</option>
                     <option value="reservation">Reservation</option>
                     <option value="complaint">Complaint</option>
@@ -210,9 +194,7 @@ export default function Contact() {
               <div className="grid gap-6 my-2">
                 {/* Message */}
                 <div>
-                  <label className="text-sm text-white/60 mb-2 block">
-                    Message
-                  </label>
+                  <label className="text-sm text-white/60 mb-2 block">Message</label>
                   <textarea
                     required
                     value={formData.message}
@@ -260,16 +242,8 @@ export default function Contact() {
 
       <section className="py-24 border-t border-white/10">
         <div className="container px-4 max-w-4xl mx-auto">
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <p className="text-[#d4a24c] tracking-[0.3em] uppercase text-sm mb-3">
-              FAQ
-            </p>
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
+            <p className="text-[#d4a24c] tracking-[0.3em] uppercase text-sm mb-3">FAQ</p>
             <h2 className={`${playfair.className} text-3xl md:text-4xl font-bold`}>
               Frequently Asked <span className="text-[#d4a24c] italic">Questions</span>
             </h2>
@@ -280,22 +254,11 @@ export default function Contact() {
               const isOpen = openFaq === index
 
               return (
-                <div
-                  key={index}
-                  className="border border-white/10 rounded-xl bg-[#0f2a33] overflow-hidden"
-                >
-                  <button
-                    onClick={() => setOpenFaq(isOpen ? null : index)}
-                    className="w-full flex items-center justify-between px-6 py-4 text-left"
-                  >
-                    <span className="font-medium text-white">
-                      {faq.question}
-                    </span>
+                <div key={index} className="border border-white/10 rounded-xl bg-[#0f2a33] overflow-hidden">
+                  <button onClick={() => setOpenFaq(isOpen ? null : index)} className="w-full flex items-center justify-between px-6 py-4 text-left">
+                    <span className="font-medium text-white">{faq.question}</span>
 
-                    <ChevronDown
-                      className={`w-5 h-5 text-[#d4a24c] transition-transform duration-300 ${isOpen ? "rotate-180" : ""
-                        }`}
-                    />
+                    <ChevronDown className={`w-5 h-5 text-[#d4a24c] transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
                   </button>
 
                   {isOpen && (
@@ -312,7 +275,6 @@ export default function Contact() {
               )
             })}
           </div>
-
         </div>
       </section>
     </div>

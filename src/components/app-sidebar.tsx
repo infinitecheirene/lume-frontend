@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, Package, Megaphone, Users, ShoppingCart, BarChart3, Settings, LogOut, ChevronDown, ChefHat, Calendar, Phone } from "lucide-react"
+import { Home, Package, Megaphone, Users, ShoppingCart, LogOut, ChevronDown, Calendar, Mail, Phone } from "lucide-react"
 
 import {
   Sidebar,
@@ -28,6 +28,7 @@ const items = [
   { title: "Products", url: "/admin/product", icon: Package },
   { title: "Orders", url: "/admin/order", icon: ShoppingCart },
   { title: "Reservations", url: "/admin/reservations", icon: Calendar },
+  { title: "Inquiries", url: "/admin/contacts", icon: Mail },
   { title: "Customers", url: "/admin/users", icon: Users },
   { title: "Contact Inquiries", url: "/admin/contacts", icon: Phone },
     {
