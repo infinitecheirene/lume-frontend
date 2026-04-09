@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    const fullUrl = `${apiUrl}/api/auth/verify-email?token=${token}`
+    const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/+$/g, '')
+    const fullUrl = new URL(`/api/auth/verify-email?token=${encodeURIComponent(token)}`, apiUrl).toString()
     
     console.log('Verifying email with token at:', fullUrl)
     

@@ -74,8 +74,8 @@ export async function POST(request: NextRequest) {
     const verificationToken = generateVerificationToken()
     const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    const fullUrl = `${apiUrl}/api/auth/register`
+    const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/+$/g, '')
+    const fullUrl = new URL('/api/auth/register', apiUrl).toString()
     
     console.log('Attempting to connect to Laravel API at:', fullUrl)
     
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
       body: JSON.stringify(requestData),
     })

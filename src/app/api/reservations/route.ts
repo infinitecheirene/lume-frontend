@@ -81,6 +81,26 @@ async function sendAdminNotification(reservationData: any) {
                   <span class="info-label">Number of Guests:</span>
                   <span class="info-value">${reservationData.guests} ${reservationData.guests === "1" ? "Guest" : "Guests"}</span>
                 </div>
+                <div class="info-row">
+                  <span class="info-label">Dining Preference:</span>
+                  <span class="info-value">${reservationData.dining_preference || "Main Dining"}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Occasion:</span>
+                  <span class="info-value">${reservationData.occasion || "Casual Dinner"}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Reservation Fee:</span>
+                  <span class="info-value">₦${reservationData.reservation_fee || "0"}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Payment Method:</span>
+                  <span class="info-value">${reservationData.payment_method || "Not provided"}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Reference:</span>
+                  <span class="info-value">${reservationData.payment_reference || "N/A"}</span>
+                </div>
               </div>
 
               ${reservationData.special_requests ? `
@@ -151,6 +171,14 @@ async function sendCustomerConfirmation(reservationData: any) {
               <div class="info-box">
                 <h2 style="margin-top: 0; color: #ea580c;">📋 Your Reservation Details</h2>
                 <div class="info-row">
+                  <span class="info-label">Reservation #:</span>
+                  <span class="info-value">${reservationData.reservation_number || "N/A"}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Reservation #:</span>
+                  <span class="info-value">${reservationData.reservation_number || "N/A"}</span>
+                </div>
+                <div class="info-row">
                   <span class="info-label">Date:</span>
                   <span class="info-value">${new Date(reservationData.date).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span>
                 </div>
@@ -163,8 +191,24 @@ async function sendCustomerConfirmation(reservationData: any) {
                   <span class="info-value">${reservationData.guests} ${reservationData.guests === "1" ? "Guest" : "Guests"}</span>
                 </div>
                 <div class="info-row">
-                  <span class="info-label">Contact:</span>
-                  <span class="info-value">${reservationData.phone}</span>
+                  <span class="info-label">Dining Preference:</span>
+                  <span class="info-value">${reservationData.dining_preference || "Main Dining"}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Occasion:</span>
+                  <span class="info-value">${reservationData.occasion || "Casual Dinner"}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Reservation Fee:</span>
+                  <span class="info-value">₦${reservationData.reservation_fee || "0"}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Payment Method:</span>
+                  <span class="info-value">${reservationData.payment_method || "Not provided"}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Reference:</span>
+                  <span class="info-value">${reservationData.payment_reference || "N/A"}</span>
                 </div>
               </div>
 
@@ -291,13 +335,13 @@ export async function POST(request: NextRequest) {
     if (contentType.includes("multipart/form-data")) {
       console.log("Processing as FormData (with file upload)")
       formData = await request.formData()
-      
+
       for (const [key, value] of formData.entries()) {
         if (!(value instanceof File)) {
           reservationData[key] = value
         }
       }
-      
+
       const logData: any = {}
       for (const [key, value] of formData.entries()) {
         if (value instanceof File) {
@@ -369,27 +413,41 @@ export async function POST(request: NextRequest) {
     console.log("✅ Success Response:", data)
 
     console.log("📧 Sending email notifications...")
-    
-    Promise.all([
-      sendAdminNotification(reservationData),
-      sendCustomerConfirmation(reservationData)
-    ]).then(([adminSent, customerSent]) => {
-      console.log("Email notification results:", {
-        adminEmail: adminSent ? "✅ Sent" : "❌ Failed",
-        customerEmail: customerSent ? "✅ Sent" : "❌ Failed"
-      })
-    }).catch(error => {
-      console.error("Error in email sending process:", error)
+
+    // Attach reservation number from Laravel response
+    const reservationNumber = data?.data?.reservation_number || "N/A"
+
+    const enrichedData = {
+      ...reservationData,
+      reservation_number: reservationNumber,
+    }
+
+    const [adminEmailSent, customerEmailSent] = await Promise.all([
+      sendAdminNotification(enrichedData),
+      sendCustomerConfirmation(enrichedData),
+    ])
+
+    console.log("Email notification results:", {
+      adminEmail: adminEmailSent ? "✅ Sent" : "❌ Failed",
+      customerEmail: customerEmailSent ? "✅ Sent" : "❌ Failed",
     })
 
-    return NextResponse.json(data, { status: 201 })
+    const responseBody = {
+      ...data,
+      emailStatus: {
+        admin: adminEmailSent,
+        customer: customerEmailSent,
+      },
+    }
+
+    return NextResponse.json(responseBody, { status: 201 })
   } catch (error) {
     console.error("❌ Reservation POST API Error:", error)
-    
+
     if (error instanceof SyntaxError) {
       console.error("JSON Parse Error - likely invalid request body format")
     }
-    
+
     return NextResponse.json(
       {
         success: false,

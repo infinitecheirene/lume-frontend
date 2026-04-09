@@ -288,9 +288,12 @@ export default function ReservationsAdmin() {
 
       // Send email if not walk-in
       if (!formData.is_walkin && formData.email) {
-        await fetch("/api/send-reservation-email", {
+        const emailResponse = await fetch("/api/send-email/reservation", {
           method: "POST",
-          headers: getAuthHeaders(),
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
           body: JSON.stringify({
             email: formData.email,
             name: formData.name,
@@ -299,7 +302,12 @@ export default function ReservationsAdmin() {
             guests: formData.guests,
           }),
         })
+
+        if (!emailResponse.ok) {
+          console.error("Failed to send reservation email:", await emailResponse.text())
+        }
       }
+
       fetchReservations()
 
       setFormData(initialFormData)
@@ -342,11 +350,11 @@ export default function ReservationsAdmin() {
 
       // Optionally send email if not walk-in
       if (!formData.is_walkin && formData.email) {
-        await fetch("/api/send-reservation-email", {
+        const emailResponse = await fetch("/api/send-email/reservation", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: getAuthHeaders().Authorization || "",
+            ...getAuthHeaders(),
           },
           body: JSON.stringify({
             email: formData.email,
@@ -356,6 +364,10 @@ export default function ReservationsAdmin() {
             guests: formData.guests,
           }),
         })
+
+        if (!emailResponse.ok) {
+          console.error("Failed to send reservation email:", await emailResponse.text())
+        }
       }
 
       // Refresh and reset
