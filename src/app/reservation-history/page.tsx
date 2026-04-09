@@ -459,9 +459,9 @@ const ReservationsHistory = () => {
                         </Badge>
                       )}
 
-                      {reservation.payment_screenshot && (
+                      {reservation.payment_receipt && (
                         <a
-                          href={`/${reservation.payment_screenshot}`}
+                          href={`/${reservation.payment_receipt}`}
                           target="_blank"
                           className="text-xs text-[#d4a24c] underline ml-1"
                         >

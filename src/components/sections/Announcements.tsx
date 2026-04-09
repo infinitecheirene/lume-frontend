@@ -10,26 +10,26 @@ const playfair = Playfair_Display({
     weight: ["400", "600", "700"],
 })
 
-interface BlogPost {
+interface Announcement {
     id: number
     title: string
-    excerpt: string
-    created_at: string
-    category?: string
+    description: string
+    badge: string
+    type?: string
 }
 
 export default function Announcements() {
-    const [posts, setPosts] = useState<BlogPost[]>([])
+    const [posts, setPosts] = useState<Announcement[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const res = await fetch("/api/blog-posts")
+                const res = await fetch("/api/announcements")
                 const data = await res.json()
                 setPosts(data || [])
             } catch (err) {
-                console.error("Failed to fetch blog posts", err)
+                console.error("Failed to fetch announcements", err)
             } finally {
                 setLoading(false)
             }
@@ -39,8 +39,8 @@ export default function Announcements() {
     }, [])
 
     return (
-        <section className="py-24 bg-[#0c222b]">
-            <div className="container px-4">
+        <section className="py-24 bg-[#0c222b] border-t border-yellow-500/10 text-white overflow-hidden">
+            <div className="container mx-auto px-4 max-w-6xl">
 
                 {/* Header */}
                 <motion.div
@@ -50,7 +50,7 @@ export default function Announcements() {
                     className="text-center mb-16"
                 >
                     <p className="text-[#d4a24c] tracking-[0.3em] uppercase text-sm mb-3">
-                        What's Happening
+                        What&apos;s Happening
                     </p>
                     <h2 className={`${playfair.className} text-4xl md:text-5xl font-bold`}>
                         News & <span className="text-[#d4a24c] italic">Promos</span>
@@ -76,7 +76,7 @@ export default function Announcements() {
                 {/* Posts */}
                 {!loading && posts.length > 0 && (
                     <>
-                        <div className="max-w-3xl mx-auto space-y-4">
+                        <div className="max-w-xl mx-auto space-y-4">
                             {posts.slice(0, 3).map((item, i) => (
                                 <motion.div
                                     key={item.id}
@@ -88,19 +88,19 @@ export default function Announcements() {
                                 >
                                     <div className="flex items-center gap-3 mb-1">
                                         {/* Badge */}
-                                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#d4a24c]/20 text-[#d4a24c]">
-                                            {item.category ?? "Update"}
+                                        <span className="text-sm font-semibold px-2.5 py-0.5 rounded-full bg-[#d4a24c]/20 text-[#d4a24c]">
+                                            {item.badge ?? "Update"}
                                         </span>
 
                                         {/* Title */}
-                                        <h3 className="text-base font-semibold text-white">
+                                        <h3 className="text-xl font-bold text-white">
                                             {item.title}
                                         </h3>
                                     </div>
 
                                     {/* Excerpt */}
-                                    <p className="text-white/70 text-sm">
-                                        {item.excerpt}
+                                    <p className="text-white/70 text-md">
+                                        {item.description}
                                     </p>
                                 </motion.div>
                             ))}

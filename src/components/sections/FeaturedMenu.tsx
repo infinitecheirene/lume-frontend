@@ -77,7 +77,7 @@ export default function BestSellerPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
-          <p className="tracking-[0.3em] uppercase text-sm mb-3 text-[#d4a24c]">
+          <p className="text-[#d4a24c] tracking-[0.3em] uppercase text-sm mb-3">
             Customer Favorites
           </p>
 

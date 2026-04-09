@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -8,11 +9,17 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { Trash2, Search, Plus, ChevronLeft, ChevronRight, Eye, Edit } from "lucide-react"
-import { SidebarProvider } from "@/components/ui/sidebar"
+import { Trash2, Search, Plus, Eye, Edit } from "lucide-react"
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 interface Testimonial {
   id: number
@@ -30,6 +37,14 @@ export default function TestimonialsAdmin() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [loading, setLoading] = useState(true)
   const [isDesktop, setIsDesktop] = useState(false)
+  useEffect(() => {
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth < 1024) // lg breakpoint
+    }
+    checkDesktop()
+    window.addEventListener("resize", checkDesktop)
+    return () => window.removeEventListener("resize", checkDesktop)
+  }, [])
 
   // Separate states for modals
   const [addOpen, setAddOpen] = useState(false)
@@ -202,261 +217,271 @@ export default function TestimonialsAdmin() {
 
   return (
     <SidebarProvider defaultOpen={!isDesktop}>
-      <div className="flex min-h-screen w-full bg-gradient-to-br from-yellow-50 to-yellow-50">
+      <div className="flex min-h-screen w-full bg-amber-50">
         <AppSidebar />
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
-          <main className="p-8 max-w-7xl mx-auto space-y-6">
-            {/* Header & Overall Rating */}
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Testimonials Management</h1>
-                <p className="text-gray-600 mt-1">Manage what says about your restaurant</p>
+          {isDesktop && (
+            <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-[#162A3A] px-4 shadow-sm">
+              <SidebarTrigger className="-ml-1" />
+              <Image src="/logo.jpg" alt="Lumè Bean and Bar Logo" width={40} height={40} className="object-contain rounded-full" />
+              <h1 className={`${playfair.className} text-lg font-semibold text-white`}>Lumè Bean and Bar</h1>
+            </div>
+          )}
+
+          <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6">
+            <div className="max-w-full space-y-4 sm:space-y-6">
+              {/* Header & Overall Rating */}
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Testimonials Management</h1>
+                  <p className="text-gray-600 mt-1">Manage what says about your restaurant</p>
+                </div>
+                <Card className="p-4">
+                  <CardContent>
+                    <p className="text-lg font-semibold">Overall Rating</p>
+                    <h2 className="text-3xl font-bold text-yellow-500 flex items-center gap-2">
+                      {overallRating} <span className="text-xl">{"★".repeat(Math.round(overallRating))}</span>
+                    </h2>
+                  </CardContent>
+                </Card>
               </div>
-              <Card className="p-4">
+
+              {/* Testimonials Table */}
+              <Card className="bg-white/70 backdrop-blur-sm shadow-xl p-0 pb-5 border-blue-100">
+                <CardHeader className="p-3 bg-[#162A3A] text-white rounded-t-lg">
+                  <div className="flex flex-col gap-4">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-950" />
+                    <Input
+                      placeholder="Search by name, email, or message..."
+                      value={searchTerm || ""}
+                      onChange={(event) => {
+                        setSearchTerm(event.target.value)
+                        setCurrentPage(1)
+                      }}
+                      className="pl-9 pr-3 py-2 w-full bg-blue-100 border-blue-950 text-gray-950 placeholder:text-gray-950 focus:bg-blue-50 focus:border-blue-500 transition-all duration-200"
+                    />
+                  </div>
+
+                  <Button onClick={openAddModal} className="bg-yellow-500 hover:bg-yellow-600">
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Testimonial
+                  </Button>
+                </CardHeader>
+
                 <CardContent>
-                  <p className="text-lg font-semibold">Overall Rating</p>
-                  <h2 className="text-3xl font-bold text-yellow-500 flex items-center gap-2">
-                    {overallRating} <span className="text-xl">{"★".repeat(Math.round(overallRating))}</span>
-                  </h2>
+                  {loading ? (
+                    <div className="text-center py-8">Loading testimonials...</div>
+                  ) : paginated.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">{testimonials.length === 0 ? "No testimonials yet" : "No results found"}</div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="border-b bg-gray-50">
+                          <tr>
+                            <th className="text-left py-3 px-4 font-semibold">Name</th>
+                            <th className="text-left py-3 px-4 font-semibold">Email</th>
+                            <th className="text-left py-3 px-4 font-semibold">Rating</th>
+                            <th className="text-left py-3 px-4 font-semibold">Message</th>
+                            <th className="text-left py-3 px-4 font-semibold">Status</th>
+                            <th className="text-left py-3 px-4 font-semibold">Date</th>
+                            <th className="text-left py-3 px-4 font-semibold">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {paginated.map((t) => (
+                            <tr key={t.id} className="border-b hover:bg-gray-50">
+                              <td className="py-3 px-4 font-medium">{t.client_name}</td>
+                              <td className="py-3 px-4 text-gray-600">{t.client_email}</td>
+                              <td className="py-3 px-4 text-yellow-500">{"★".repeat(t.rating)}</td>
+                              <td className="py-3 px-4 max-w-xs truncate">{t.message}</td>
+                              <td className="py-3 px-4 capitalize">
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${t.status === "approved" ? "bg-green-100 text-green-800" : t.status === "rejected" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"}`}
+                                >
+                                  {t.status}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-gray-600">{new Date(t.created_at).toLocaleDateString()}</td>
+                              <td className="py-3 px-4 flex items-center gap-2">
+                                <Button size="sm" variant="outline" className="bg-transparent border-0" onClick={() => openViewModal(t)}>
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+
+                                <Button size="sm" variant="outline" className="bg-transparent border-0" onClick={() => openEditModal(t)}>
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => {
+                                    setDeleteId(t.id)
+                                    setDeleteOpen(true)
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            </div>
 
-            {/* Testimonials Table */}
-            <Card className="bg-white/70 backdrop-blur-sm shadow-xl p-0 pb-5 border-yellow-100">
-              <CardHeader className="p-3 bg-[#0d1b2a] text-white rounded-t-lg flex justify-between items-center">
-                <div className="relative flex-1 max-w-sm">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-950" />
-                  <Input
-                    placeholder="Search by name, email, or message..."
-                    value={searchTerm || ""}
-                    onChange={(event) => {
-                      setSearchTerm(event.target.value)
-                      setCurrentPage(1)
-                    }}
-                    className="pl-9 pr-3 py-2 w-full bg-blue-100 border-blue-950 text-gray-950 placeholder:text-gray-950 focus:bg-blue-50 focus:border-blue-500 transition-all duration-200"
-                  />
-                </div>
+              {/* view modal */}
+              <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+                <DialogContent className="text-black max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Testimonial Details</DialogTitle>
+                    <DialogDescription>View testimonial information.</DialogDescription>
+                  </DialogHeader>
 
-                <Button onClick={openAddModal} className="bg-yellow-500 hover:bg-yellow-600">
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Testimonial
-                </Button>
-              </CardHeader>
+                  {viewTestimonial && (
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <p className="font-semibold">Client Name</p>
+                        <p className="text-gray-700">{viewTestimonial.client_name}</p>
+                      </div>
 
-              <CardContent>
-                {loading ? (
-                  <div className="text-center py-8">Loading testimonials...</div>
-                ) : paginated.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">{testimonials.length === 0 ? "No testimonials yet" : "No results found"}</div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="border-b bg-gray-50">
-                        <tr>
-                          <th className="text-left py-3 px-4 font-semibold">Name</th>
-                          <th className="text-left py-3 px-4 font-semibold">Email</th>
-                          <th className="text-left py-3 px-4 font-semibold">Rating</th>
-                          <th className="text-left py-3 px-4 font-semibold">Message</th>
-                          <th className="text-left py-3 px-4 font-semibold">Status</th>
-                          <th className="text-left py-3 px-4 font-semibold">Date</th>
-                          <th className="text-left py-3 px-4 font-semibold">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {paginated.map((t) => (
-                          <tr key={t.id} className="border-b hover:bg-gray-50">
-                            <td className="py-3 px-4 font-medium">{t.client_name}</td>
-                            <td className="py-3 px-4 text-gray-600">{t.client_email}</td>
-                            <td className="py-3 px-4 text-yellow-500">{"★".repeat(t.rating)}</td>
-                            <td className="py-3 px-4 max-w-xs truncate">{t.message}</td>
-                            <td className="py-3 px-4 capitalize">
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${t.status === "approved" ? "bg-green-100 text-green-800" : t.status === "rejected" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"}`}
-                              >
-                                {t.status}
-                              </span>
-                            </td> 
-                            <td className="py-3 px-4 text-gray-600">{new Date(t.created_at).toLocaleDateString()}</td>
-                            <td className="py-3 px-4 flex items-center gap-2">
-                              <Button size="sm" variant="outline" className="bg-transparent border-0" onClick={() => openViewModal(t)}>
-                                <Eye className="w-4 h-4" />
-                              </Button>
+                      <div>
+                        <p className="font-semibold">Email</p>
+                        <p className="text-gray-700">{viewTestimonial.client_email}</p>
+                      </div>
 
-                              <Button size="sm" variant="outline" className="bg-transparent border-0" onClick={() => openEditModal(t)}>
-                                <Edit className="w-4 h-4" />
-                              </Button>
+                      <div>
+                        <p className="font-semibold">Rating</p>
+                        <p className="text-yellow-500">{"★".repeat(viewTestimonial.rating)}</p>
+                      </div>
 
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => {
-                                  setDeleteId(t.id)
-                                  setDeleteOpen(true)
-                                }}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </td>
-                          </tr>
+                      <div>
+                        <p className="font-semibold">Message</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">{viewTestimonial.message}</p>
+                      </div>
+
+                      <div>
+                        <p className="font-semibold">Status</p>
+                        <p className="capitalize text-gray-700">{viewTestimonial.status}</p>
+                      </div>
+
+                      <div>
+                        <p className="font-semibold">Date</p>
+                        <p className="text-gray-700">{new Date(viewTestimonial.created_at).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
+
+              {/* add/edit modal */}
+              <Dialog open={formOpen} onOpenChange={setFormOpen}>
+                <DialogContent className="text-black">
+                  <DialogHeader>
+                    <DialogTitle>{editingTestimonial ? "Update Testimonial" : "New Testimonial"}</DialogTitle>
+                    <DialogDescription>{editingTestimonial ? "Update testimonial details." : "Add a new testimonial."}</DialogDescription>
+                  </DialogHeader>
+
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="client_name">Client Name</Label>
+                      <Input
+                        id="client_name"
+                        value={formData.client_name}
+                        onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="client_email">Client Email</Label>
+                      <Input
+                        id="client_email"
+                        type="email"
+                        value={formData.client_email}
+                        onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Rating</Label>
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Button
+                            key={star}
+                            type="button"
+                            size="sm"
+                            onClick={() => setFormData({ ...formData, rating: star })}
+                            className={formData.rating >= star ? "bg-yellow-400 hover:bg-amber-500" : "bg-gray-200 hover:bg-yellow-400"}
+                          >
+                            ★
+                          </Button>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* view modal */}
-            <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-              <DialogContent className="text-black max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Testimonial Details</DialogTitle>
-                  <DialogDescription>View testimonial information.</DialogDescription>
-                </DialogHeader>
-
-                {viewTestimonial && (
-                  <div className="space-y-3 text-sm">
-                    <div>
-                      <p className="font-semibold">Client Name</p>
-                      <p className="text-gray-700">{viewTestimonial.client_name}</p>
+                      </div>
                     </div>
 
-                    <div>
-                      <p className="font-semibold">Email</p>
-                      <p className="text-gray-700">{viewTestimonial.client_email}</p>
+                    <div className="space-y-2">
+                      <Label htmlFor="message">Message</Label>
+                      <Textarea
+                        id="message"
+                        rows={4}
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      />
                     </div>
 
-                    <div>
-                      <p className="font-semibold">Rating</p>
-                      <p className="text-yellow-500">{"★".repeat(viewTestimonial.rating)}</p>
-                    </div>
-
-                    <div>
-                      <p className="font-semibold">Message</p>
-                      <p className="text-gray-700 whitespace-pre-wrap">{viewTestimonial.message}</p>
-                    </div>
-
-                    <div>
-                      <p className="font-semibold">Status</p>
-                      <p className="capitalize text-gray-700">{viewTestimonial.status}</p>
-                    </div>
-
-                    <div>
-                      <p className="font-semibold">Date</p>
-                      <p className="text-gray-700">{new Date(viewTestimonial.created_at).toLocaleString()}</p>
-                    </div>
-                  </div>
-                )}
-              </DialogContent>
-            </Dialog>
-
-            {/* add/edit modal */}
-            <Dialog open={formOpen} onOpenChange={setFormOpen}>
-              <DialogContent className="text-black">
-                <DialogHeader>
-                  <DialogTitle>{editingTestimonial ? "Update Testimonial" : "New Testimonial"}</DialogTitle>
-                  <DialogDescription>{editingTestimonial ? "Update testimonial details." : "Add a new testimonial."}</DialogDescription>
-                </DialogHeader>
-
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="client_name">Client Name</Label>
-                    <Input
-                      id="client_name"
-                      value={formData.client_name}
-                      onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="client_email">Client Email</Label>
-                    <Input
-                      id="client_email"
-                      type="email"
-                      value={formData.client_email}
-                      onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Rating</Label>
-                    <div className="flex items-center gap-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Button
-                          key={star}
-                          type="button"
-                          size="sm"
-                          onClick={() => setFormData({ ...formData, rating: star })}
-                          className={formData.rating >= star ? "bg-yellow-400 hover:bg-amber-500" : "bg-gray-200 hover:bg-yellow-400"}
-                        >
-                          ★
-                        </Button>
-                      ))}
+                    <div className="space-y-2">
+                      <Label htmlFor="status">Status</Label>
+                      <Select value={formData.status} onValueChange={(val: Testimonial["status"]) => setFormData({ ...formData, status: val })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="approved">Approved</SelectItem>
+                          <SelectItem value="rejected">Rejected</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
-                    <Textarea
-                      id="message"
-                      rows={4}
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    />
-                  </div>
+                  <DialogFooter>
+                    <Button onClick={handleSave} disabled={isSubmitting} className="bg-yellow-500 hover:bg-yellow-600">
+                      {editingTestimonial ? "Update" : "Create"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select value={formData.status} onValueChange={(val: Testimonial["status"]) => setFormData({ ...formData, status: val })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="approved">Approved</SelectItem>
-                        <SelectItem value="rejected">Rejected</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <DialogFooter>
-                  <Button onClick={handleSave} disabled={isSubmitting} className="bg-yellow-500 hover:bg-yellow-600">
-                    {editingTestimonial ? "Update" : "Create"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            {/* Delete Confirmation Modal */}
-            <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle className="text-black">Delete Testimonial</DialogTitle>
-                  <DialogDescription>Are you sure you want to delete this testimonial? This action cannot be undone.</DialogDescription>
-                </DialogHeader>
-                <DialogFooter className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setDeleteOpen(false)
-                      setDeleteId(null)
-                    }}
-                    className="bg-transparent text-black"
-                  >
-                    Cancel
-                  </Button>
-                  <Button variant="destructive" onClick={() => deleteId && handleDelete(deleteId)}>
-                    Delete
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+              {/* Delete Confirmation Modal */}
+              <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="text-black">Delete Testimonial</DialogTitle>
+                    <DialogDescription>Are you sure you want to delete this testimonial? This action cannot be undone.</DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setDeleteOpen(false)
+                        setDeleteId(null)
+                      }}
+                      className="bg-transparent text-black"
+                    >
+                      Cancel
+                    </Button>
+                    <Button variant="destructive" onClick={() => deleteId && handleDelete(deleteId)}>
+                      Delete
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
           </main>
         </div>
       </div>
-    </SidebarProvider>
+    </SidebarProvider >
   )
 }

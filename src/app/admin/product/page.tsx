@@ -1,14 +1,13 @@
 "use client"
+
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import type React from "react"
-
 import { AppSidebar } from "@/components/app-sidebar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { MoreHorizontal, Eye, Plus, Search, Loader2, ArrowUpDown, Edit, Trash2, Upload, Flame, Leaf, Star } from "lucide-react"
 import {
@@ -20,7 +19,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -748,56 +746,6 @@ export default function ProductsAdminPage() {
                                   </div>
                                 )}
                               </div>
-
-                              {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div className="flex items-center space-x-2 p-3 border-2 border-blue-200 rounded-lg bg-white/50 hover:bg-white/70 transition-colors">
-                                  <Switch
-                                    id="is_featured"
-                                    checked={newFormData.is_featured}
-                                    onCheckedChange={(checked) => handleSwitchChange("is_featured", checked)}
-                                    disabled={isCreating}
-                                  />
-                                  <Label
-                                    htmlFor="is_featured"
-                                    className="flex items-center gap-2 cursor-pointer text-gray-700 font-medium"
-                                  >
-                                    <Star className="w-4 h-4 text-yellow-500" />
-                                    Featured
-                                  </Label>
-                                </div>
-
-                                <div className="flex items-center space-x-2 p-3 border-2 border-blue-200 rounded-lg bg-white/50 hover:bg-white/70 transition-colors">
-                                  <Switch
-                                    id="is_spicy"
-                                    checked={newFormData.is_spicy}
-                                    onCheckedChange={(checked) => handleSwitchChange("is_spicy", checked)}
-                                    disabled={isCreating}
-                                  />
-                                  <Label
-                                    htmlFor="is_spicy"
-                                    className="flex items-center gap-2 cursor-pointer text-gray-700 font-medium"
-                                  >
-                                    <Flame className="w-4 h-4 text-blue-500" />
-                                    Spicy
-                                  </Label>
-                                </div>
-
-                                <div className="flex items-center space-x-2 p-3 border-2 border-blue-200 rounded-lg bg-white/50 hover:bg-white/70 transition-colors">
-                                  <Switch
-                                    id="is_vegetarian"
-                                    checked={newFormData.is_vegetarian}
-                                    onCheckedChange={(checked) => handleSwitchChange("is_vegetarian", checked)}
-                                    disabled={isCreating}
-                                  />
-                                  <Label
-                                    htmlFor="is_vegetarian"
-                                    className="flex items-center gap-2 cursor-pointer text-gray-700 font-medium"
-                                  >
-                                    <Leaf className="w-4 h-4 text-green-500" />
-                                    Vegetarian
-                                  </Label>
-                                </div>
-                              </div> */}
                             </div>
 
                             <DialogFooter className="gap-2">

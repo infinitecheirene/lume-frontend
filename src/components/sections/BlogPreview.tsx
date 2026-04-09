@@ -41,8 +41,8 @@ export default function BlogPreview() {
     }, [])
 
     return (
-        <section className="py-24 bg-[#0b1d26]">
-            <div className="container px-4">
+        <section className="relative py-24 bg-[#0c222b] border-t border-yellow-500/10 text-white overflow-hidden">
+            <div className="container mx-auto px-4 max-w-6xl">
 
                 {/* Header */}
                 <motion.div
@@ -55,7 +55,7 @@ export default function BlogPreview() {
                         From the Roastery
                     </p>
                     <h2 className={`${playfair.className} text-4xl md:text-5xl font-bold`}>
-                        Latest from the{" "}
+                        Latest from the
                         <span className="text-[#d4a24c] italic">Journal</span>
                     </h2>
                 </motion.div>

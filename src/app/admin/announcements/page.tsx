@@ -15,8 +15,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Switch } from "@/components/ui/switch"
@@ -38,7 +36,8 @@ import {
 interface Announcement {
   id: number
   title: string
-  content: string
+  dscription: string
+  
   is_active: boolean
   created_at: string
 }
@@ -491,8 +490,7 @@ export default function AdminAnnouncementsPage() {
                       </CardHeader>
                       <CardContent>
                         <p className="text-gray-700">
-                          {announcement.content.substring(0, 100)}
-                          {announcement.content.length > 100 ? "..." : ""}
+                          {announcement.description}
                         </p>
                       </CardContent>
                     </Card>
