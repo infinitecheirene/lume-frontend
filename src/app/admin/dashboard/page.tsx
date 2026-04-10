@@ -8,6 +8,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Loader2, TrendingUp, ShoppingCart, DollarSign, Users, ArrowUpRight, ArrowDownRight } from "lucide-react"
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 interface AnalyticsData {
   keyMetrics: {
@@ -128,15 +134,11 @@ export default function AdminDashboard() {
     return (
       <SidebarProvider defaultOpen={!isDesktop}>
         <div className="flex min-h-screen w-full bg-amber-50">
-
           <AppSidebar />
 
           <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
-
             <div className="flex items-center justify-center min-h-screen w-full">
-
               <div className="flex flex-col items-center gap-4 bg-[#162A3A] backdrop-blur-xl px-8 py-8 rounded-2xl border border-[#d4a24c]/70 shadow-2xl">
-
                 {/* Spinner */}
                 <div className="relative">
                   <Loader2 className="h-8 w-8 animate-spin text-[#d4a24c]" />
@@ -145,12 +147,8 @@ export default function AdminDashboard() {
 
                 {/* Text */}
                 <div className="text-center">
-                  <p className="text-lg font-semibold text-white">
-                    Loading Dashboard
-                  </p>
-                  <p className="text-sm text-white/60">
-                    Please wait while we fetch the data...
-                  </p>
+                  <p className="text-lg font-semibold text-white">Loading Dashboard</p>
+                  <p className="text-sm text-white/60">Please wait while we fetch the data...</p>
                 </div>
 
                 {/* Animated dots */}
@@ -159,11 +157,8 @@ export default function AdminDashboard() {
                   <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.15s]" />
                   <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce" />
                 </div>
-
               </div>
-
             </div>
-
           </div>
         </div>
       </SidebarProvider>
@@ -204,10 +199,10 @@ export default function AdminDashboard() {
         <AppSidebar />
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
           {isDesktop && (
-            <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-white px-4 shadow-sm">
+            <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-[#162A3A] px-4 shadow-sm">
               <SidebarTrigger className="-ml-1" />
-              <Image src="/logo.jpg" alt="Lumè Logo" width={40} height={40} className="object-contain" />
-              <h1 className="text-lg font-bold text-gray-900">Lumè Bean and Bar</h1>
+              <Image src="/logo.jpg" alt="Lumè Bean and Bar Logo" width={40} height={40} className="object-contain rounded-full" />
+              <h1 className={`${playfair.className} text-lg font-semibold text-white`}>Lumè Bean and Bar</h1>
             </div>
           )}
 

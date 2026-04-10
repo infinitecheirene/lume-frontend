@@ -23,6 +23,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 interface BlogPost {
   id: number
@@ -47,7 +53,9 @@ export default function BlogPostsAdmin() {
 
   const [isDesktop, setIsDesktop] = useState(false)
   useEffect(() => {
-    const checkDesktop = () => setIsDesktop(window.innerWidth < 1024)
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth < 1024) // lg breakpoint
+    }
     checkDesktop()
     window.addEventListener("resize", checkDesktop)
     return () => window.removeEventListener("resize", checkDesktop)
@@ -155,7 +163,7 @@ export default function BlogPostsAdmin() {
     return `${API_BASE_URL}/${normalizedPath}`
   }
 
-    if (loading) {
+  if (loading) {
     return (
       <SidebarProvider defaultOpen={!isDesktop}>
         <div className="flex min-h-screen w-full bg-amber-50">
@@ -192,15 +200,14 @@ export default function BlogPostsAdmin() {
 
   return (
     <SidebarProvider defaultOpen={!isDesktop}>
-      <div className="flex min-h-screen w-full bg-yellow-50">
+      <div className="flex min-h-screen w-full bg-amber-50">
         <AppSidebar />
-
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
           {isDesktop && (
-            <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-white px-4">
-              <SidebarTrigger />
-              <Image src="/logo.jpg" alt="Logo" width={40} height={40} />
-              <h1 className="font-bold">Lumè Bean and Bar</h1>
+            <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-[#162A3A] px-4 shadow-sm">
+              <SidebarTrigger className="-ml-1" />
+              <Image src="/logo.jpg" alt="Lumè Bean and Bar Logo" width={40} height={40} className="object-contain rounded-full" />
+              <h1 className={`${playfair.className} text-lg font-semibold text-white`}>Lumè Bean and Bar</h1>
             </div>
           )}
 
@@ -330,44 +337,44 @@ export default function BlogPostsAdmin() {
                   </Card>
                 ) : (
                   filteredPosts.map((post) => (
-                  <Card key={post.id} className="overflow-hidden p-0 flex flex-col h-[360px]">
-                    <Image
-                      src={getImageUrl(post.image_url) || "/placeholder.png"}
-                      alt={post.title}
-                      width={400}
-                      height={200}
-                      className="w-full h-48 object-cover flex-shrink-0"
-                    />
+                    <Card key={post.id} className="overflow-hidden p-0 flex flex-col h-[360px]">
+                      <Image
+                        src={getImageUrl(post.image_url) || "/placeholder.png"}
+                        alt={post.title}
+                        width={400}
+                        height={200}
+                        className="w-full h-48 object-cover flex-shrink-0"
+                      />
 
-                    <CardContent className="p-4 flex flex-col gap-3 flex-1">
-                      <div className="flex justify-between items-start gap-2">
-                        <div className="min-w-0">
-                          <h3 className="text-lg font-bold truncate">{post.title}</h3>
-                          <p className="text-sm text-gray-500">Author: {post.author}</p>
+                      <CardContent className="p-4 flex flex-col gap-3 flex-1">
+                        <div className="flex justify-between items-start gap-2">
+                          <div className="min-w-0">
+                            <h3 className="text-lg font-bold truncate">{post.title}</h3>
+                            <p className="text-sm text-gray-500">Author: {post.author}</p>
+                          </div>
+
+                          <div className="flex gap-2 flex-shrink-0">
+                            <Button size="sm" variant="outline" onClick={() => handleEdit(post)}>
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => {
+                                setDeleteId(post.id)
+                                setDeleteOpen(true)
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
 
-                        <div className="flex gap-2 flex-shrink-0">
-                          <Button size="sm" variant="outline" onClick={() => handleEdit(post)}>
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => {
-                              setDeleteId(post.id)
-                              setDeleteOpen(true)
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <p className="text-md text-gray-700 line-clamp-2">{post.excerpt}</p>
-                    </CardContent>
-                  </Card>
-                ))
+                        <p className="text-md text-gray-700 line-clamp-2">{post.excerpt}</p>
+                      </CardContent>
+                    </Card>
+                  ))
                 )}
               </div>
             </div>

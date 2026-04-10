@@ -6,7 +6,7 @@ import Image from "next/image"
 import { motion } from "framer-motion"
 import { usePathname, useRouter } from "next/navigation"
 import logo from "@/assets/logo.jpg"
-import { Menu, X, User, LogOut, ShoppingCart, Calendar, Settings, Package } from "lucide-react"
+import { Menu, X, User, LogOut, ShoppingCart, Calendar, Settings, Package, Download } from "lucide-react"
 import { useCartStore } from "@/store/cartStore"
 import { Playfair_Display } from "next/font/google"
 
@@ -27,6 +27,8 @@ export default function Header() {
   const [open, setOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [isInstallable, setIsInstallable] = useState(false)
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
 
   const itemCount = useCartStore((state) => state.getItemCount())
 
@@ -79,6 +81,36 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
+  // PWA install prompt handling
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault()
+      // Stash the event so it can be triggered later
+      setDeferredPrompt(e)
+      setIsInstallable(true)
+    }
+
+    const handleAppInstalled = () => {
+      // Hide the install button
+      setIsInstallable(false)
+      setDeferredPrompt(null)
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    window.addEventListener('appinstalled', handleAppInstalled)
+
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstallable(false)
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('appinstalled', handleAppInstalled)
+    }
+  }, [])
+
   if (pathname.startsWith("/admin")) {
     return null
   }
@@ -90,6 +122,20 @@ export default function Header() {
     setUserMenuOpen(false)
     window.dispatchEvent(new Event("userDataUpdated"))
     router.push("/login")
+  }
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return
+
+    // Show the install prompt
+    deferredPrompt.prompt()
+
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice
+
+    // Reset the deferred prompt
+    setDeferredPrompt(null)
+    setIsInstallable(false)
   }
 
   return (
@@ -191,6 +237,18 @@ export default function Header() {
             Book a Table
           </Link>
 
+          {/* PWA INSTALL BUTTON */}
+          {isInstallable && (
+            <button
+              onClick={handleInstallClick}
+              className="ml-2 bg-white/10 border border-[#d4a24c]/30 text-[#d4a24c] px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#d4a24c]/10 transition flex items-center gap-2 whitespace-nowrap"
+              title="Install Lumè Bean & Bar App"
+            >
+              <Download size={16} />
+              Install App
+            </button>
+          )}
+
         </nav>
 
         {/* MOBILE */}
@@ -252,6 +310,17 @@ export default function Header() {
                 </button>
 
               </div>
+            )}
+
+            {/* PWA INSTALL BUTTON - MOBILE */}
+            {isInstallable && (
+              <button
+                onClick={handleInstallClick}
+                className="w-full mt-4 bg-[#d4a24c] text-black px-4 py-3 rounded-full text-sm font-semibold hover:brightness-110 transition flex items-center justify-center gap-2"
+              >
+                <Download size={16} />
+                Install App
+              </button>
             )}
 
           </div>

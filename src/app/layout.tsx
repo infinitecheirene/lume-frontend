@@ -50,6 +50,30 @@ export const metadata: Metadata = {
     },
     category: "cafe",
     classification: "Coffee Shop and Bar",
+    manifest: "/manifest.json",
+    appleWebApp: {
+        capable: true,
+        statusBarStyle: "default",
+        title: "Lumè Bean & Bar",
+        startupImage: [
+            {
+                url: "/apple-touch-icon.png",
+                media: "(device-width: 768px) and (device-height: 1024px)",
+            },
+        ],
+    },
+    formatDetection: {
+        telephone: false,
+    },
+    other: {
+        "mobile-web-app-capable": "yes",
+        "apple-mobile-web-app-capable": "yes",
+        "apple-mobile-web-app-status-bar-style": "default",
+        "apple-mobile-web-app-title": "Lumè Bean & Bar",
+        "application-name": "Lumè Bean & Bar",
+        "msapplication-TileColor": "#d4a24c",
+        "msapplication-config": "/browserconfig.xml",
+    },
 }
 export const viewport = {
     themeColor: "#0b1d26",

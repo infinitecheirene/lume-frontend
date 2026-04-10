@@ -1,5 +1,21 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Progressive Web App (PWA) Features
+
+This application includes full PWA support with the following features:
+
+- **Installable**: Users can install the app on their devices
+- **Offline Support**: Basic offline functionality with cached content
+- **Fast Loading**: Service worker caches assets for improved performance
+- **Native App Experience**: Runs in standalone mode on mobile devices
+
+### PWA Configuration
+
+- **Service Worker**: Automatically generated using `@ducanh2912/next-pwa`
+- **Web App Manifest**: Configured with Lumè Bean & Bar branding
+- **Icons**: Multiple icon sizes for different devices
+- **Offline Page**: Custom offline experience at `/offline`
+
 ## Getting Started
 
 First, run the development server:

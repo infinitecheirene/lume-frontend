@@ -1,14 +1,21 @@
 "use client"
 
 import type React from "react"
+import Image from "next/image"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Eye, Search, Loader2 } from "lucide-react"
-import { SidebarProvider } from "@/components/ui/sidebar"
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 interface ContactInquiry {
   id: number
@@ -25,14 +32,16 @@ const ITEMS_PER_PAGE = 10
 export default function ContactsAdmin() {
   const [contacts, setContacts] = useState<ContactInquiry[]>([])
   const [loading, setLoading] = useState(true)
-  const [isDesktop, setIsDesktop] = useState(false)
   const [viewOpen, setViewOpen] = useState(false)
   const [viewContact, setViewContact] = useState<ContactInquiry | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
 
+  const [isDesktop, setIsDesktop] = useState(false)
   useEffect(() => {
-    const checkDesktop = () => setIsDesktop(window.innerWidth < 1024)
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth < 1024) // lg breakpoint
+    }
     checkDesktop()
     window.addEventListener("resize", checkDesktop)
     return () => window.removeEventListener("resize", checkDesktop)
@@ -111,9 +120,17 @@ export default function ContactsAdmin() {
 
   return (
     <SidebarProvider defaultOpen={!isDesktop}>
-      <div className="flex min-h-screen w-full bg-yellow-50">
+      <div className="flex min-h-screen w-full bg-amber-50">
         <AppSidebar />
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
+          {isDesktop && (
+            <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-[#162A3A] px-4 shadow-sm">
+              <SidebarTrigger className="-ml-1" />
+              <Image src="/logo.jpg" alt="Lumè Bean and Bar Logo" width={40} height={40} className="object-contain rounded-full" />
+              <h1 className={`${playfair.className} text-lg font-semibold text-white`}>Lumè Bean and Bar</h1>
+            </div>
+          )}
+
           <main className="p-8 max-w-7xl mx-auto space-y-6">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Inquiries Management</h1>
             <p className="text-gray-600 mt-1">View contact inquiries submitted via the website.</p>
