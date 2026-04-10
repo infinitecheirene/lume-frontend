@@ -29,6 +29,8 @@ export default function Header() {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [isInstallable, setIsInstallable] = useState(false)
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [tabletMenuOpen, setTabletMenuOpen] = useState(false)
 
   const itemCount = useCartStore((state) => state.getItemCount())
 
@@ -155,7 +157,7 @@ export default function Header() {
         </Link>
 
         {/* DESKTOP NAV */}
-        <nav className="hidden md:flex items-center gap-6 relative">
+        <nav className="hidden lg:flex items-center gap-6 relative">
 
           {/* NAV LINKS */}
           {navLinks.map((link) => (
@@ -163,8 +165,8 @@ export default function Header() {
               key={link.href}
               href={link.href}
               className={`text-sm transition ${isActive(link.href)
-                  ? "text-[#d4a24c]"
-                  : "text-white/70 hover:text-[#d4a24c]"
+                ? "text-[#d4a24c]"
+                : "text-white/70 hover:text-[#d4a24c]"
                 }`}
             >
               {link.label}
@@ -201,7 +203,7 @@ export default function Header() {
                 <div className="absolute right-0 mt-2 w-48 bg-[#0b1d26] border border-white/10 rounded-lg shadow-lg overflow-hidden">
                   <Link href="/orders" className="flex items-center gap-2 px-4 py-2 hover:bg-white/10">
                     <Package size={16} /> Orders
-                  </Link> 
+                  </Link>
                   <Link href="/reservation-history" className="flex items-center gap-2 px-4 py-2 hover:bg-white/10">
                     <Calendar size={16} /> Reservations
                   </Link>
@@ -251,19 +253,144 @@ export default function Header() {
 
         </nav>
 
+        {/* TABLET NAV */}
+        <div className="hidden md:flex lg:hidden items-center gap-4">
+          {/* CART */}
+          {user && (
+            <Link
+              href="/cart"
+              className="relative flex items-center justify-center text-white hover:text-[#d4a24c]"
+            >
+              <ShoppingCart size={22} />
+
+              {itemCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-[#d4a24c] text-black text-xs font-bold px-1.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full">
+                  {itemCount > 99 ? "99+" : itemCount}
+                </span>
+              )}
+            </Link>
+          )}
+
+          {/* USER */}
+          {user ? (
+            <div ref={dropdownRef} className="relative">
+              <button
+                onClick={() => setUserMenuOpen((p) => !p)}
+                className="text-white hover:text-[#d4a24c]"
+              >
+                <User size={22} />
+              </button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-[#0b1d26] border border-white/10 rounded-lg shadow-lg overflow-hidden z-50">
+                  <Link href="/orders" className="block px-4 py-2 hover:bg-white/10">Orders</Link>
+                  <Link href="/reservation-history" className="block px-4 py-2 hover:bg-white/10">Reservations</Link>
+                  <Link href="/profile" className="block px-4 py-2 hover:bg-white/10">Account</Link>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-[#d4a24c] hover:bg-white/10"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link href="/login" className="text-white text-sm">
+              Log In
+            </Link>
+          )}
+
+          {/* CTA */}
+          <Link
+            href="/reservations"
+            className="bg-[#d4a24c] text-black px-4 py-2 rounded-full text-sm font-semibold"
+          >
+            Book
+          </Link>
+
+          {/* MENU BUTTON */}
+          <button
+            onClick={() => setTabletMenuOpen((p) => !p)}
+            className="text-white"
+          >
+            {tabletMenuOpen ? <X /> : <Menu />}
+          </button>
+        </div>
+
+        {tabletMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="hidden md:block lg:hidden absolute top-full left-0 w-full z-50 bg-[#162a3a]"
+          >
+            <div className="px-6 py-6 space-y-4">
+
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setTabletMenuOpen(false)}
+                  className="block text-white/80 hover:text-[#d4a24c]"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {/* MOBILE */}
         <div className="md:hidden flex items-center gap-5">
 
           {/* CART */}
           {user && (
-            <Link href="/cart" className="text-white hover:text-[#d4a24c]">
-              <ShoppingCart size={24} />
+            <>
+              <Link
+                href="/cart"
+                className="relative flex items-center justify-center text-white hover:text-[#d4a24c]"
+              >
+                <ShoppingCart size={22} className="sm:w-6 sm:h-6" />
 
-              {itemCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-[#d4a24c] text-black text-xs font-bold px-1.5 rounded-full min-w-[18px] text-center">
-                  {itemCount}
-                </span>
+                {itemCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 
+                    bg-[#d4a24c] text-black text-[10px] sm:text-xs font-bold 
+                    px-1.5 min-w-[16px] sm:min-w-[18px] h-[16px] sm:h-[18px]
+                    flex items-center justify-center rounded-full leading-none">
+                    {itemCount}
+                  </span>
+                )}
+              </Link>
+            </>
+          )}
+
+                    {/* USER */}
+          {user ? (
+            <div ref={dropdownRef} className="relative">
+              <button
+                onClick={() => setUserMenuOpen((p) => !p)}
+                className="text-white hover:text-[#d4a24c]"
+              >
+                <User size={22} />
+              </button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-[#0b1d26] border border-white/10 rounded-lg shadow-lg overflow-hidden z-50">
+                  <Link href="/orders" className="block px-4 py-2 hover:bg-white/10">Orders</Link>
+                  <Link href="/reservation-history" className="block px-4 py-2 hover:bg-white/10">Reservations</Link>
+                  <Link href="/profile" className="block px-4 py-2 hover:bg-white/10">Account</Link>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-[#d4a24c] hover:bg-white/10"
+                  >
+                    Logout
+                  </button>
+                </div>
               )}
+            </div>
+          ) : (
+            <Link href="/login" className="text-white text-sm">
+              Log In
             </Link>
           )}
 
@@ -292,25 +419,6 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
-
-            {!user ? (
-              <Link href="/login" className="block text-white/80">
-                Log In
-              </Link>
-            ) : (
-              <div className="space-y-2">
-
-              <Link href="/cart" className="block text-white/80">Cart</Link>
-              <Link href="/orders" className="block text-white/80">Orders</Link>
-              <Link href="/reservation-history" className="block text-white/80">Reservations</Link>
-              <Link href="/profile" className="block text-white/80">Profile</Link>
-
-                <button onClick={handleLogout} className="text-red-400">
-                  Logout
-                </button>
-
-              </div>
-            )}
 
             {/* PWA INSTALL BUTTON - MOBILE */}
             {isInstallable && (

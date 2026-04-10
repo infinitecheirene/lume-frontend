@@ -1,7 +1,7 @@
 "use client"
 
 import { Home, Package, Megaphone, Users, ShoppingCart, LogOut, ChevronDown, Calendar, Mail, Phone } from "lucide-react"
-
+import logo from "@/assets/logo.jpg"
 import {
   Sidebar,
   SidebarContent,
@@ -30,7 +30,7 @@ const items = [
   { title: "Reservations", url: "/admin/reservations", icon: Calendar },
   { title: "Inquiries", url: "/admin/contacts", icon: Mail },
   { title: "Customers", url: "/admin/users", icon: Users },
-    {
+  {
     title: "Content Management",
     icon: Megaphone,
     items: [
@@ -63,7 +63,13 @@ export function AppSidebar() {
           <div className="px-4 py-6 bg-[#162A3A] text-white rounded-lg mx-3 mt-3 mb-4 shadow-lg">
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 overflow-hidden">
-                <Image src="/logo.jpg" alt="Lumè Bean and Bar Logo" fill className="object-contain rounded-full" />
+                <Image
+                  src={logo}
+                  alt="Lumè Bean and Bar"
+                  width={42}
+                  height={42}
+                  className="rounded-full object-cover"
+                />
               </div>
               <div>
                 <h2 className="font-semibold text-lg">Admin Panel</h2>
