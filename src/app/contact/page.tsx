@@ -121,7 +121,7 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-[#0b1d26]">
-      <section className="py-24">
+      <section className="py-24 justify-center flex">
         <div className="container px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
             <p className=" text-[#d4a24c] tracking-[0.3em] uppercase text-sm mb-3">Get In Touch</p>
