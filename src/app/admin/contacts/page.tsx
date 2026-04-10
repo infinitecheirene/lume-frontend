@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Eye, Search } from "lucide-react"
+import { Eye, Search, Loader2 } from "lucide-react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
@@ -31,9 +31,8 @@ export default function ContactsAdmin() {
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
 
-  // Detect desktop
   useEffect(() => {
-    const checkDesktop = () => setIsDesktop(window.innerWidth >= 1024)
+    const checkDesktop = () => setIsDesktop(window.innerWidth < 1024)
     checkDesktop()
     window.addEventListener("resize", checkDesktop)
     return () => window.removeEventListener("resize", checkDesktop)
@@ -75,17 +74,52 @@ export default function ContactsAdmin() {
   const startIdx = (currentPage - 1) * ITEMS_PER_PAGE
   const paginated = filtered.slice(startIdx, startIdx + ITEMS_PER_PAGE)
 
+  if (loading) {
+    return (
+      <SidebarProvider defaultOpen={!isDesktop}>
+        <div className="flex min-h-screen w-full bg-amber-50">
+          <AppSidebar />
+
+          <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
+            <div className="flex items-center justify-center min-h-screen w-full">
+              <div className="flex flex-col items-center gap-4 bg-[#162A3A] backdrop-blur-xl px-8 py-8 rounded-2xl border border-[#d4a24c]/70 shadow-2xl">
+                {/* Spinner */}
+                <div className="relative">
+                  <Loader2 className="h-8 w-8 animate-spin text-[#d4a24c]" />
+                  <div className="absolute inset-0 rounded-full border border-[#d4a24c]/20 blur-sm" />
+                </div>
+
+                {/* Text */}
+                <div className="text-center">
+                  <p className="text-lg font-semibold text-white">Loading Inquiries</p>
+                  <p className="text-sm text-white/60">Please wait while we fetch the data...</p>
+                </div>
+
+                {/* Animated dots */}
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </SidebarProvider>
+    )
+  }
+
   return (
     <SidebarProvider defaultOpen={!isDesktop}>
-      <div className="flex min-h-screen w-full bg-gray-50">
+      <div className="flex min-h-screen w-full bg-yellow-50">
         <AppSidebar />
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
           <main className="p-8 max-w-7xl mx-auto space-y-6">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Inquiries Management</h1>
             <p className="text-gray-600 mt-1">View contact inquiries submitted via the website.</p>
 
-            <Card className="bg-white shadow-xl p-0 pb-5">
-              <CardHeader className="p-3 bg-blue-900 text-white rounded-t-lg flex justify-between items-center">
+            <Card className="bg-white/70 backdrop-blur-sm shadow-xl p-0 pb-5 border-blue-100">
+              <CardHeader className="p-3 bg-[#162A3A] text-white rounded-t-lg">
                 <div className="relative flex-1 max-w-sm">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-700" />
                   <Input
@@ -152,42 +186,75 @@ export default function ContactsAdmin() {
 
             {/* View Modal */}
             <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-              <DialogContent className="text-black max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Contact Details</DialogTitle>
-                  <DialogDescription>View contact inquiry information.</DialogDescription>
-                </DialogHeader>
+              <DialogContent className="max-w-lg bg-[#fdfaf6] border border-[#e7d7c9] rounded-2xl p-0 overflow-hidden">
 
+                {/* Header */}
+                <div className="bg-[#162a3a] text-white px-6 py-4">
+                  <DialogHeader>
+                    <DialogTitle className="text-lg font-semibold">
+                      Contact Details
+                    </DialogTitle>
+                    <DialogDescription className="text-[#d6c8bf] text-sm">
+                      Guest inquiry information
+                    </DialogDescription>
+                  </DialogHeader>
+                </div>
+
+                {/* Body */}
                 {viewContact && (
-                  <div className="space-y-3 text-sm">
-                    <div>
-                      <p className="font-semibold">Name</p>
-                      <p className="text-gray-700">{viewContact.name}</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold">Email</p>
-                      <p className="text-gray-700">{viewContact.email}</p>
-                    </div>
-                    {viewContact.phone && (
-                      <div>
-                        <p className="font-semibold">Phone</p>
-                        <p className="text-gray-700">{viewContact.phone}</p>
+                  <div className="p-6 space-y-5 text-sm">
+
+                    {/* Grid Info */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                      <div className="bg-white border border-[#eee2d8] rounded-lg p-3">
+                        <p className="text-xs text-[#a89a94]">Name</p>
+                        <p className="font-semibold text-[#3b2f2f]">{viewContact.name}</p>
                       </div>
-                    )}
-                    {viewContact.subject && (
-                      <div>
-                        <p className="font-semibold">Subject</p>
-                        <p className="text-gray-700">{viewContact.subject}</p>
+
+                      <div className="bg-white border border-[#eee2d8] rounded-lg p-3">
+                        <p className="text-xs text-[#a89a94]">Email</p>
+                        <p className="font-semibold text-[#3b2f2f] break-all">
+                          {viewContact.email}
+                        </p>
                       </div>
-                    )}
-                    <div>
-                      <p className="font-semibold">Message</p>
-                      <p className="text-gray-700 whitespace-pre-wrap">{viewContact.message}</p>
+
+                      {viewContact.phone && (
+                        <div className="bg-white border border-[#eee2d8] rounded-lg p-3">
+                          <p className="text-xs text-[#a89a94]">Phone</p>
+                          <p className="font-semibold text-[#3b2f2f]">
+                            {viewContact.phone}
+                          </p>
+                        </div>
+                      )}
+
+                      {viewContact.subject && (
+                        <div className="bg-white border border-[#eee2d8] rounded-lg p-3">
+                          <p className="text-xs text-[#a89a94]">Subject</p>
+                          <p className="font-semibold text-[#3b2f2f]">
+                            {viewContact.subject}
+                          </p>
+                        </div>
+                      )}
+
                     </div>
-                    <div>
-                      <p className="font-semibold">Date Submitted</p>
-                      <p className="text-gray-700">{new Date(viewContact.created_at).toLocaleString()}</p>
+
+                    {/* Message */}
+                    <div className="bg-white border border-[#eee2d8] rounded-lg p-4">
+                      <p className="text-xs text-[#a89a94] mb-2">Message</p>
+                      <p className="text-[#3b2f2f] leading-relaxed whitespace-pre-wrap">
+                        {viewContact.message}
+                      </p>
                     </div>
+
+                    {/* Date */}
+                    <div className="flex justify-between items-center pt-2 border-t border-[#eee2d8]">
+                      <p className="text-xs text-[#a89a94]">Date Submitted</p>
+                      <p className="text-xs font-medium text-[#3b2f2f]">
+                        {new Date(viewContact.created_at).toLocaleString()}
+                      </p>
+                    </div>
+
                   </div>
                 )}
               </DialogContent>

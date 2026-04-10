@@ -36,8 +36,7 @@ import {
 interface Announcement {
   id: number
   title: string
-  dscription: string
-  
+  description: string
   is_active: boolean
   created_at: string
 }
@@ -46,13 +45,13 @@ export default function AdminAnnouncementsPage() {
   const { toast } = useToast()
   const [search, setSearch] = useState("")
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null)
   const [formData, setFormData] = useState({
     title: "",
-    content: "",
+    description: "",
     isActive: true,
   })
 
@@ -70,7 +69,7 @@ export default function AdminAnnouncementsPage() {
   const inactiveCount = announcements.filter((a) => !a.is_active).length
 
   const filteredAnnouncements = announcements.filter(
-    (a) => a.title.toLowerCase().includes(search.toLowerCase()) || a.content.toLowerCase().includes(search.toLowerCase()),
+    (a) => a.title.toLowerCase().includes(search.toLowerCase()) || a.description?.toLowerCase().includes(search.toLowerCase()),
   )
 
   useEffect(() => {
@@ -79,7 +78,7 @@ export default function AdminAnnouncementsPage() {
 
   const fetchAnnouncements = async () => {
     try {
-      setIsLoading(true)
+      setLoading(true)
       const response = await fetch("/api/announcements", {
         method: "GET",
         headers: {
@@ -101,12 +100,12 @@ export default function AdminAnnouncementsPage() {
         variant: "destructive",
       })
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
   const handleCreate = async () => {
-    if (!formData.title.trim() || !formData.content.trim()) {
+    if (!formData.title.trim() || !formData.description.trim()) {
       toast({
         title: "Validation Error",
         description: "Title and content are required",
@@ -130,7 +129,7 @@ export default function AdminAnnouncementsPage() {
       const newAnnouncement = await response.json()
       setAnnouncements([newAnnouncement, ...announcements])
       setIsDialogOpen(false)
-      setFormData({ title: "", content: "", isActive: true })
+      setFormData({ title: "", description: "", isActive: true })
       toast({
         title: "Success",
         description: "Announcement created successfully",
@@ -151,7 +150,7 @@ export default function AdminAnnouncementsPage() {
     setEditingAnnouncement(announcement)
     setFormData({
       title: announcement.title,
-      content: announcement.content,
+      description: announcement.description,
       isActive: announcement.is_active,
     })
     setIsDialogOpen(true)
@@ -160,7 +159,7 @@ export default function AdminAnnouncementsPage() {
   const handleUpdate = async () => {
     if (!editingAnnouncement) return
 
-    if (!formData.title.trim() || !formData.content.trim()) {
+    if (!formData.title.trim() || !formData.description.trim()) {
       toast({
         title: "Validation Error",
         description: "Title and content are required",
@@ -185,7 +184,7 @@ export default function AdminAnnouncementsPage() {
       setAnnouncements(announcements.map((a) => (a.id === editingAnnouncement.id ? updatedAnnouncement : a)))
       setIsDialogOpen(false)
       setEditingAnnouncement(null)
-      setFormData({ title: "", content: "", isActive: true })
+      setFormData({ title: "", description: "", isActive: true })
       toast({
         title: "Success",
         description: "Announcement updated successfully",
@@ -234,7 +233,7 @@ export default function AdminAnnouncementsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: announcement.title,
-          content: announcement.content,
+          description: announcement.description,
           isActive: !announcement.is_active,
         }),
       })
@@ -257,6 +256,41 @@ export default function AdminAnnouncementsPage() {
         variant: "destructive",
       })
     }
+  }
+  
+  if (loading) {
+    return (
+      <SidebarProvider defaultOpen={!isDesktop}>
+        <div className="flex min-h-screen w-full bg-amber-50">
+          <AppSidebar />
+
+          <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
+            <div className="flex items-center justify-center min-h-screen w-full">
+              <div className="flex flex-col items-center gap-4 bg-[#162A3A] backdrop-blur-xl px-8 py-8 rounded-2xl border border-[#d4a24c]/70 shadow-2xl">
+                {/* Spinner */}
+                <div className="relative">
+                  <Loader2 className="h-8 w-8 animate-spin text-[#d4a24c]" />
+                  <div className="absolute inset-0 rounded-full border border-[#d4a24c]/20 blur-sm" />
+                </div>
+
+                {/* Text */}
+                <div className="text-center">
+                  <p className="text-lg font-semibold text-white">Loading Announcements</p>
+                  <p className="text-sm text-white/60">Please wait while we fetch the data...</p>
+                </div>
+
+                {/* Animated dots */}
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </SidebarProvider>
+    )
   }
 
   return (
@@ -288,7 +322,7 @@ export default function AdminAnnouncementsPage() {
                       <Button
                         onClick={() => {
                           setEditingAnnouncement(null)
-                          setFormData({ title: "", content: "", isActive: true })
+                          setFormData({ title: "", description: "", isActive: true })
                         }}
                         className="bg-yellow-600 hover:bg-orange-700 w-full md:w-auto"
                       >
@@ -317,10 +351,10 @@ export default function AdminAnnouncementsPage() {
                         <div className="space-y-2">
                           <Label htmlFor="content">Content</Label>
                           <Textarea
-                            id="content"
-                            value={formData.content}
-                            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                            placeholder="Enter announcement content"
+                            id="description"
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            placeholder="Enter announcement description"
                             rows={4}
                           />
                         </div>
@@ -393,14 +427,14 @@ export default function AdminAnnouncementsPage() {
 
             {/* Announcements List */}
             <div className="space-y-4 grid grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-              {isLoading ? (
+              {loading ? (
                 <Card>
                   <CardContent className="text-center py-12">
                     <Loader2 className="w-8 h-8 text-orange-600 mx-auto mb-4 animate-spin" />
                     <p className="text-gray-600">Loading announcements...</p>
                   </CardContent>
                 </Card>
-              ) : announcements.length === 0 ? (
+              ) : filteredAnnouncements.length === 0 ? (
                 <Card>
                   <CardContent className="text-center py-12">
                     <Megaphone className="w-12 h-12 text-gray-400 mx-auto mb-4" />

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
-import { Trash2, Edit2, Plus, X, Search, Underline } from "lucide-react"
+import { Trash2, Edit2, Plus, X, Search, Underline, Loader2 } from "lucide-react"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -155,12 +155,36 @@ export default function BlogPostsAdmin() {
     return `${API_BASE_URL}/${normalizedPath}`
   }
 
-  if (loading) {
+    if (loading) {
     return (
       <SidebarProvider defaultOpen={!isDesktop}>
-        <AppSidebar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin h-10 w-10 border-b-2 border-primary rounded-full" />
+        <div className="flex min-h-screen w-full bg-amber-50">
+          <AppSidebar />
+
+          <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
+            <div className="flex items-center justify-center min-h-screen w-full">
+              <div className="flex flex-col items-center gap-4 bg-[#162A3A] backdrop-blur-xl px-8 py-8 rounded-2xl border border-[#d4a24c]/70 shadow-2xl">
+                {/* Spinner */}
+                <div className="relative">
+                  <Loader2 className="h-8 w-8 animate-spin text-[#d4a24c]" />
+                  <div className="absolute inset-0 rounded-full border border-[#d4a24c]/20 blur-sm" />
+                </div>
+
+                {/* Text */}
+                <div className="text-center">
+                  <p className="text-lg font-semibold text-white">Loading Blog Posts</p>
+                  <p className="text-sm text-white/60">Please wait while we fetch the data...</p>
+                </div>
+
+                {/* Animated dots */}
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </SidebarProvider>
     )
@@ -296,7 +320,16 @@ export default function BlogPostsAdmin() {
 
               {/* Posts List */}
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-                {filteredPosts.map((post) => (
+                {filteredPosts.length === 0 ? (
+                  <Card className="col-span-full">
+                    <CardContent className="text-center py-12">
+                      <Underline className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600">No blog posts found</p>
+                      <p className="text-sm text-gray-500 mt-1">Create your first blog post to get started</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  filteredPosts.map((post) => (
                   <Card key={post.id} className="overflow-hidden p-0 flex flex-col h-[360px]">
                     <Image
                       src={getImageUrl(post.image_url) || "/placeholder.png"}
@@ -334,7 +367,8 @@ export default function BlogPostsAdmin() {
                       <p className="text-md text-gray-700 line-clamp-2">{post.excerpt}</p>
                     </CardContent>
                   </Card>
-                ))}
+                ))
+                )}
               </div>
             </div>
 
