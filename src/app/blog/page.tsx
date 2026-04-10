@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight, X, ChefHat, Newspaper } from "lucide-react"
 import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
+import Image from "next/image"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -18,8 +19,7 @@ interface BlogPost {
   content: string
   author: string
   created_at: string
-  video_url?: string
-  thumbnail_url?: string
+  image_url?: string
 }
 
 export default function BlogPage() {
@@ -67,14 +67,8 @@ export default function BlogPage() {
 
       <div className="container mx-auto px-4 py-16 relative z-10">
         {/* Heading */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
-        >
-          <p className="tracking-[0.3em] uppercase text-sm mb-3 text-[#d4a24c]">
-            Our Offerings
-          </p>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
+          <p className="tracking-[0.3em] uppercase text-sm mb-3 text-[#d4a24c]">Our Offerings</p>
           <h2 className={`${playfair.className} text-4xl md:text-5xl font-bold`}>
             The <span className="text-[#d4a24c] italic">Menu</span>
           </h2>
@@ -84,10 +78,7 @@ export default function BlogPage() {
         {loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className="animate-pulse overflow-hidden rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm shadow-lg"
-              >
+              <div key={i} className="animate-pulse overflow-hidden rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm shadow-lg">
                 <div className="h-72 bg-gradient-to-br from-white/20 to-white/5"></div>
                 <div className="p-4">
                   <div className="h-6 bg-white/20 rounded w-3/4 mb-2"></div>
@@ -105,7 +96,7 @@ export default function BlogPage() {
         {error && (
           <div className="max-w-2xl mx-auto">
             <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 text-center shadow-2xl">
-              <p className="text-[#ff6b6b] text-lg font-semibold">⚠️ {error}</p>
+              <p className="text-[#d4a24c] text-lg font-semibold">⚠️ {error}</p>
             </div>
           </div>
         )}
@@ -126,43 +117,29 @@ export default function BlogPage() {
               >
                 {/* Thumbnail/Video Preview */}
                 <div className="relative h-72 overflow-hidden bg-gradient-to-br from-white/20 to-white/5">
-                  {post.thumbnail_url ? (
+                  {post.image_url ? (
                     <img
-                      src={`${process.env.NEXT_PUBLIC_API_URL}${post.thumbnail_url}`}
+                      src={`${process.env.NEXT_PUBLIC_API_URL}${post.image_url}`}
                       alt={post.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                       onError={(e) => {
                         e.currentTarget.src = "/placeholder.svg"
                       }}
                     />
-                  ) : post.video_url ? (
-                    <video
-                      src={`${process.env.NEXT_PUBLIC_API_URL}${post.video_url}`}
-                      className="w-full h-full object-cover"
-                      muted
-                      playsInline
-                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-5xl">🍽️</div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                  {/* Video indicator */}
-                  {post.video_url && (
-                    <div className="absolute top-4 left-4 bg-white text-gray-800 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
-                      ▶️ Video
-                    </div>
-                  )}
-
                   {/* Date badge */}
-                  <div className="absolute top-4 right-4 bg-[#ff6b6b] text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg">
+                  <div className="absolute top-4 right-4 bg-[#d4a24c] text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg">
                     {new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                   </div>
                 </div>
 
                 {/* Content */}
                 <div className="p-4 flex flex-col flex-grow">
-                  <h3 className="text-xl font-bold line-clamp-2 group-hover:text-[#ff6b6b] transition-colors leading-tight mb-3 text-white">
+                  <h3 className="text-xl font-bold line-clamp-2 group-hover:text-[#d4a24c] transition-colors leading-tight mb-3 text-white">
                     {post.title}
                   </h3>
 
@@ -170,18 +147,18 @@ export default function BlogPage() {
 
                   {/* Author info with avatar */}
                   <div className="flex items-center gap-3 pt-3 mb-4 border-t border-white/10">
-                    <div className="w-8 h-8 rounded-full bg-[#ff6b6b] flex items-center justify-center text-white text-xs font-bold">
+                    <div className="w-8 h-8 rounded-full bg-[#d4a24c] flex items-center justify-center text-white text-xs font-bold">
                       {post.author.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-white truncate">{post.author}</p>
-                      <p className="text-xs text-white/50">Recipe Creator</p>
+                      <p className="text-xs text-white/50">Author</p>
                     </div>
                   </div>
 
                   {/* Button - pushed to bottom */}
                   <div className="mt-auto">
-                    <Button className="w-full bg-white hover:bg-white/90 text-[#8B0000] shadow-lg hover:shadow-xl transition-all duration-300 group/btn hover:scale-105">
+                    <Button className="w-full bg-white hover:bg-white/90 text-yellow-600 shadow-lg hover:shadow-xl transition-all duration-300 group/btn hover:scale-105">
                       Read More
                       <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
                     </Button>
@@ -211,23 +188,17 @@ export default function BlogPage() {
           onClick={() => setSelectedPost(null)}
         >
           <div
-            className="bg-gradient-to-b from-[#8B0000] to-[#6B0000] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-white/20 animate-in zoom-in duration-300"
+            className="bg-black rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-white/20 animate-in zoom-in duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header - Video or Thumbnail */}
             <div className="relative h-64 md:h-96 overflow-hidden bg-gradient-to-br from-white/20 to-white/5">
-              {selectedPost.video_url ? (
-                <video
-                  src={`${process.env.NEXT_PUBLIC_API_URL}${selectedPost.video_url}`}
-                  className="w-full h-full object-cover"
-                  controls
-                  playsInline
-                />
-              ) : selectedPost.thumbnail_url ? (
-                <img
-                  src={`${process.env.NEXT_PUBLIC_API_URL}${selectedPost.thumbnail_url}`}
+              {selectedPost.image_url ? (
+                <Image
+                  src={`${process.env.NEXT_PUBLIC_API_URL}${selectedPost.image_url}`}
                   alt={selectedPost.title}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                   onError={(e) => {
                     e.currentTarget.src = "/placeholder.svg"
                   }}
@@ -239,21 +210,10 @@ export default function BlogPage() {
               {/* Close button */}
               <button
                 onClick={() => setSelectedPost(null)}
-                className="absolute top-4 right-4 bg-white hover:bg-[#ff6b6b] hover:text-white p-2 rounded-full shadow-lg transition-all duration-300 hover:scale-110 z-10"
+                className="absolute top-4 right-4 bg-white hover:bg-[#d4a24c] hover:text-white p-2 rounded-full shadow-lg transition-all duration-300 hover:scale-110 z-10"
               >
                 <X className="w-6 h-6" />
               </button>
-
-              {/* Date badge */}
-              {!selectedPost.video_url && (
-                <div className="absolute top-4 left-4 bg-[#ff6b6b] text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                  {new Date(selectedPost.created_at).toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </div>
-              )}
             </div>
 
             {/* Modal Content */}
@@ -263,7 +223,7 @@ export default function BlogPage() {
 
               {/* Author info */}
               <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/20">
-                <div className="w-12 h-12 rounded-full bg-[#ff6b6b] flex items-center justify-center text-white text-lg font-bold">
+                <div className="w-12 h-12 rounded-full bg-[#d4a24c] flex items-center justify-center text-white text-lg font-bold">
                   {selectedPost.author.charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -274,7 +234,7 @@ export default function BlogPage() {
 
               {/* Excerpt */}
               <div className="mb-6">
-                <p className="text-xl text-white/90 leading-relaxed italic border-l-4 border-[#ff6b6b] pl-4 bg-white/5 py-3 rounded-r-lg">
+                <p className="text-xl text-white/90 leading-relaxed italic border-l-4 border-[#d4a24c] pl-4 bg-white/5 py-3 rounded-r-lg">
                   {selectedPost.excerpt}
                 </p>
               </div>
@@ -299,9 +259,10 @@ export default function BlogPage() {
             transform: translateY(0);
           }
         }
-        
+
         @keyframes blob {
-          0%, 100% {
+          0%,
+          100% {
             transform: translate(0, 0) scale(1);
           }
           33% {
@@ -311,15 +272,15 @@ export default function BlogPage() {
             transform: translate(-20px, 20px) scale(0.9);
           }
         }
-        
+
         .animate-blob {
           animation: blob 7s infinite;
         }
-        
+
         .animation-delay-2000 {
           animation-delay: 2s;
         }
-        
+
         .animation-delay-4000 {
           animation-delay: 4s;
         }
