@@ -164,7 +164,7 @@ export default function ProductsAdminPage() {
       formData.append("description", newFormData.description)
       formData.append("price", newFormData.price)
       formData.append("category", newFormData.category)
-        formData.append("best_seller", newFormData.best_seller.toString())
+      formData.append("best_seller", newFormData.best_seller.toString())
 
       if (selectedImage) {
         formData.append("image", selectedImage)
@@ -627,6 +627,19 @@ export default function ProductsAdminPage() {
                 <CardHeader className="p-3 bg-[#162A3A] text-white rounded-t-lg">
                   <div className="flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row gap-3 items-center sm:items-center justify-between">
+                      {/* Search Bar */}
+                      <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                        <div className="relative flex-1 max-w-sm">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-950" />
+                          <Input
+                            placeholder="Search products..."
+                            value={globalFilter || ""}
+                            onChange={(event) => setGlobalFilter(event.target.value)}
+                            className="pl-9 pr-3 py-2 w-full bg-blue-100 border-blue-950 text-gray-950 placeholder:text-gray-950 focus:bg-blue-50 focus:border-blue-500 transition-all duration-200"
+                          />
+                        </div>
+                      </div>
+                      
                       {/* Add Product Button */}
                       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
                         <DialogTrigger asChild>
@@ -639,7 +652,7 @@ export default function ProductsAdminPage() {
                             <span className="sm:hidden">Add</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto mx-4 bg-amber-50">
+                        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto mx-4 bg-amber-50 text-black">
                           <DialogHeader className="bg-[#162A3A] text-white p-6 -m-6 mb-4 rounded-t-lg">
                             <DialogTitle className="text-2xl font-bold">Add New Product</DialogTitle>
                             <DialogDescription className="text-amber-50">Fill in the details for your new menu item.</DialogDescription>
@@ -779,25 +792,6 @@ export default function ProductsAdminPage() {
                           </form>
                         </DialogContent>
                       </Dialog>
-
-                      {/* Price Range Filter */}
-
-                      {/* Properties */}
-
-                      {/* Category */}
-
-                      {/* Search Bar */}
-                      <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
-                        <div className="relative flex-1 max-w-sm">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-950" />
-                          <Input
-                            placeholder="Search products..."
-                            value={globalFilter || ""}
-                            onChange={(event) => setGlobalFilter(event.target.value)}
-                            className="pl-9 pr-3 py-2 w-full bg-blue-100 border-blue-950 text-gray-950 placeholder:text-gray-950 focus:bg-blue-50 focus:border-blue-500 transition-all duration-200"
-                          />
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </CardHeader>

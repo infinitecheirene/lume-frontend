@@ -29,7 +29,7 @@ interface Product {
   updated_at: string
 }
 
-const categories = ["Appetizers", "Main Course", "Desserts", "Coffee", "Beverages", "Noodles", "Rice Dishes", "Soups", "Add-ons"]
+const categories = ["Coffee", "Bar", "Food"]
 
 const getImageUrl = (imagePath: string) => {
   if (!imagePath) return "/placeholder-food.jpg"
@@ -248,13 +248,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 <CardHeader className="bg-slate-800 text-white rounded-t-lg">
                   <CardTitle className="flex py-2 items-center gap-2 text-xl font-bold">
                     <span>Product Details</span>
-                    {(formData.is_spicy || formData.is_vegetarian || formData.is_featured) && (
-                      <div className="flex gap-1 ml-auto">
-                        {formData.is_featured && <StarBadge />}
-                        {formData.is_spicy && <FlameBadge />}
-                        {formData.is_vegetarian && <LeafBadge />}
-                      </div>
-                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 bg-white">
@@ -284,23 +277,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     </SidebarProvider>
   )
 }
-
-// --- Subcomponents ---
-const StarBadge = () => (
-  <div className="bg-white/20 rounded-full p-1">
-    <Star className="w-4 h-4 text-white" />
-  </div>
-)
-const FlameBadge = () => (
-  <div className="bg-white/20 rounded-full p-1">
-    <Flame className="w-4 h-4 text-white" />
-  </div>
-)
-const LeafBadge = () => (
-  <div className="bg-white/20 rounded-full p-1">
-    <Leaf className="w-4 h-4 text-white" />
-  </div>
-)
 
 function ProductMeta({ product }: { product: Product }) {
   return (
