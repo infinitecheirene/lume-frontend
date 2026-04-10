@@ -13,6 +13,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import Image from "next/image"
 import { Playfair_Display } from "next/font/google"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Switch } from "@/components/ui/switch"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -595,14 +596,11 @@ export default function ReservationsAdmin() {
                       <CardContent className="p-2 flex flex-col h-full">
                         {date && (
                           <>
-                            <div className="text-xs sm:text-sm font-semibold mb-2 text-gray-700">
-                              {date.getDate()}
-                            </div>
+                            <div className="text-xs sm:text-sm font-semibold mb-2 text-gray-700">{date.getDate()}</div>
 
                             <div className="space-y-1 flex-1 overflow-hidden">
                               {dayReservations.slice(0, 3).map((reservation) => (
                                 <div key={reservation.id} className="relative group pr-6">
-
                                   {/* Main Button */}
                                   <button
                                     onClick={() => {
@@ -611,27 +609,18 @@ export default function ReservationsAdmin() {
                                     }}
                                     className={`w-full text-left px-2 py-1 rounded text-[10px] sm:text-xs truncate font-medium transition ${getReservationColor(reservation)}`}
                                   >
-                                    <span className="hidden sm:inline">
-                                      {reservation.time.substring(0, 5)} •
-                                    </span>{" "}
-                                    {reservation.reservation_status}
+                                    <span className="hidden sm:inline">{reservation.time.substring(0, 5)} •</span> {reservation.reservation_status}
                                   </button>
 
                                   {/* Dropdown */}
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                      <button
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="absolute top-1 right-1 p-1 rounded "
-                                      >
+                                      <button onClick={(e) => e.stopPropagation()} className="absolute top-1 right-1 p-1 rounded ">
                                         <MoreHorizontal className="w-3 h-3" />
                                       </button>
                                     </DropdownMenuTrigger>
 
-                                    <DropdownMenuContent
-                                      className="w-40 bg-white border shadow-md"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
+                                    <DropdownMenuContent className="w-40 bg-white border shadow-md" onClick={(e) => e.stopPropagation()}>
                                       <DropdownMenuItem
                                         onClick={() => {
                                           setStatusDialogReservation(reservation)
@@ -684,11 +673,7 @@ export default function ReservationsAdmin() {
                               ))}
 
                               {/* Overflow indicator */}
-                              {dayReservations.length > 3 && (
-                                <div className="text-[10px] text-gray-500 pl-1">
-                                  +{dayReservations.length - 3} more
-                                </div>
-                              )}
+                              {dayReservations.length > 3 && <div className="text-[10px] text-gray-500 pl-1">+{dayReservations.length - 3} more</div>}
                             </div>
                           </>
                         )}
@@ -934,13 +919,8 @@ export default function ReservationsAdmin() {
                       {/* Walk-in / Status */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                         <div>
-                          <span className="text-md font-semibold text-gray-800">Walk-In</span>
-                          <input
-                            type="checkbox"
-                            checked={formData.is_walkin}
-                            onChange={(e) => setFormData({ ...formData, is_walkin: e.target.checked })}
-                            className="h-5 w-5"
-                          />
+                          <span className="text-md font-semibold text-gray-800">Walk-In</span>{" "}
+                          <Switch checked={formData.is_walkin} onCheckedChange={(checked) => setFormData({ ...formData, is_walkin: checked })} />
                         </div>
                         <div>
                           <span className="text-md font-semibold text-gray-800">Reservation Status</span>
@@ -1021,17 +1001,10 @@ export default function ReservationsAdmin() {
                     </div>
 
                     <div className="flex gap-2 mt-4">
-                      <Button
-                        variant="outline"
-                        className="flex-1 text-gray-800"
-                        onClick={() => setOpenStatusDialog(false)}
-                      >
+                      <Button variant="outline" className="flex-1 text-gray-800" onClick={() => setOpenStatusDialog(false)}>
                         Cancel
                       </Button>
-                      <Button
-                        onClick={handleStatusUpdate}
-                        className="flex-1 rounded-md bg-[#d4a24c] text-gray-800 hover:bg-[#d4a24c]/70"
-                      >
+                      <Button onClick={handleStatusUpdate} className="flex-1 rounded-md bg-[#d4a24c] text-gray-800 hover:bg-[#d4a24c]/70">
                         Save Status
                       </Button>
                     </div>
@@ -1048,36 +1021,31 @@ export default function ReservationsAdmin() {
                 }}
               >
                 <DialogContent className="lg:max-w-5xl max-h-[90vh] overflow-y-auto rounded-xl shadow-lg border border-gray-200 p-0 bg-white">
-
                   {viewingReservation && (
                     <div className="px-6 py-8 space-y-8">
-
                       {/* Header */}
                       <DialogHeader className="pb-4 border-b px-2">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                          <DialogTitle className="text-2xl font-bold text-gray-900">
-                            Reservation Details
-                          </DialogTitle>
+                          <DialogTitle className="text-2xl font-bold text-gray-900">Reservation Details</DialogTitle>
 
                           <div className="flex flex-wrap gap-2">
                             <span
                               className={`px-3 py-1 rounded-lg text-sm font-semibold 
-                                ${viewingReservation.reservation_status === "confirmed"
-                                  ? "bg-green-100 text-green-800"
-                                  : viewingReservation.reservation_status === "pending"
-                                    ? "bg-yellow-100 text-yellow-800"
-                                    : viewingReservation.reservation_status === "cancelled"
-                                      ? "bg-red-100 text-red-800"
-                                      : "bg-gray-100 text-gray-800"
+                                ${
+                                  viewingReservation.reservation_status === "confirmed"
+                                    ? "bg-green-100 text-green-800"
+                                    : viewingReservation.reservation_status === "pending"
+                                      ? "bg-yellow-100 text-yellow-800"
+                                      : viewingReservation.reservation_status === "cancelled"
+                                        ? "bg-red-100 text-red-800"
+                                        : "bg-gray-100 text-gray-800"
                                 }`}
                             >
                               {viewingReservation.reservation_status}
                             </span>
 
                             {viewingReservation.is_walkin && (
-                              <span className="px-3 py-1 rounded-lg text-sm font-semibold bg-blue-100 text-blue-800">
-                                Walk-in
-                              </span>
+                              <span className="px-3 py-1 rounded-lg text-sm font-semibold bg-blue-100 text-blue-800">Walk-in</span>
                             )}
 
                             <CircleX className="w-5 h-5 text-gray-500 cursor-pointer" onClick={() => setOpenView(false)} />
@@ -1087,10 +1055,8 @@ export default function ReservationsAdmin() {
 
                       {/* MAIN GRID */}
                       <div className="grid lg:grid-cols-3 gap-6">
-
                         {/* LEFT SIDE */}
                         <div className="lg:col-span-2 space-y-6">
-
                           {/* Guest Info */}
                           <section className="bg-gray-50 rounded-xl p-5 space-y-4">
                             <h3 className="text-lg font-bold text-gray-900">Guest Information</h3>
@@ -1113,9 +1079,7 @@ export default function ReservationsAdmin() {
 
                               <div>
                                 <p className="text-sm text-gray-500">Guests</p>
-                                <p className="text-base font-medium text-gray-800">
-                                  {viewingReservation.guests} people
-                                </p>
+                                <p className="text-base font-medium text-gray-800">{viewingReservation.guests} people</p>
                               </div>
                             </div>
                           </section>
@@ -1127,16 +1091,12 @@ export default function ReservationsAdmin() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                               <div>
                                 <p className="text-sm text-gray-500">Date</p>
-                                <p className="text-base font-medium text-gray-800">
-                                  {formatDate(viewingReservation.date)}
-                                </p>
+                                <p className="text-base font-medium text-gray-800">{formatDate(viewingReservation.date)}</p>
                               </div>
 
                               <div>
                                 <p className="text-sm text-gray-500">Time</p>
-                                <p className="text-base font-medium text-gray-800">
-                                  {formatTime(viewingReservation.time)}
-                                </p>
+                                <p className="text-base font-medium text-gray-800">{formatTime(viewingReservation.time)}</p>
                               </div>
                             </div>
                           </section>
@@ -1150,18 +1110,14 @@ export default function ReservationsAdmin() {
                                 {viewingReservation.dining_preference && (
                                   <div>
                                     <p className="text-sm text-gray-500">Dining Preference</p>
-                                    <p className="text-base font-medium text-gray-800">
-                                      {viewingReservation.dining_preference}
-                                    </p>
+                                    <p className="text-base font-medium text-gray-800">{viewingReservation.dining_preference}</p>
                                   </div>
                                 )}
 
                                 {viewingReservation.occasion && (
                                   <div>
                                     <p className="text-sm text-gray-500">Occasion</p>
-                                    <p className="text-base font-medium text-gray-800">
-                                      {viewingReservation.occasion}
-                                    </p>
+                                    <p className="text-base font-medium text-gray-800">{viewingReservation.occasion}</p>
                                   </div>
                                 )}
                               </div>
@@ -1171,15 +1127,12 @@ export default function ReservationsAdmin() {
                           {/* Special Requests */}
                           <section className="bg-gray-50 rounded-xl p-5 space-y-2">
                             <h3 className="text-lg font-bold text-gray-900">Special Requests</h3>
-                            <p className="text-gray-700">
-                              {viewingReservation.special_requests || "None"}
-                            </p>
+                            <p className="text-gray-700">{viewingReservation.special_requests || "None"}</p>
                           </section>
                         </div>
 
                         {/* RIGHT SIDE */}
                         <div className="space-y-6">
-
                           <section className="bg-gray-50 rounded-xl p-5 space-y-4">
                             <div className="flex items-center justify-between">
                               <h3 className="text-lg font-bold text-gray-900">Payment Details</h3>
@@ -1189,9 +1142,7 @@ export default function ReservationsAdmin() {
                               {viewingReservation.reservation_fee != null && (
                                 <div>
                                   <p className="text-sm text-gray-500">Reservation Fee</p>
-                                  <p className="text-base font-medium text-gray-800">
-                                    ₱{viewingReservation.reservation_fee}
-                                  </p>
+                                  <p className="text-base font-medium text-gray-800">₱{viewingReservation.reservation_fee}</p>
                                 </div>
                               )}
 
@@ -1199,9 +1150,7 @@ export default function ReservationsAdmin() {
                                 <div>
                                   <p className="text-sm text-gray-500">Amount Paid</p>
                                   <p className="text-base font-medium text-gray-800">
-                                    {viewingReservation.reservation_fee_paid === 0
-                                      ? "Unpaid"
-                                      : `₱${viewingReservation.reservation_fee_paid}`}
+                                    {viewingReservation.reservation_fee_paid === 0 ? "Unpaid" : `₱${viewingReservation.reservation_fee_paid}`}
                                   </p>
                                 </div>
                               )}
@@ -1209,18 +1158,14 @@ export default function ReservationsAdmin() {
                               {viewingReservation.payment_method && (
                                 <div>
                                   <p className="text-sm text-gray-500">Payment Method</p>
-                                  <p className="text-base font-medium text-gray-800">
-                                    {viewingReservation.payment_method}
-                                  </p>
+                                  <p className="text-base font-medium text-gray-800">{viewingReservation.payment_method}</p>
                                 </div>
                               )}
 
                               {viewingReservation.payment_reference && (
                                 <div>
                                   <p className="text-sm text-gray-500">Reference</p>
-                                  <p className="text-base font-medium text-gray-800">
-                                    {viewingReservation.payment_reference}
-                                  </p>
+                                  <p className="text-base font-medium text-gray-800">{viewingReservation.payment_reference}</p>
                                 </div>
                               )}
                             </div>
@@ -1234,7 +1179,7 @@ export default function ReservationsAdmin() {
                                     window.open(
                                       `${process.env.NEXT_PUBLIC_API_URL}/${viewingReservation.payment_receipt}`,
                                       "_blank",
-                                      "noopener,noreferrer"
+                                      "noopener,noreferrer",
                                     )
                                   }
                                   className="w-full px-4 py-2 rounded-lg bg-yellow-600 text-white font-semibold hover:bg-yellow-700"
@@ -1252,7 +1197,6 @@ export default function ReservationsAdmin() {
                               </div>
                             )}
                           </section>
-
                         </div>
                       </div>
                     </div>
