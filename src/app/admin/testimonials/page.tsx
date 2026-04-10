@@ -219,15 +219,7 @@ export default function TestimonialsAdmin() {
     <SidebarProvider defaultOpen={!isDesktop}>
       <div className="flex min-h-screen w-full bg-amber-50">
         <AppSidebar />
-        <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
-          {isDesktop && (
-            <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-[#162A3A] px-4 shadow-sm">
-              <SidebarTrigger className="-ml-1" />
-              <Image src="/logo.jpg" alt="Lumè Bean and Bar Logo" width={40} height={40} className="object-contain rounded-full" />
-              <h1 className={`${playfair.className} text-lg font-semibold text-white`}>Lumè Bean and Bar</h1>
-            </div>
-          )}
-
+        <div className={`flex-1 min-w-0 ${isDesktop ? "ml-72" : "ml-0"}`}>
           <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6">
             <div className="max-w-full space-y-4 sm:space-y-6">
               {/* Header & Overall Rating */}
@@ -249,23 +241,27 @@ export default function TestimonialsAdmin() {
               {/* Testimonials Table */}
               <Card className="bg-white/70 backdrop-blur-sm shadow-xl p-0 pb-5 border-blue-100">
                 <CardHeader className="p-3 bg-[#162A3A] text-white rounded-t-lg">
-                  <div className="flex flex-col gap-4">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-950" />
-                    <Input
-                      placeholder="Search by name, email, or message..."
-                      value={searchTerm || ""}
-                      onChange={(event) => {
-                        setSearchTerm(event.target.value)
-                        setCurrentPage(1)
-                      }}
-                      className="pl-9 pr-3 py-2 w-full bg-blue-100 border-blue-950 text-gray-950 placeholder:text-gray-950 focus:bg-blue-50 focus:border-blue-500 transition-all duration-200"
-                    />
-                  </div>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    {/* Search Input */}
+                    <div className="relative w-full sm:max-w-md">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-950" />
+                      <Input
+                        placeholder="Search by name, email, or message..."
+                        value={searchTerm || ""}
+                        onChange={(event) => {
+                          setSearchTerm(event.target.value)
+                          setCurrentPage(1)
+                        }}
+                        className="pl-9 pr-3 py-2 w-full bg-blue-100 border-blue-950 text-gray-950 placeholder:text-gray-950 focus:bg-blue-50 focus:border-blue-500 transition-all duration-200"
+                      />
+                    </div>
 
-                  <Button onClick={openAddModal} className="bg-yellow-500 hover:bg-yellow-600">
-                    <Plus className="w-4 h-4 mr-2" />
-                    New Testimonial
-                  </Button>
+                    {/* Button */}
+                    <Button onClick={openAddModal} className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600">
+                      <Plus className="w-4 h-4 mr-2" />
+                      New Testimonial
+                    </Button>
+                  </div>
                 </CardHeader>
 
                 <CardContent>
@@ -482,6 +478,6 @@ export default function TestimonialsAdmin() {
           </main>
         </div>
       </div>
-    </SidebarProvider >
+    </SidebarProvider>
   )
 }
