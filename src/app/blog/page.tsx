@@ -68,9 +68,9 @@ export default function BlogPage() {
       <div className="container mx-auto px-4 py-16 relative z-10">
         {/* Heading */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
-          <p className="tracking-[0.3em] uppercase text-sm mb-3 text-[#d4a24c]">Our Offerings</p>
+          <p className="tracking-[0.3em] uppercase text-sm mb-3 text-[#d4a24c]">Our Stories</p>
           <h2 className={`${playfair.className} text-4xl md:text-5xl font-bold`}>
-            The <span className="text-[#d4a24c] italic">Menu</span>
+            The <span className="text-[#d4a24c] italic">Blogs</span>
           </h2>
         </motion.div>
 
