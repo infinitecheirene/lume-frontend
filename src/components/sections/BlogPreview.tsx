@@ -56,8 +56,7 @@ export default function BlogPreview() {
                         From the Roastery
                     </p>
                     <h2 className={`${playfair.className} text-4xl md:text-5xl font-bold`}>
-                        Latest from the
-                        <span className="text-[#d4a24c] italic">Journal</span>
+                        Latest from the <span className="text-[#d4a24c] italic">Journal</span>
                     </h2>
                 </motion.div>
 

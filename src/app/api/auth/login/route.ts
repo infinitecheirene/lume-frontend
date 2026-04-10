@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: "Email and password are required. 이메일과 비밀번호는 필수 항목입니다.",
+          message: "Email and password are required.",
           errors: {
             email: !body.email ? ["Email is required"] : [],
             password: !body.password ? ["Password is required"] : [],

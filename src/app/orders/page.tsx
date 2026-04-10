@@ -308,7 +308,7 @@ const Orders = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-[#d4a24c]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto relative z-10">
+      <div className="max-w-7xl mx-5 lg:mx-auto relative z-10">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -319,15 +319,15 @@ const Orders = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
-            <div className="flex flex-row lg:flex-col flex-wrap space-x-4 space-y-2">
+            <div className="flex flex-col flex-wrap space-x-4 space-y-2">
               {/* Tab buttons */}
-              <div className="flex flex-col justify-center mb-6 flex-wrap">
+              <div className="flex flex-col justify-center mb-6 flex-wrap max-w-lg lg:w-full">
                 <button
                   onClick={() => {
                     setActiveTab("orders")
                     setActiveFilter("all")
                   }}
-                  className={`flex-1 min-w-fit p-2 rounded-2xl font-bold text-lg transition-all ${activeTab === "orders"
+                  className={`flex-1 p-2 rounded-2xl font-bold text-lg transition-all ${activeTab === "orders"
                     ? "bg-[#d4a24c] text-white shadow-lg scale-105"
                     : "bg-white text-gray-600 hover:bg-gray-50 shadow-md border border-gray-200"
                     }`}
