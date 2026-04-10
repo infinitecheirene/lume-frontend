@@ -71,42 +71,42 @@ export default function BlogPage() {
   }
 
   return (
-    <div className="py-14 bg-[#0b1d26]">
+    <div className="py-8 md:py-14 bg-[#0b1d26] min-h-screen">
       {/* Animated background patterns */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-[#E5A834]/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#E5A834]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-[#E5A834]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute top-0 left-0 w-64 h-64 md:w-96 md:h-96 bg-[#E5A834]/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-0 w-64 h-64 md:w-96 md:h-96 bg-[#E5A834]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/4 w-48 h-48 md:w-64 md:h-64 bg-[#E5A834]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
 
-      <div className="container mx-auto px-4 py-16 relative z-10">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 py-8 md:py-16 relative z-10">
         {/* Heading */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
-          <p className="tracking-[0.3em] uppercase text-sm mb-3 text-[#d4a24c]">From Roastery</p>
-          <h2 className={`${playfair.className} text-4xl md:text-5xl font-bold`}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8 md:mb-16">
+          <p className="tracking-[0.2em] md:tracking-[0.3em] uppercase text-xs md:text-sm mb-2 md:mb-3 text-[#d4a24c]">From Roastery</p>
+          <h2 className={`${playfair.className} text-3xl md:text-4xl lg:text-5xl font-bold leading-tight`}>
             The Crescent <span className="text-[#d4a24c] italic">Journal</span>
           </h2>
         </motion.div>
 
         {/* Loading State */}
         {loading && (
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8 max-w-7xl mx-auto">
             {[...Array(POSTS_PER_PAGE)].map((_, i) => (
               <div key={i} className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl border border-[#d4a24c]/30 overflow-hidden animate-pulse">
                 <div className="aspect-video bg-gradient-to-br from-white/20 to-white/10"></div>
-                <div className="p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="h-6 bg-[#d4a24c]/20 rounded-full w-16"></div>
-                    <div className="h-4 bg-white/20 rounded w-20"></div>
+                <div className="p-4 md:p-6">
+                  <div className="flex items-center gap-2 md:gap-3 mb-3">
+                    <div className="h-5 md:h-6 bg-[#d4a24c]/20 rounded-full w-12 md:w-16"></div>
+                    <div className="h-3 md:h-4 bg-white/20 rounded w-16 md:w-20"></div>
                   </div>
-                  <div className="h-6 bg-white/20 rounded w-3/4 mb-2"></div>
+                  <div className="h-5 md:h-6 bg-white/20 rounded w-3/4 mb-2"></div>
                   <div className="space-y-2 mb-4">
-                    <div className="h-4 bg-white/20 rounded"></div>
-                    <div className="h-4 bg-white/20 rounded w-5/6"></div>
+                    <div className="h-3 md:h-4 bg-white/20 rounded"></div>
+                    <div className="h-3 md:h-4 bg-white/20 rounded w-5/6"></div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <div className="h-4 bg-white/20 rounded w-16"></div>
-                    <div className="h-4 bg-[#d4a24c]/20 rounded w-20"></div>
+                    <div className="h-3 md:h-4 bg-white/20 rounded w-12 md:w-16"></div>
+                    <div className="h-3 md:h-4 bg-[#d4a24c]/20 rounded w-16 md:w-20"></div>
                   </div>
                 </div>
               </div>
@@ -125,9 +125,9 @@ export default function BlogPage() {
 
         {/* Blog Posts Grid */}
         {!loading && !error && posts.length > 0 && (
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8 max-w-7xl mx-auto">
             {currentPosts.map((post, index) => (
-              <motion.articles
+              <motion.article
                 key={post.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -146,15 +146,15 @@ export default function BlogPage() {
                       }}
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-6xl bg-gradient-to-br from-[#d4a24c]/20 to-[#d4a24c]/10">🍽️</div>
+                    <div className="w-full h-full flex items-center justify-center text-4xl md:text-6xl bg-gradient-to-br from-[#d4a24c]/20 to-[#d4a24c]/10">🍽️</div>
                   )}
                 </div>
-                <div className="p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-xs font-medium text-[#d4a24c] bg-[#d4a24c]/10 px-3 py-1 rounded-full">Blog</span>
+                <div className="p-4 md:p-6">
+                  <div className="flex items-center gap-2 md:gap-3 mb-3">
+                    <span className="text-xs font-medium text-[#d4a24c] bg-[#d4a24c]/10 px-2 md:px-3 py-1 rounded-full">Blog</span>
                     <span className="text-xs text-white/60">{new Date(post.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
                   </div>
-                  <h2 className={`${playfair.className} text-xl font-semibold mb-2 text-white group-hover:text-[#d4a24c] transition-colors`}>{post.title}</h2>
+                  <h2 className={`${playfair.className} text-lg md:text-xl font-semibold mb-2 text-white group-hover:text-[#d4a24c] transition-colors leading-tight`}>{post.title}</h2>
                   <p className="text-white/70 text-sm leading-relaxed mb-4 line-clamp-3">{post.excerpt}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-white/60">By {post.author}</span>
@@ -166,34 +166,36 @@ export default function BlogPage() {
                     </button>
                   </div>
                 </div>
-              </motion.articles>
+              </motion.article>
             ))}
           </div>
         )}
 
         {/* Pagination */}
         {!loading && !error && posts.length > POSTS_PER_PAGE && (
-          <div className="flex items-center justify-center gap-4 mt-12 mb-8">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8 md:mt-12 mb-8 px-4">
             <Button
               variant="outline"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="border-[#d4a24c]/30 text-[#d4a24c] hover:bg-[#d4a24c]/10 hover:border-[#d4a24c]/50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="border-[#d4a24c]/30 text-[#d4a24c] hover:bg-[#d4a24c]/10 hover:border-[#d4a24c]/50 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
             >
               <ChevronLeft className="w-4 h-4 mr-2" />
-              Previous
+              <span className="hidden sm:inline">Previous</span>
+              <span className="sm:hidden">Prev</span>
             </Button>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                 <Button
                   key={page}
                   variant={currentPage === page ? "default" : "outline"}
                   onClick={() => handlePageChange(page)}
-                  className={`w-10 h-10 p-0 ${currentPage === page
+                  className={`w-8 h-8 sm:w-10 sm:h-10 p-0 text-xs sm:text-sm ${
+                    currentPage === page
                       ? "bg-[#d4a24c] text-black hover:bg-[#d4a24c]/90"
                       : "border-[#d4a24c]/30 text-[#d4a24c] hover:bg-[#d4a24c]/10 hover:border-[#d4a24c]/50"
-                    }`}
+                  }`}
                 >
                   {page}
                 </Button>
@@ -204,9 +206,10 @@ export default function BlogPage() {
               variant="outline"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="border-[#d4a24c]/30 text-[#d4a24c] hover:bg-[#d4a24c]/10 hover:border-[#d4a24c]/50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="border-[#d4a24c]/30 text-[#d4a24c] hover:bg-[#d4a24c]/10 hover:border-[#d4a24c]/50 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
             >
-              Next
+              <span className="hidden sm:inline">Next</span>
+              <span className="sm:hidden">Next</span>
               <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
