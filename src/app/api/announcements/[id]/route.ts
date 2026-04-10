@@ -19,8 +19,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       },
       body: JSON.stringify({
         title: body.title,
-        content: body.content,
-        is_active: body.isActive,
+        description: body.description,
+        type: body.type,
+        badge: body.badge || "",
+        is_active: body.is_active,
       }),
     })
 

@@ -7,16 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
+import { Badge, badgeVariants } from "@/components/ui/badge"
 import { Megaphone, Plus, Edit, Trash2, Calendar, Eye, EyeOff, Loader2, MoreHorizontal } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Switch } from "@/components/ui/switch"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
@@ -32,12 +27,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Announcement {
   id: number
   title: string
-  dscription: string
-  
+  description: string
+  type: string
+  badge?: string
   is_active: boolean
   created_at: string
 }
@@ -52,8 +49,10 @@ export default function AdminAnnouncementsPage() {
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null)
   const [formData, setFormData] = useState({
     title: "",
-    content: "",
-    isActive: true,
+    description: "",
+    type: "",
+    badge: "",
+    is_active: true,
   })
 
   const [isDesktop, setIsDesktop] = useState(false)
@@ -70,7 +69,7 @@ export default function AdminAnnouncementsPage() {
   const inactiveCount = announcements.filter((a) => !a.is_active).length
 
   const filteredAnnouncements = announcements.filter(
-    (a) => a.title.toLowerCase().includes(search.toLowerCase()) || a.content.toLowerCase().includes(search.toLowerCase()),
+    (a) => a.title.toLowerCase().includes(search.toLowerCase()) || a.description.toLowerCase().includes(search.toLowerCase()),
   )
 
   useEffect(() => {
@@ -106,10 +105,10 @@ export default function AdminAnnouncementsPage() {
   }
 
   const handleCreate = async () => {
-    if (!formData.title.trim() || !formData.content.trim()) {
+    if (!formData.title.trim() || !formData.description.trim()) {
       toast({
         title: "Validation Error",
-        description: "Title and content are required",
+        description: "Title and description are required",
         variant: "destructive",
       })
       return
@@ -130,7 +129,7 @@ export default function AdminAnnouncementsPage() {
       const newAnnouncement = await response.json()
       setAnnouncements([newAnnouncement, ...announcements])
       setIsDialogOpen(false)
-      setFormData({ title: "", content: "", isActive: true })
+      setFormData({ title: "", description: "", type: "", badge: "", is_active: true })
       toast({
         title: "Success",
         description: "Announcement created successfully",
@@ -151,8 +150,10 @@ export default function AdminAnnouncementsPage() {
     setEditingAnnouncement(announcement)
     setFormData({
       title: announcement.title,
-      content: announcement.content,
-      isActive: announcement.is_active,
+      description: announcement.description,
+      is_active: announcement.is_active,
+      type: announcement.type,
+      badge: announcement.badge || "",
     })
     setIsDialogOpen(true)
   }
@@ -160,10 +161,10 @@ export default function AdminAnnouncementsPage() {
   const handleUpdate = async () => {
     if (!editingAnnouncement) return
 
-    if (!formData.title.trim() || !formData.content.trim()) {
+    if (!formData.title.trim() || !formData.description.trim()) {
       toast({
         title: "Validation Error",
-        description: "Title and content are required",
+        description: "Title and description are required",
         variant: "destructive",
       })
       return
@@ -185,7 +186,7 @@ export default function AdminAnnouncementsPage() {
       setAnnouncements(announcements.map((a) => (a.id === editingAnnouncement.id ? updatedAnnouncement : a)))
       setIsDialogOpen(false)
       setEditingAnnouncement(null)
-      setFormData({ title: "", content: "", isActive: true })
+      setFormData({ title: "", description: "", type: "", badge: "", is_active: true })
       toast({
         title: "Success",
         description: "Announcement updated successfully",
@@ -234,8 +235,10 @@ export default function AdminAnnouncementsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: announcement.title,
-          content: announcement.content,
-          isActive: !announcement.is_active,
+          description: announcement.description,
+          type: announcement.type,
+          badge: announcement.badge || "",
+          is_active: !announcement.is_active,
         }),
       })
 
@@ -288,7 +291,7 @@ export default function AdminAnnouncementsPage() {
                       <Button
                         onClick={() => {
                           setEditingAnnouncement(null)
-                          setFormData({ title: "", content: "", isActive: true })
+                          setFormData({ title: "", description: "", type: "", badge: "", is_active: true })
                         }}
                         className="bg-yellow-600 hover:bg-orange-700 w-full md:w-auto"
                       >
@@ -318,18 +321,42 @@ export default function AdminAnnouncementsPage() {
                           <Label htmlFor="content">Content</Label>
                           <Textarea
                             id="content"
-                            value={formData.content}
-                            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                            placeholder="Enter announcement content"
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            placeholder="Enter announcement description"
                             rows={4}
                           />
                         </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="type">Type</Label>
+                          <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
+                            <SelectTrigger id="type">
+                              <SelectValue placeholder="Select announcement type" />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                              <SelectItem value="news">News</SelectItem>
+                              <SelectItem value="promo">Promo</SelectItem>
+                              <SelectItem value="event">Event</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="badge">Badge (optional)</Label>
+                          <Input
+                            id="badge"
+                            value={formData.badge}
+                            onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
+                            placeholder="e.g. New, Hot, Limited"
+                          />
+                        </div>
                         <div className="flex items-center justify-between">
-                          <Label htmlFor="isActive">Active</Label>
+                          <Label htmlFor="is_active">Active</Label>
                           <Switch
-                            id="isActive"
-                            checked={formData.isActive}
-                            onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                            id="is_active"
+                            checked={formData.is_active}
+                            onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                           />
                         </div>
                       </div>
@@ -467,7 +494,7 @@ export default function AdminAnnouncementsPage() {
                                     </Button>
                                   </AlertDialogTrigger>
 
-                                  <AlertDialogContent>
+                                  <AlertDialogContent className="text-black">
                                     <AlertDialogHeader>
                                       <AlertDialogTitle>Delete Announcement?</AlertDialogTitle>
                                       <AlertDialogDescription>
@@ -489,9 +516,7 @@ export default function AdminAnnouncementsPage() {
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-gray-700">
-                          {announcement.description}
-                        </p>
+                        <p className="text-gray-700">{announcement.description}</p>
                       </CardContent>
                     </Card>
                   </div>
