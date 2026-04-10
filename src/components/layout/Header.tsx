@@ -31,6 +31,10 @@ export default function Header() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [tabletMenuOpen, setTabletMenuOpen] = useState(false)
+  const desktopDropdownRef = useRef<HTMLDivElement | null>(null)
+  const tabletDropdownRef = useRef<HTMLDivElement | null>(null)
+  const mobileDropdownRef = useRef<HTMLDivElement | null>(null)
+
 
   const itemCount = useCartStore((state) => state.getItemCount())
 
@@ -74,7 +78,13 @@ export default function Header() {
   // close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      const target = e.target as Node
+
+      if (
+        !desktopDropdownRef.current?.contains(target) &&
+        !tabletDropdownRef.current?.contains(target) &&
+        !mobileDropdownRef.current?.contains(target)
+      ) {
         setUserMenuOpen(false)
       }
     }
@@ -191,41 +201,55 @@ export default function Header() {
 
           {/* USER MENU */}
           {user ? (
-            <div ref={dropdownRef} className="relative -mb-2">
+            <div ref={desktopDropdownRef} className="relative">
               <button
-                onClick={() => setUserMenuOpen((p) => !p)}
-                className="text-white/70 hover:text-[#d4a24c]"
+                type="button"
+                onClick={() => setUserMenuOpen((prev) => !prev)}
+                className="text-white/70 hover:text-[#d4a24c] transition-colors"
               >
                 <User size={22} />
               </button>
 
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-[#0b1d26] border border-white/10 rounded-lg shadow-lg overflow-hidden">
-                  <Link href="/orders" className="flex items-center gap-2 px-4 py-2 hover:bg-white/10">
+                <div className="absolute right-0 top-full mt-3 w-48 bg-[#0b1d26] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95">
+
+                  <Link
+                    href="/orders"
+                    className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-white/10 transition"
+                  >
                     <Package size={16} /> Orders
                   </Link>
-                  <Link href="/reservation-history" className="flex items-center gap-2 px-4 py-2 hover:bg-white/10">
+
+                  <Link
+                    href="/reservation-history"
+                    className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-white/10 transition"
+                  >
                     <Calendar size={16} /> Reservations
                   </Link>
 
-                  <Link href="/profile" className="flex items-center gap-2 px-4 py-2 hover:bg-white/10">
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-white/10 transition"
+                  >
                     <Settings size={16} /> Account
                   </Link>
 
+                  <div className="border-t border-white/10 my-1" />
+
                   <button
+                    type="button"
                     onClick={handleLogout}
-                    className="flex items-center gap-2 px-4 py-2 text-[#d4a24c] hover:bg-white/10 w-full text-left"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-[#d4a24c] hover:bg-white/10 w-full text-left transition"
                   >
                     <LogOut size={16} /> Logout
                   </button>
-
                 </div>
               )}
             </div>
           ) : (
             <Link
               href="/login"
-              className="text-white/70 hover:text-[#d4a24c] text-sm"
+              className="text-white/70 hover:text-[#d4a24c] text-sm transition-colors"
             >
               Log In
             </Link>
@@ -273,7 +297,7 @@ export default function Header() {
 
           {/* USER */}
           {user ? (
-            <div ref={dropdownRef} className="relative">
+            <div ref={tabletDropdownRef} className="relative">
               <button
                 onClick={() => setUserMenuOpen((p) => !p)}
                 className="text-white hover:text-[#d4a24c]"
@@ -364,9 +388,9 @@ export default function Header() {
             </>
           )}
 
-                    {/* USER */}
+          {/* USER */}
           {user ? (
-            <div ref={dropdownRef} className="relative">
+            <div ref={mobileDropdownRef} className="relative">
               <button
                 onClick={() => setUserMenuOpen((p) => !p)}
                 className="text-white hover:text-[#d4a24c]"
