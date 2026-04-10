@@ -421,7 +421,8 @@ export default function ReservationsAdmin() {
             time: statusDialogReservation.time,
             guests: statusDialogReservation.guests,
             subject: `Reservation Confirmed - ${statusDialogReservation.name}`,
-            message: `Hello ${statusDialogReservation.name},\n\nYour reservation for ${statusDialogReservation.guests} guest(s) on ${statusDialogReservation.date} at ${statusDialogReservation.time} has been confirmed. We look forward to seeing you at Izakaya Tori Ichizu.`,
+            message: `Your reservation for ${statusDialogReservation.guests} guest(s) on ${formatDate(statusDialogReservation.date)} at ${formatTime(statusDialogReservation.time)} has been confirmed.
+            <br>We look forward to seeing you at Lumè Bean and Bar.`,
           }),
         })
 
@@ -643,7 +644,27 @@ export default function ReservationsAdmin() {
 
                                       <DropdownMenuItem
                                         onClick={() => {
-                                          // your edit logic
+                                          setFormData({
+                                            name: reservation.name,
+                                            email: reservation.email,
+                                            phone: reservation.phone,
+                                            date: reservation.date.split("T")[0],
+                                            time: reservation.time,
+                                            guests: reservation.guests,
+                                            special_requests: reservation.special_requests || "",
+                                            reservation_fee: reservation.reservation_fee || 0,
+                                            reservation_fee_paid: reservation.reservation_fee_paid || 0,
+                                            payment_method: reservation.payment_method || "",
+                                            payment_reference: reservation.payment_reference || "",
+                                            payment_receipt: reservation.payment_receipt || null,
+                                            payment_status: reservation.payment_status || "pending",
+                                            reservation_status: reservation.reservation_status || "pending",
+                                            dining_preference: reservation.dining_preference || "Main Dining",
+                                            occasion: reservation.occasion || "Casual Dinner",
+                                            is_walkin: reservation.is_walkin || false,
+                                          })
+                                          setEditingReservation(reservation)
+                                          setOpenEdit(true)
                                         }}
                                       >
                                         Edit
