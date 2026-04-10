@@ -7,233 +7,165 @@ import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
 
 const playfair = Playfair_Display({
-    subsets: ["latin"],
-    weight: ["400", "600", "700"],
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
 })
 
 interface Announcement {
-    id: number
-    title: string
-    description?: string
-    badge?: string
-    type?: string
-    is_active: boolean
-    created_at: string
+  id: number
+  title: string
+  description?: string
+  badge?: string
+  type?: string
+  is_active: boolean
+  created_at: string
 }
 
 export default function AnnouncementPage() {
-    const [posts, setPosts] = useState<Announcement[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState("")
-    const [selectedPost, setSelectedPost] = useState<Announcement | null>(null)
+  const [posts, setPosts] = useState<Announcement[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [selectedPost, setSelectedPost] = useState<Announcement | null>(null)
 
-    useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                const response = await fetch("/api/announcements")
-                if (!response.ok) throw new Error("Failed to fetch announcements")
-                const data = await response.json()
-                setPosts(Array.isArray(data) ? data : data.data || [])
-            } catch (err) {
-                setError(err instanceof Error ? err.message : "An error occurred")
-            } finally {
-                setLoading(false)
-            }
-        }
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch("/api/announcements")
+        if (!response.ok) throw new Error("Failed to fetch announcements")
+        const data = await response.json()
+        setPosts(Array.isArray(data) ? data : data.data || [])
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred")
+      } finally {
+        setLoading(false)
+      }
+    }
 
-        fetchPosts()
-    }, [])
+    fetchPosts()
+  }, [])
 
-    useEffect(() => {
-        document.body.style.overflow = selectedPost ? "hidden" : "unset"
-        return () => {
-            document.body.style.overflow = "unset"
-        }
-    }, [selectedPost])
+  useEffect(() => {
+    document.body.style.overflow = selectedPost ? "hidden" : "unset"
+    return () => {
+      document.body.style.overflow = "unset"
+    }
+  }, [selectedPost])
 
-    return (
-        <div className="py-14 bg-[#0b1d26] relative">
-            {/* Animated background patterns */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-                <div className="absolute top-0 left-0 w-96 h-96 bg-[#E5A834]/30 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#E5A834]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-                <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-[#E5A834]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
-            </div>
+  return (
+    <div className="py-14 bg-[#0b1d26] relative">
+      {/* Animated background patterns */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-[#E5A834]/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#E5A834]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-[#E5A834]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
+      </div>
 
-            <div className="container mx-auto px-4 py-16 relative z-10">
-                {/* Heading */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
-                    <p className="tracking-[0.3em] uppercase text-sm mb-3 text-[#d4a24c]">What&apos;s Happening</p>
-                    <h2 className={`${playfair.className} text-4xl md:text-5xl font-bold`}>
-                        News &<span className="text-[#d4a24c] italic">Promos</span>
-                    </h2>
-                </motion.div>
+      <div className="container mx-auto px-4 py-16 relative z-10">
+        {/* Heading */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
+          <p className="tracking-[0.3em] uppercase text-sm mb-3 text-[#d4a24c]">What&apos;s Happening</p>
+          <h2 className={`${playfair.className} text-4xl md:text-5xl font-bold`}>
+            News &<span className="text-[#d4a24c] italic">Promos</span>
+          </h2>
+        </motion.div>
 
-                {/* Loading */}
-                {loading && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {[...Array(6)].map((_, i) => (
-                            <div key={i} className="animate-pulse overflow-hidden rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm shadow-lg">
-                                <div className="h-72 bg-gradient-to-br from-white/20 to-white/5"></div>
-                                <div className="p-4">
-                                    <div className="h-6 bg-white/20 rounded w-3/4 mb-2"></div>
-                                    <div className="space-y-2 mt-3">
-                                        <div className="h-4 bg-white/20 rounded"></div>
-                                        <div className="h-4 bg-white/20 rounded w-5/6"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {/* Error */}
-                {error && (
-                    <div className="max-w-2xl mx-auto">
-                        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 text-center shadow-2xl">
-                            <p className="text-[#ff6b6b] text-lg font-semibold">⚠️ {error}</p>
-                        </div>
-                    </div>
-                )}
-
-                {/* Grid */}
-                {!loading && !error && posts.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {posts.map((post, index) => (
-                            <div
-                                key={post.id}
-                                className="group flex flex-col overflow-hidden rounded-lg border border-white/10 hover:border-white/30 bg-white/5 backdrop-blur-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer"
-                                style={{
-                                    animationDelay: `${index * 100}ms`,
-                                    animation: "fadeInUp 0.6s ease-out forwards",
-                                    opacity: 0,
-                                }}
-                                onClick={() => setSelectedPost(post)}
-                            >
-                                <div className="relative h-72 overflow-hidden bg-gradient-to-br from-white/20 to-white/5">
-                                    {post.thumbnail_url ? (
-                                        <img
-                                            src={`${process.env.NEXT_PUBLIC_API_URL || ""}${post.thumbnail_url}`}
-                                            alt={post.title}
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                            onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
-                                        />
-                                    ) : post.video_url ? (
-                                        <video src={`${process.env.NEXT_PUBLIC_API_URL || ""}${post.video_url}`} className="w-full h-full object-cover" muted playsInline />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-5xl">🍽️</div>
-                                    )}
-                                    {post.video_url && (
-                                        <div className="absolute top-4 left-4 bg-white text-gray-800 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
-                                            ▶️ Video
-                                        </div>
-                                    )}
-                                    <div className="absolute top-4 right-4 bg-[#ff6b6b] text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg">
-                                        {new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                                    </div>
-                                </div>
-
-                                <div className="p-4 flex flex-col flex-grow">
-                                    <h3 className="text-xl font-bold line-clamp-2 group-hover:text-[#ff6b6b] transition-colors leading-tight mb-3 text-white">
-                                        {post.title}
-                                    </h3>
-                                    <p className="text-sm text-white/70 line-clamp-3 leading-relaxed mb-4">{post.excerpt}</p>
-                                    <div className="mt-auto">
-                                        <Button className="w-full bg-white hover:bg-white/90 text-[#8B0000] shadow-lg hover:shadow-xl transition-all duration-300 group/btn hover:scale-105">
-                                            Read More
-                                            <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {/* Empty */}
-                {!loading && !error && posts.length === 0 && (
-                    <div className="text-center py-20 animate-in fade-in zoom-in duration-500">
-                        <div className="inline-block p-8 bg-white/10 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20">
-                            <div className="text-7xl mb-6">📝</div>
-                            <h2 className="text-3xl font-bold text-white mb-3">No Stories Yet</h2>
-                            <p className="text-white/70 text-lg">Check back soon for delicious content!</p>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Modal */}
-            {selectedPost && (
-                <div
-                    className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
-                    onClick={() => setSelectedPost(null)}
-                >
-                    <div
-                        className="bg-gradient-to-b from-[#8B0000] to-[#6B0000] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-white/20 animate-in zoom-in duration-300"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="relative h-64 md:h-96 overflow-hidden bg-gradient-to-br from-white/20 to-white/5">
-                            {selectedPost.video_url ? (
-                                <video
-                                    src={`${process.env.NEXT_PUBLIC_API_URL || ""}${selectedPost.video_url}`}
-                                    className="w-full h-full object-cover"
-                                    controls
-                                    playsInline
-                                />
-                            ) : selectedPost.thumbnail_url ? (
-                                <img
-                                    src={`${process.env.NEXT_PUBLIC_API_URL || ""}${selectedPost.thumbnail_url}`}
-                                    alt={selectedPost.title}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-8xl">🍽️</div>
-                            )}
-
-                            <button
-                                onClick={() => setSelectedPost(null)}
-                                className="absolute top-4 right-4 bg-white hover:bg-[#ff6b6b] hover:text-white p-2 rounded-full shadow-lg transition-all duration-300 hover:scale-110 z-10"
-                            >
-                                <X className="w-6 h-6" />
-                            </button>
-
-                            {!selectedPost.video_url && (
-                                <div className="absolute top-4 left-4 bg-[#ff6b6b] text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                                    {new Date(selectedPost.created_at).toLocaleDateString("en-US", {
-                                        month: "long",
-                                        day: "numeric",
-                                        year: "numeric",
-                                    })}
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="p-8">
-                            <h2 className="text-4xl font-bold text-white mb-4 drop-shadow-lg">{selectedPost.title}</h2>
-                            <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/20">
-                                <div className="w-12 h-12 rounded-full bg-[#ff6b6b] flex items-center justify-center text-white text-lg font-bold">
-                                    {selectedPost.author?.charAt(0).toUpperCase() || "?"}
-                                </div>
-                                <div>
-                                    <p className="text-lg font-semibold text-white">{selectedPost.author || "Unknown"}</p>
-                                    <p className="text-sm text-white/60">Recipe Creator</p>
-                                </div>
-                            </div>
-                            <div className="mb-6">
-                                <p className="text-xl text-white/90 leading-relaxed italic border-l-4 border-[#ff6b6b] pl-4 bg-white/5 py-3 rounded-r-lg">
-                                    {selectedPost.excerpt}
-                                </p>
-                            </div>
-                            <div className="prose prose-lg prose-invert max-w-none">
-                                <p className="text-white/80 leading-relaxed whitespace-pre-wrap">{selectedPost.content}</p>
-                            </div>
-                        </div>
-                    </div>
+        {/* Loading */}
+        {loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="animate-pulse overflow-hidden rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm shadow-lg">
+                <div className="h-72 bg-gradient-to-br from-white/20 to-white/5"></div>
+                <div className="p-4">
+                  <div className="h-6 bg-white/20 rounded w-3/4 mb-2"></div>
+                  <div className="space-y-2 mt-3">
+                    <div className="h-4 bg-white/20 rounded"></div>
+                    <div className="h-4 bg-white/20 rounded w-5/6"></div>
+                  </div>
                 </div>
-            )}
+              </div>
+            ))}
+          </div>
+        )}
 
-            <style jsx>{`
+        {/* Error */}
+        {error && (
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 text-center shadow-2xl">
+              <p className="text-[#ff6b6b] text-lg font-semibold">⚠️ {error}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Grid */}
+        {!loading && !error && posts.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {posts.map((post, index) => (
+              <div
+                key={post.id}
+                className="group flex flex-col overflow-hidden rounded-lg border border-white/10 hover:border-white/30 bg-white/5 backdrop-blur-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer"
+                style={{
+                  animationDelay: `${index * 100}ms`,
+                  animation: "fadeInUp 0.6s ease-out forwards",
+                  opacity: 0,
+                }}
+                onClick={() => setSelectedPost(post)}
+              >
+                <div className="p-4 flex flex-col flex-grow">
+                  <h3 className="text-xl font-bold line-clamp-2 group-hover:text-[#ff6b6b] transition-colors leading-tight mb-3 text-white">
+                    {post.title}
+                  </h3>
+                  <p className="text-sm text-white/70 line-clamp-3 leading-relaxed mb-4">{post.description}</p>
+                  <div className="mt-auto">
+                    <Button className="w-full bg-white hover:bg-white/90 text-[#8B0000] shadow-lg hover:shadow-xl transition-all duration-300 group/btn hover:scale-105">
+                      Read More
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Empty */}
+        {!loading && !error && posts.length === 0 && (
+          <div className="text-center py-20 animate-in fade-in zoom-in duration-500">
+            <div className="inline-block p-8 bg-white/10 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20">
+              <div className="text-7xl mb-6">📝</div>
+              <h2 className="text-3xl font-bold text-white mb-3">No Stories Yet</h2>
+              <p className="text-white/70 text-lg">Check back soon for delicious content!</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Modal */}
+      {selectedPost && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setSelectedPost(null)}
+        >
+          <div
+            className="bg-gradient-to-b from-[#8B0000] to-[#6B0000] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-white/20 animate-in zoom-in duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-8">
+              <h2 className="text-4xl font-bold text-white mb-4 drop-shadow-lg">{selectedPost.title}</h2>
+              <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/20"></div>
+              <div className="mb-6">
+                <p className="text-xl text-white/90 leading-relaxed italic border-l-4 border-[#ff6b6b] pl-4 bg-white/5 py-3 rounded-r-lg">
+                  {selectedPost.description}
+                </p>
+              </div>
+              <div className="prose prose-lg prose-invert max-w-none">
+                <p className="text-white/80 leading-relaxed whitespace-pre-wrap">{selectedPost.type}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
         @keyframes fadeInUp {
           from {
             opacity: 0;
@@ -245,6 +177,6 @@ export default function AnnouncementPage() {
           }
         }
       `}</style>
-        </div>
-    )
+    </div>
+  )
 }
