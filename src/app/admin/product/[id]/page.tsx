@@ -25,6 +25,7 @@ interface Product {
   is_spicy?: boolean
   is_vegetarian?: boolean
   is_featured?: boolean
+  best_seller?: boolean
   created_at: string
   updated_at: string
 }
@@ -59,6 +60,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     is_spicy: false,
     is_vegetarian: false,
     is_featured: false,
+    best_seller: false,
   })
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -91,6 +93,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           is_spicy: data.is_spicy || false,
           is_vegetarian: data.is_vegetarian || false,
           is_featured: data.is_featured || false,
+          best_seller: data.best_seller || false,
         })
       } catch (error) {
         console.error(error)
@@ -431,7 +434,14 @@ function ProductForm({
             />
           </div>
 
-         
+          <div className="flex items-center justify-between rounded-lg border border-yellow-600 p-4 bg-white/40">
+            <div className="space-y-1">
+              <Label className="text-gray-700 font-bold text-md">Bestseller</Label>
+              <p className="text-sm text-gray-600">Mark this product as a bestseller item.</p>
+            </div>
+
+            <Switch checked={formData.best_seller} onCheckedChange={(checked) => handleSwitchChange("best_seller", checked)} disabled={saving} />
+          </div>
         </div>
       </div>
 
@@ -464,5 +474,3 @@ function ProductForm({
     </form>
   )
 }
-
-

@@ -28,10 +28,7 @@ export async function GET(request: NextRequest) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: "Unknown error" }))
-      return NextResponse.json(
-        { message: errorData.message || "Failed to fetch products" },
-        { status: response.status },
-      )
+      return NextResponse.json({ message: errorData.message || "Failed to fetch products" }, { status: response.status })
     }
 
     const data = await response.json()
@@ -51,30 +48,67 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
 
-    // Create a new FormData object to send to Laravel
+    console.log("=== Incoming FormData ===")
+    for (const [key, value] of formData.entries()) {
+      console.log(key, value)
+    }
+
+    // Create Laravel FormData
     const laravelFormData = new FormData()
 
-    // Extract and append all form fields
-    const name = formData.get("name") as string
-    const description = formData.get("description") as string
-    const price = formData.get("price") as string
-    const category = formData.get("category") as string
-    const isSpicy = formData.get("is_spicy") as string
-    const isVegetarian = formData.get("is_vegetarian") as string
-    const isFeatured = formData.get("is_featured") as string
-    const image = formData.get("image") as File
+    // Helper: normalize boolean-like values
+    const toBooleanString = (value: FormDataEntryValue | null) => {
+      return value === "true" ||
+        value === "1" ||
+        value === 1 ||
+        value === true ||
+        value === "on"
+        ? "1"
+        : "0"
+    }
 
-    laravelFormData.append("name", name)
-    laravelFormData.append("description", description)
-    laravelFormData.append("price", price)
-    laravelFormData.append("category", category)
+    // Helper: safe string cast
+    const getString = (key: string) => (formData.get(key) as string) ?? ""
 
-    laravelFormData.append("is_spicy", isSpicy === "true" ? "1" : "0")
-    laravelFormData.append("is_vegetarian", isVegetarian === "true" ? "1" : "0")
-    laravelFormData.append("is_featured", isFeatured === "true" ? "1" : "0")
+    // Fields mapping (iterate instead of manual repetition)
+    const fields = {
+      name: getString("name"),
+      description: getString("description"),
+      price: getString("price"),
+      category: getString("category"),
+    }
 
+    console.log("=== Parsed Fields ===", fields)
+
+    Object.entries(fields).forEach(([key, value]) => {
+      console.log(`Appending field: ${key} =`, value)
+      laravelFormData.append(key, value)
+    })
+
+    // Boolean fields handling (FIXED)
+    const isFeatured = toBooleanString(formData.get("is_featured"))
+    const bestSeller = toBooleanString(formData.get("best_seller"))
+
+    console.log("is_featured raw:", formData.get("is_featured"))
+    console.log("best_seller raw:", formData.get("best_seller"))
+    console.log("normalized is_featured:", isFeatured)
+    console.log("normalized best_seller:", bestSeller)
+
+    laravelFormData.append("is_featured", isFeatured)
+    laravelFormData.append("best_seller", bestSeller)
+
+    // File handling
+    const image = formData.get("image") as File | null
     if (image && image.size > 0) {
+      console.log("Appending image:", image.name, image.size)
       laravelFormData.append("image", image)
+    } else {
+      console.log("No valid image provided")
+    }
+
+    console.log("=== Final Laravel FormData Preview ===")
+    for (const [key, value] of laravelFormData.entries()) {
+      console.log(key, value)
     }
 
     const response = await fetch(`${API_BASE_URL}/api/products`, {
@@ -83,6 +117,8 @@ export async function POST(request: NextRequest) {
     })
 
     const responseData = await response.json()
+
+    console.log("=== Laravel Response ===", responseData)
 
     if (!response.ok) {
       return NextResponse.json(

@@ -46,6 +46,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import Image from "next/image"
 import { Playfair_Display } from "next/font/google"
+import { Switch } from "@/components/ui/switch"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -164,10 +165,14 @@ export default function ProductsAdminPage() {
       formData.append("description", newFormData.description)
       formData.append("price", newFormData.price)
       formData.append("category", newFormData.category)
-      formData.append("best_seller", newFormData.best_seller.toString())
+      formData.append("best_seller", newFormData.best_seller ? "1" : "0")
 
       if (selectedImage) {
         formData.append("image", selectedImage)
+      }
+
+      for (const pair of formData.entries()) {
+        console.log(pair[0], pair[1])
       }
 
       const response = await fetch("/api/product", {
@@ -390,6 +395,15 @@ export default function ProductsAdminPage() {
       cell: ({ row }) => <div className="font-semibold">₱{formatPrice(row.original.price)}</div>,
     },
     {
+      accessorKey: "best_seller",
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="p-0 h-auto font-normal">
+          Bestseller <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => <div className="font-semibold">{row.original.best_seller ? <Badge variant="default">Best Seller</Badge> : "-"}</div>,
+    },
+    {
       accessorKey: "created_at",
       header: ({ column }) => (
         <Button
@@ -456,6 +470,13 @@ export default function ProductsAdminPage() {
                       <div className="space-y-1">
                         <p className="text-xs tracking-widest text-gray-500">Product Name</p>
                         <h3 className="text-base sm:text-lg font-semibold text-gray-900">{selectedProduct.name}</h3>
+                        {selectedProduct.best_seller && (
+                          <span>
+                            <Badge variant="outline" className="text-xs">
+                              Best Seller
+                            </Badge>
+                          </span>
+                        )}
                       </div>
 
                       <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -639,13 +660,13 @@ export default function ProductsAdminPage() {
                           />
                         </div>
                       </div>
-                      
+
                       {/* Add Product Button */}
                       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
                         <DialogTrigger asChild>
                           <Button
                             size="sm"
-                            className="shrink-0 bg-white text-[#162A3A] hover:bg-blue-50 hover:text-blue-800 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                            className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start bg-amber-500 text-[#162A3A] hover:bg-blue-50 hover:text-blue-800 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                           >
                             <Plus className="mr-2 h-4 w-4" />
                             <span className="hidden sm:inline">Add Product</span>
@@ -729,6 +750,24 @@ export default function ProductsAdminPage() {
                                     </SelectContent>
                                   </Select>
                                 </div>
+                              </div>
+
+                              <div className="flex items-center justify-between rounded-lg border border-blue-950 p-4 bg-white/40">
+                                <div className="space-y-1">
+                                  <Label className="text-gray-700 font-bold text-md">Bestseller</Label>
+                                  <p className="text-sm text-gray-600">Mark this product as a bestseller item.</p>
+                                </div>
+
+                                <Switch
+                                  checked={newFormData.best_seller}
+                                  onCheckedChange={(checked) =>
+                                    setNewFormData((prev) => ({
+                                      ...prev,
+                                      best_seller: checked,
+                                    }))
+                                  }
+                                  disabled={isCreating}
+                                />
                               </div>
 
                               <div>

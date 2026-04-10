@@ -63,7 +63,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const laravelFormData = new FormData()
     // Append fields with debug
-    const fields = ["name", "description", "price", "category", "is_spicy", "is_vegetarian", "is_featured"]
+    const fields = ["name", "description", "price", "category", "is_spicy", "is_vegetarian", "is_featured", "best_seller"]
     fields.forEach((field) => {
       const value = formData.get(field)
       let convertedValue: string
