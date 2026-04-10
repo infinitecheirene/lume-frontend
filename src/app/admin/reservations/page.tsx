@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { ChevronLeft, ChevronRight, Plus, Loader2, MoreHorizontal } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, Loader2, MoreHorizontal, CircleX } from "lucide-react"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import Image from "next/image"
@@ -68,6 +68,9 @@ export default function ReservationsAdmin() {
   const [openEdit, setOpenEdit] = useState(false)
   const [viewingReservation, setViewingReservation] = useState<Reservation | null>(null)
   const [openView, setOpenView] = useState(false)
+  const [statusDialogReservation, setStatusDialogReservation] = useState<Reservation | null>(null)
+  const [openStatusDialog, setOpenStatusDialog] = useState(false)
+  const [statusUpdate, setStatusUpdate] = useState<Reservation["reservation_status"]>("pending")
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null)
   const [paymentFile, setPaymentFile] = useState<File | null>(null)
 
@@ -340,16 +343,19 @@ export default function ReservationsAdmin() {
 
       const response = await fetch(`/api/reservations/${editingReservation.id}`, {
         method: "PUT",
-        headers: {
-          Authorization: getAuthHeaders().Authorization || "",
-        },
+        headers: getAuthHeaders(),
         body: payload,
       })
 
       if (!response.ok) throw new Error("Failed to update reservation")
 
-      // Optionally send email if not walk-in
-      if (!formData.is_walkin && formData.email) {
+      // Send confirmation email only if the reservation was just confirmed
+      if (
+        !formData.is_walkin &&
+        formData.email &&
+        formData.reservation_status === "confirmed" &&
+        editingReservation?.reservation_status !== "confirmed"
+      ) {
         const emailResponse = await fetch("/api/send-email/reservation", {
           method: "POST",
           headers: {
@@ -362,11 +368,13 @@ export default function ReservationsAdmin() {
             date: formData.date,
             time: formData.time,
             guests: formData.guests,
+            subject: `Reservation Confirmed - ${formData.name}`,
+            message: `Hello ${formData.name},\n\nYour reservation for ${formData.guests} guest(s) on ${formData.date} at ${formData.time} has been confirmed. We look forward to serving you at Izakaya Tori Ichizu.`,
           }),
         })
 
         if (!emailResponse.ok) {
-          console.error("Failed to send reservation email:", await emailResponse.text())
+          console.error("Failed to send reservation confirmation email:", await emailResponse.text())
         }
       }
 
@@ -378,6 +386,55 @@ export default function ReservationsAdmin() {
       setPaymentFile(null)
     } catch (error) {
       console.error("Error updating reservation:", error)
+    }
+  }
+
+  async function handleStatusUpdate() {
+    if (!statusDialogReservation) return
+
+    try {
+      const payload = new FormData()
+      payload.append("reservation_status", statusUpdate)
+
+      const headers = getAuthHeaders()
+      const response = await fetch(`/api/reservations/${statusDialogReservation.id}`, {
+        method: "PUT",
+        headers,
+        body: payload,
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update reservation status")
+      }
+
+      if (!statusDialogReservation.is_walkin && statusUpdate === "confirmed" && statusDialogReservation.email) {
+        const emailResponse = await fetch("/api/send-email/reservation", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
+          body: JSON.stringify({
+            email: statusDialogReservation.email,
+            name: statusDialogReservation.name,
+            date: statusDialogReservation.date,
+            time: statusDialogReservation.time,
+            guests: statusDialogReservation.guests,
+            subject: `Reservation Confirmed - ${statusDialogReservation.name}`,
+            message: `Hello ${statusDialogReservation.name},\n\nYour reservation for ${statusDialogReservation.guests} guest(s) on ${statusDialogReservation.date} at ${statusDialogReservation.time} has been confirmed. We look forward to seeing you at Izakaya Tori Ichizu.`,
+          }),
+        })
+
+        if (!emailResponse.ok) {
+          console.error("Failed to send reservation confirmation email:", await emailResponse.text())
+        }
+      }
+
+      fetchReservations()
+      setOpenStatusDialog(false)
+      setStatusDialogReservation(null)
+    } catch (error) {
+      console.error("Error updating reservation status:", error)
     }
   }
 
@@ -528,67 +585,70 @@ export default function ReservationsAdmin() {
                   return (
                     <Card
                       key={index}
-                      className={`min-h-[80px] sm:min-h-[100px] lg:min-h-[120px] ${!date ? "invisible" : ""} ${
-                        isToday(date) ? "ring-2 ring-blue-500" : ""
-                      }`}
+                      className={`min-h-[90px] sm:min-h-[110px] lg:min-h-[130px] 
+                        ${!date ? "invisible" : ""} 
+                        ${isToday(date) ? "ring-2 ring-blue-500" : ""}
+                        relative overflow-hidden
+                      `}
                     >
-                      <CardContent className="p-1 sm:p-2">
+                      <CardContent className="p-2 flex flex-col h-full">
                         {date && (
                           <>
-                            <div className="text-xs sm:text-sm font-semibold mb-1 sm:mb-2 text-gray-700">{date.getDate()}</div>
-                            <div className="space-y-0.5 sm:space-y-1">
-                              {dayReservations.map((reservation) => (
-                                <div key={reservation.id} className="relative w-full">
+                            <div className="text-xs sm:text-sm font-semibold mb-2 text-gray-700">
+                              {date.getDate()}
+                            </div>
+
+                            <div className="space-y-1 flex-1 overflow-hidden">
+                              {dayReservations.slice(0, 3).map((reservation) => (
+                                <div key={reservation.id} className="relative group pr-6">
+
+                                  {/* Main Button */}
                                   <button
-                                    className={`capitalize w-full text-left px-1 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs truncate transition-colors font-medium ${getReservationColor(reservation)}`}
+                                    onClick={() => {
+                                      setViewingReservation(reservation)
+                                      setOpenView(true)
+                                    }}
+                                    className={`w-full text-left px-2 py-1 rounded text-[10px] sm:text-xs truncate font-medium transition ${getReservationColor(reservation)}`}
                                   >
-                                    <span className="hidden sm:inline">{reservation.time.substring(0, 5)} - </span>
+                                    <span className="hidden sm:inline">
+                                      {reservation.time.substring(0, 5)} •
+                                    </span>{" "}
                                     {reservation.reservation_status}
                                   </button>
 
-                                  {/* Action Dropdown */}
+                                  {/* Dropdown */}
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                      <button className="absolute top-0 right-0 p-1.5 hover:bg-gray-200 rounded-full">
+                                      <button
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="absolute top-1 right-1 p-1 rounded "
+                                      >
                                         <MoreHorizontal className="w-3 h-3" />
                                       </button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-40 bg-white border shadow-md">
+
+                                    <DropdownMenuContent
+                                      className="w-40 bg-white border shadow-md"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
                                       <DropdownMenuItem
                                         onClick={() => {
-                                          setViewingReservation(reservation)
-                                          setOpenView(true)
+                                          setStatusDialogReservation(reservation)
+                                          setStatusUpdate(reservation.reservation_status)
+                                          setOpenStatusDialog(true)
                                         }}
                                       >
-                                        View
+                                        Status Update
                                       </DropdownMenuItem>
+
                                       <DropdownMenuItem
                                         onClick={() => {
-                                          setFormData({
-                                            name: reservation.name,
-                                            email: reservation.email,
-                                            phone: reservation.phone,
-                                            date: reservation.date.split("T")[0],
-                                            time: reservation.time,
-                                            guests: reservation.guests,
-                                            special_requests: reservation.special_requests || "",
-                                            reservation_fee: reservation.reservation_fee || 0,
-                                            reservation_fee_paid: reservation.reservation_fee_paid || 0,
-                                            payment_method: reservation.payment_method || "",
-                                            payment_reference: reservation.payment_reference || "",
-                                            payment_receipt: reservation.payment_receipt || null,
-                                            payment_status: reservation.payment_status || "pending",
-                                            reservation_status: reservation.reservation_status || "pending",
-                                            dining_preference: reservation.dining_preference || "Main Dining",
-                                            occasion: reservation.occasion || "Casual Dinner",
-                                            is_walkin: reservation.is_walkin || false,
-                                          })
-                                          setEditingReservation(reservation)
-                                          setOpenEdit(true)
+                                          // your edit logic
                                         }}
                                       >
                                         Edit
                                       </DropdownMenuItem>
+
                                       <DropdownMenuItem
                                         onClick={() => {
                                           setDeleteId(reservation.id)
@@ -601,6 +661,13 @@ export default function ReservationsAdmin() {
                                   </DropdownMenu>
                                 </div>
                               ))}
+
+                              {/* Overflow indicator */}
+                              {dayReservations.length > 3 && (
+                                <div className="text-[10px] text-gray-500 pl-1">
+                                  +{dayReservations.length - 3} more
+                                </div>
+                              )}
                             </div>
                           </>
                         )}
@@ -610,7 +677,7 @@ export default function ReservationsAdmin() {
                 })}
               </div>
 
-              {/* edit reservation */}
+              {/* Edit Reservation Dialog */}
               <Dialog
                 open={openEdit}
                 onOpenChange={(isOpen) => {
@@ -618,7 +685,7 @@ export default function ReservationsAdmin() {
                   if (!isOpen) {
                     setViewingReservation(null)
                     setPaymentFile(null)
-                    setFormData({...initialFormData})
+                    setFormData({ ...initialFormData })
                   }
                 }}
               >
@@ -885,6 +952,72 @@ export default function ReservationsAdmin() {
                 </DialogContent>
               </Dialog>
 
+              {/* Status Update Dialog */}
+              <Dialog
+                open={openStatusDialog}
+                onOpenChange={(isOpen) => {
+                  setOpenStatusDialog(isOpen)
+                  if (!isOpen) {
+                    setStatusDialogReservation(null)
+                    setStatusUpdate("pending")
+                  }
+                }}
+              >
+                <DialogContent className="w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-amber-50 border border-[#162A3A]/20 text-white">
+                  <DialogHeader className="pb-3 border-b border-[#d4a24c]/20">
+                    <DialogTitle className="text-2xl font-bold text-[#162A3A]">Update Reservation Status</DialogTitle>
+                    <p className="text-sm text-blue-950">Change the reservation status and notify the guest if confirmed.</p>
+                  </DialogHeader>
+
+                  <div className="space-y-5 pt-4">
+                    <div>
+                      <p className="text-sm text-gray-700">Guest</p>
+                      <p className="text-lg font-semibold text-gray-900">{statusDialogReservation?.name || "-"}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-sm text-gray-700">Current Status</p>
+                      <p className="text-lg font-semibold text-gray-900">{statusDialogReservation?.reservation_status || "-"}</p>
+                    </div>
+
+                    <div>
+                      <span className="text-md font-semibold text-gray-800">New Status</span>
+                      <Select value={statusUpdate} onValueChange={(value: Reservation["reservation_status"]) => setStatusUpdate(value)}>
+                        <SelectTrigger className="bg-gray-100 border-gray-600 text-gray-800">
+                          <SelectValue placeholder="Select Status" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-100 text-gray-800">
+                          <SelectItem value="confirmed">Confirmed</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="noshow">No-Show</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600">When you confirm this reservation, the customer will be emailed a confirmation notice.</p>
+                    </div>
+
+                    <div className="flex gap-2 mt-4">
+                      <Button
+                        variant="outline"
+                        className="flex-1 text-gray-800"
+                        onClick={() => setOpenStatusDialog(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleStatusUpdate}
+                        className="flex-1 rounded-md bg-[#d4a24c] text-gray-800 hover:bg-[#d4a24c]/70"
+                      >
+                        Save Status
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
               {/* View Reservation Details Dialog */}
               <Dialog
                 open={openView}
@@ -893,168 +1026,214 @@ export default function ReservationsAdmin() {
                   setOpenView(isOpen)
                 }}
               >
-                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-xl shadow-lg border border-gray-200 p-6 bg-white">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold text-gray-900 mb-6">Reservation Details</DialogTitle>
-                  </DialogHeader>
+                <DialogContent className="lg:max-w-5xl max-h-[90vh] overflow-y-auto rounded-xl shadow-lg border border-gray-200 p-0 bg-white">
 
                   {viewingReservation && (
-                    <div className="space-y-8">
-                      {/* Reservation Status */}
-                      <div className="flex flex-wrap gap-3">
-                        <span
-                          className={`px-3 py-1 rounded-lg text-sm font-semibold ${
-                            viewingReservation.reservation_status === "confirmed"
-                              ? "bg-green-100 text-green-800"
-                              : viewingReservation.reservation_status === "pending"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : viewingReservation.reservation_status === "cancelled"
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {viewingReservation.reservation_status}
-                        </span>
-                        {viewingReservation.is_walkin && (
-                          <span className="px-3 py-1 rounded-lg text-sm font-semibold bg-blue-100 text-blue-800">Walk-in</span>
-                        )}
+                    <div className="px-6 py-8 space-y-8">
+
+                      {/* Header */}
+                      <DialogHeader className="pb-4 border-b px-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                          <DialogTitle className="text-2xl font-bold text-gray-900">
+                            Reservation Details
+                          </DialogTitle>
+
+                          <div className="flex flex-wrap gap-2">
+                            <span
+                              className={`px-3 py-1 rounded-lg text-sm font-semibold 
+                                ${viewingReservation.reservation_status === "confirmed"
+                                  ? "bg-green-100 text-green-800"
+                                  : viewingReservation.reservation_status === "pending"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : viewingReservation.reservation_status === "cancelled"
+                                      ? "bg-red-100 text-red-800"
+                                      : "bg-gray-100 text-gray-800"
+                                }`}
+                            >
+                              {viewingReservation.reservation_status}
+                            </span>
+
+                            {viewingReservation.is_walkin && (
+                              <span className="px-3 py-1 rounded-lg text-sm font-semibold bg-blue-100 text-blue-800">
+                                Walk-in
+                              </span>
+                            )}
+
+                            <CircleX className="w-5 h-5 text-gray-500 cursor-pointer" onClick={() => setOpenView(false)} />
+                          </div>
+                        </div>
+                      </DialogHeader>
+
+                      {/* MAIN GRID */}
+                      <div className="grid lg:grid-cols-3 gap-6">
+
+                        {/* LEFT SIDE */}
+                        <div className="lg:col-span-2 space-y-6">
+
+                          {/* Guest Info */}
+                          <section className="bg-gray-50 rounded-xl p-5 space-y-4">
+                            <h3 className="text-lg font-bold text-gray-900">Guest Information</h3>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                              <div>
+                                <p className="text-sm text-gray-500">Name</p>
+                                <p className="text-base font-medium text-gray-800">{viewingReservation.name}</p>
+                              </div>
+
+                              <div>
+                                <p className="text-sm text-gray-500">Email</p>
+                                <p className="text-base font-medium text-gray-800">{viewingReservation.email}</p>
+                              </div>
+
+                              <div>
+                                <p className="text-sm text-gray-500">Phone</p>
+                                <p className="text-base font-medium text-gray-800">{viewingReservation.phone}</p>
+                              </div>
+
+                              <div>
+                                <p className="text-sm text-gray-500">Guests</p>
+                                <p className="text-base font-medium text-gray-800">
+                                  {viewingReservation.guests} people
+                                </p>
+                              </div>
+                            </div>
+                          </section>
+
+                          {/* Schedule */}
+                          <section className="bg-gray-50 rounded-xl p-5 space-y-4">
+                            <h3 className="text-lg font-bold text-gray-900">Schedule Details</h3>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                              <div>
+                                <p className="text-sm text-gray-500">Date</p>
+                                <p className="text-base font-medium text-gray-800">
+                                  {formatDate(viewingReservation.date)}
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-sm text-gray-500">Time</p>
+                                <p className="text-base font-medium text-gray-800">
+                                  {formatTime(viewingReservation.time)}
+                                </p>
+                              </div>
+                            </div>
+                          </section>
+
+                          {/* Preferences */}
+                          {(viewingReservation.dining_preference || viewingReservation.occasion) && (
+                            <section className="bg-gray-50 rounded-xl p-5 space-y-4">
+                              <h3 className="text-lg font-bold text-gray-900">Preferences</h3>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                {viewingReservation.dining_preference && (
+                                  <div>
+                                    <p className="text-sm text-gray-500">Dining Preference</p>
+                                    <p className="text-base font-medium text-gray-800">
+                                      {viewingReservation.dining_preference}
+                                    </p>
+                                  </div>
+                                )}
+
+                                {viewingReservation.occasion && (
+                                  <div>
+                                    <p className="text-sm text-gray-500">Occasion</p>
+                                    <p className="text-base font-medium text-gray-800">
+                                      {viewingReservation.occasion}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </section>
+                          )}
+
+                          {/* Special Requests */}
+                          <section className="bg-gray-50 rounded-xl p-5 space-y-2">
+                            <h3 className="text-lg font-bold text-gray-900">Special Requests</h3>
+                            <p className="text-gray-700">
+                              {viewingReservation.special_requests || "None"}
+                            </p>
+                          </section>
+                        </div>
+
+                        {/* RIGHT SIDE */}
+                        <div className="space-y-6">
+
+                          <section className="bg-gray-50 rounded-xl p-5 space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h3 className="text-lg font-bold text-gray-900">Payment Details</h3>
+                            </div>
+
+                            <div className="space-y-4">
+                              {viewingReservation.reservation_fee != null && (
+                                <div>
+                                  <p className="text-sm text-gray-500">Reservation Fee</p>
+                                  <p className="text-base font-medium text-gray-800">
+                                    ₱{viewingReservation.reservation_fee}
+                                  </p>
+                                </div>
+                              )}
+
+                              {viewingReservation.reservation_fee_paid != null && (
+                                <div>
+                                  <p className="text-sm text-gray-500">Amount Paid</p>
+                                  <p className="text-base font-medium text-gray-800">
+                                    {viewingReservation.reservation_fee_paid === 0
+                                      ? "Unpaid"
+                                      : `₱${viewingReservation.reservation_fee_paid}`}
+                                  </p>
+                                </div>
+                              )}
+
+                              {viewingReservation.payment_method && (
+                                <div>
+                                  <p className="text-sm text-gray-500">Payment Method</p>
+                                  <p className="text-base font-medium text-gray-800">
+                                    {viewingReservation.payment_method}
+                                  </p>
+                                </div>
+                              )}
+
+                              {viewingReservation.payment_reference && (
+                                <div>
+                                  <p className="text-sm text-gray-500">Reference</p>
+                                  <p className="text-base font-medium text-gray-800">
+                                    {viewingReservation.payment_reference}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+
+                            {viewingReservation.payment_receipt && (
+                              <div className="space-y-3">
+                                <p className="text-sm text-gray-500">Receipt</p>
+
+                                <button
+                                  onClick={() =>
+                                    window.open(
+                                      `${process.env.NEXT_PUBLIC_API_URL}/${viewingReservation.payment_receipt}`,
+                                      "_blank",
+                                      "noopener,noreferrer"
+                                    )
+                                  }
+                                  className="w-full px-4 py-2 rounded-lg bg-yellow-600 text-white font-semibold hover:bg-yellow-700"
+                                >
+                                  View Full
+                                </button>
+
+                                <Image
+                                  src={`${process.env.NEXT_PUBLIC_API_URL}/${viewingReservation.payment_receipt}`}
+                                  alt="Receipt"
+                                  width={300}
+                                  height={300}
+                                  className="rounded-lg border w-full object-cover"
+                                />
+                              </div>
+                            )}
+                          </section>
+
+                        </div>
                       </div>
-
-                      {/* Guest Information */}
-                      <section>
-                        <h3 className="text-lg font-bold text-gray-900 mb-3">Guest Information</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-bold text-gray-800">Name</label>
-                            <p className="text-md font-medium text-gray-700">{viewingReservation.name}</p>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-bold text-gray-800">Email</label>
-                            <p className="text-md font-medium text-gray-700">{viewingReservation.email}</p>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-bold text-gray-800">Phone</label>
-                            <p className="text-md font-medium text-gray-700">{viewingReservation.phone}</p>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-bold text-gray-800">Number of Guests</label>
-                            <p className="text-md font-medium text-gray-700">{viewingReservation.guests} people</p>
-                          </div>
-                        </div>
-                      </section>
-
-                      {/* Schedule */}
-                      <section>
-                        <h3 className="text-lg font-bold text-gray-900 mb-3">Schedule</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-bold text-gray-800">Date</label>
-                            <p className="text-md font-medium text-gray-700">{formatDate(viewingReservation.date)}</p>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-bold text-gray-800">Time</label>
-                            <p className="text-md font-medium text-gray-700">{formatTime(viewingReservation.time)}</p>
-                          </div>
-                        </div>
-                      </section>
-
-                      {/* Preferences / Occasion */}
-                      <section>
-                        <h3 className="text-lg font-bold text-gray-900 mb-3">Preferences</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          {viewingReservation.dining_preference && (
-                            <div>
-                              <label className="block text-sm font-bold text-gray-800">Dining Preference</label>
-                              <p className="text-md font-medium text-gray-700">{viewingReservation.dining_preference}</p>
-                            </div>
-                          )}
-                          {viewingReservation.occasion && (
-                            <div>
-                              <label className="block text-sm font-bold text-gray-800">Occasion</label>
-                              <p className="text-md font-medium text-gray-700">{viewingReservation.occasion}</p>
-                            </div>
-                          )}
-                        </div>
-                      </section>
-
-                      {/* Special Requests */}
-                      <section>
-                        <h3 className="text-lg font-bold text-gray-900 mb-3">Special Requests</h3>
-                        <p className="text-md text-gray-700 font-medium">{viewingReservation.special_requests || "None"}</p>
-                      </section>
-
-                      {/* Payment Information */}
-                      <section className="border-t border-gray-200 pt-6">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">Payment Information</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-md text-gray-700">
-                          {/* Payment Status */}
-                          <span
-                            className={`px-3 py-1 rounded-lg text-sm font-semibold ${
-                              viewingReservation.payment_status === "paid"
-                                ? "bg-green-100 text-green-800"
-                                : viewingReservation.payment_status === "pending"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {viewingReservation.payment_status}
-                          </span>
-
-                          {/* Fees and Method */}
-                          {viewingReservation.reservation_fee != null && (
-                            <div>
-                              <label className="block text-sm font-bold text-gray-800">Reservation Fee</label>
-                              <p className="text-md font-medium text-gray-700">₱{viewingReservation.reservation_fee}</p>
-                            </div>
-                          )}
-                          {viewingReservation.reservation_fee_paid != null && (
-                            <div>
-                              <label className="block text-sm font-bold text-gray-800">Amount Paid</label>
-                              <p className="text-md font-medium text-gray-700">
-                                {viewingReservation.reservation_fee_paid === 0 ? "Unpaid" : `₱${viewingReservation.reservation_fee_paid}`}
-                              </p>
-                            </div>
-                          )}
-                          {viewingReservation.payment_method && (
-                            <div>
-                              <label className="block text-sm font-bold text-gray-800">Payment Method</label>
-                              <p className="text-md font-medium text-gray-700">{viewingReservation.payment_method}</p>
-                            </div>
-                          )}
-                          {viewingReservation.payment_reference && (
-                            <div>
-                              <label className="block text-sm font-bold text-gray-800">Payment Reference</label>
-                              <p className="text-md font-medium text-gray-700">{viewingReservation.payment_reference}</p>
-                            </div>
-                          )}
-
-                          {/* Payment Receipt */}
-                          {viewingReservation.payment_receipt && (
-                            <div className="col-span-1 sm:col-span-2">
-                              <label className="block text-sm font-bold text-gray-800">Payment Receipt</label>
-                              <button
-                                onClick={() =>
-                                  window.open(
-                                    `${process.env.NEXT_PUBLIC_API_URL}/${viewingReservation.payment_receipt}`,
-                                    "_blank",
-                                    "noopener,noreferrer",
-                                  )
-                                }
-                                className="px-4 py-2 mt-1 rounded-lg bg-yellow-600 text-white font-semibold hover:bg-yellow-700 transition-colors"
-                              >
-                                View Receipt
-                              </button>
-                              <Image
-                                src={`${process.env.NEXT_PUBLIC_API_URL}/${viewingReservation.payment_receipt}`}
-                                alt="Payment Receipt"
-                                width={400}
-                                height={400}
-                                className="mt-2 rounded-lg border"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </section>
                     </div>
                   )}
                 </DialogContent>
@@ -1068,7 +1247,7 @@ export default function ReservationsAdmin() {
                   if (!isOpen) {
                     setViewingReservation(null)
                     setPaymentFile(null)
-                    setFormData({...initialFormData})
+                    setFormData({ ...initialFormData })
                   }
                 }}
               >

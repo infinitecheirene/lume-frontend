@@ -30,7 +30,6 @@ const items = [
   { title: "Reservations", url: "/admin/reservations", icon: Calendar },
   { title: "Inquiries", url: "/admin/contacts", icon: Mail },
   { title: "Customers", url: "/admin/users", icon: Users },
-  { title: "Contact Inquiries", url: "/admin/contacts", icon: Phone },
     {
     title: "Content Management",
     icon: Megaphone,
