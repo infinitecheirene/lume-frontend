@@ -109,7 +109,7 @@ export default function MenuPage() {
   if (loading) return <LumeLoaderMinimal />
 
   return (
-    <section className="relative py-24 bg-gradient-to-br from-[#0b1d26] via-[#0f232f] to-[#1a2e3a] text-white overflow-hidden">
+    <section className="py-28 bg-[#0b1d26] min-h-screen">
       {/* Background decoration */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-10 left-10 w-32 h-32 bg-[#d4a24c]/10 rounded-full blur-2xl" />
@@ -121,23 +121,11 @@ export default function MenuPage() {
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
 
         {/* Heading */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-20"
-        >
-          <div className="inline-flex items-center gap-2 bg-[#d4a24c]/10 border border-[#d4a24c]/20 rounded-full px-6 py-2 mb-6">
-            <Coffee className="w-4 h-4 text-[#d4a24c]" />
-            <p className="text-[#d4a24c] tracking-[0.2em] uppercase text-sm font-medium">
-              Our Offerings
-            </p>
-          </div>
-
-          <h2 className={`${playfair.className} text-5xl md:text-6xl font-bold mb-4`}>
-            The <span className="text-[#d4a24c] italic bg-gradient-to-r from-[#d4a24c] to-[#b8943a] bg-clip-text text-transparent">Menu</span>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8 md:mb-16">
+          <p className="tracking-[0.2em] md:tracking-[0.3em] uppercase text-xs md:text-sm mb-2 md:mb-3 text-[#d4a24c]">Our Offerings</p>
+          <h2 className={`${playfair.className} text-3xl md:text-5xl lg:text-6xl font-bold leading-tight`}>
+            The <span className="text-[#d4a24c] italic">Menu</span>
           </h2>
-
-          <div className="w-24 h-0.5 bg-gradient-to-r from-transparent via-[#d4a24c] to-transparent mx-auto" />
         </motion.div>
 
         {/* Tabs */}
@@ -152,8 +140,8 @@ export default function MenuPage() {
                 setActiveMainCategory(cat as keyof typeof mainCategoryMap)
               }
               className={`px-8 py-3 rounded-full text-sm font-medium transition-all duration-300 shadow-lg ${activeMainCategory === cat
-                  ? "bg-gradient-to-r from-[#d4a24c] to-[#b8943a] text-black font-semibold shadow-[#d4a24c]/30"
-                  : "bg-[#132e3b]/80 backdrop-blur-sm text-white/70 hover:bg-[#193847] hover:text-white border border-white/10 hover:border-[#d4a24c]/30"
+                ? "bg-gradient-to-r from-[#d4a24c] to-[#b8943a] text-black font-semibold shadow-[#d4a24c]/30"
+                : "bg-[#132e3b]/80 backdrop-blur-sm text-white/70 hover:bg-[#193847] hover:text-white border border-white/10 hover:border-[#d4a24c]/30"
                 }`}
             >
               {cat}

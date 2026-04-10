@@ -72,18 +72,19 @@ export default function BlogPage() {
 
   return (
     <div className="py-8 md:py-14 bg-[#0b1d26] min-h-screen">
-      {/* Animated background patterns */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-        <div className="absolute top-0 left-0 w-64 h-64 md:w-96 md:h-96 bg-[#E5A834]/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-64 h-64 md:w-96 md:h-96 bg-[#E5A834]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/4 w-48 h-48 md:w-64 md:h-64 bg-[#E5A834]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
+      {/* Background decoration */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-10 left-10 w-32 h-32 bg-[#d4a24c]/10 rounded-full blur-2xl" />
+        <div className="absolute top-1/3 right-20 w-24 h-24 bg-[#d4a24c]/5 rounded-full blur-xl" />
+        <div className="absolute bottom-20 left-1/3 w-40 h-40 bg-[#d4a24c]/8 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 right-10 w-28 h-28 bg-[#d4a24c]/6 rounded-full blur-2xl" />
       </div>
 
       <div className="container mx-auto px-4 md:px-6 lg:px-8 py-8 md:py-16 relative z-10">
         {/* Heading */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8 md:mb-16">
           <p className="tracking-[0.2em] md:tracking-[0.3em] uppercase text-xs md:text-sm mb-2 md:mb-3 text-[#d4a24c]">From Roastery</p>
-          <h2 className={`${playfair.className} text-3xl md:text-4xl lg:text-5xl font-bold leading-tight`}>
+          <h2 className={`${playfair.className} text-3xl md:text-5xl lg:text-6xl font-bold leading-tight`}>
             The Crescent <span className="text-[#d4a24c] italic">Journal</span>
           </h2>
         </motion.div>
@@ -116,9 +117,9 @@ export default function BlogPage() {
 
         {/* Error State */}
         {error && (
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 text-center shadow-2xl">
-              <p className="text-[#d4a24c] text-lg font-semibold">⚠️ {error}</p>
+          <div className="max-w-2xl mx-auto px-4">
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 md:p-8 text-center shadow-2xl">
+              <p className="text-[#d4a24c] text-base md:text-lg font-semibold">⚠️ {error}</p>
             </div>
           </div>
         )}
@@ -217,11 +218,11 @@ export default function BlogPage() {
 
         {/* Empty State */}
         {!loading && !error && posts.length === 0 && (
-          <div className="text-center py-20 animate-in fade-in zoom-in duration-500">
-            <div className="inline-block p-8 bg-white/10 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20">
-              <div className="text-7xl mb-6">📝</div>
-              <h2 className="text-3xl font-bold text-white mb-3">No Stories Yet</h2>
-              <p className="text-white/70 text-lg">Check back soon for delicious content!</p>
+          <div className="text-center py-12 md:py-20 animate-in fade-in zoom-in duration-500 px-4">
+            <div className="inline-block p-6 md:p-8 bg-white/10 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20">
+              <div className="text-5xl md:text-7xl mb-4 md:mb-6">📝</div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">No Stories Yet</h2>
+              <p className="text-white/70 text-base md:text-lg">Check back soon for delicious content!</p>
             </div>
           </div>
         )}
@@ -229,22 +230,22 @@ export default function BlogPage() {
 
       {/* Blog Post Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="lg:max-w-5xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-[#0b1d26] to-[#1a2e3a] border border-[#d4a24c]/20 text-white">
-          <DialogHeader className="text-center pb-6">
-            <DialogTitle className={`${playfair.className} text-3xl font-bold text-[#d4a24c] mb-2`}>
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl md:max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-[#0b1d26] to-[#1a2e3a] border border-[#d4a24c]/20 text-white mx-4">
+          <DialogHeader className="text-center pb-4 md:pb-6">
+            <DialogTitle className={`${playfair.className} text-2xl md:text-3xl font-bold text-[#d4a24c] mb-2`}>
               {selectedPost?.title}
             </DialogTitle>
-            <div className="flex gap-4 text-sm text-white/60">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs md:text-sm text-white/60">
               <span>By {selectedPost?.author}</span>
-              <span>•</span>
+              <span className="hidden sm:inline">•</span>
               <span>{selectedPost ? new Date(selectedPost.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : ""}</span>
             </div>
           </DialogHeader>
 
           {selectedPost && (
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {/* Featured Image */}
-              <div className="relative w-full h-64 md:h-96 rounded-xl overflow-hidden shadow-2xl">
+              <div className="relative w-full h-48 sm:h-64 md:h-96 rounded-xl overflow-hidden shadow-2xl">
                 {selectedPost.image_url ? (
                   <img
                     src={`${process.env.NEXT_PUBLIC_API_URL}${selectedPost.image_url}`}
@@ -255,22 +256,22 @@ export default function BlogPage() {
                     }}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-8xl bg-gradient-to-br from-[#d4a24c]/20 to-[#d4a24c]/10">🍽️</div>
+                  <div className="w-full h-full flex items-center justify-center text-6xl md:text-8xl bg-gradient-to-br from-[#d4a24c]/20 to-[#d4a24c]/10">🍽️</div>
                 )}
               </div>
 
               {/* Excerpt */}
-              <div className="prose prose-lg prose-invert max-w-none">
-                <div className="text-white/80 leading-relaxed whitespace-pre-wrap text-justify">
+              <div className="bg-white/5 rounded-lg p-4 md:p-6 border border-white/10">
+                <p className="text-lg md:text-xl text-white/90 leading-relaxed italic text-center">
                   {selectedPost.excerpt}
-                </div>
+                </p>
               </div>
 
               {/* Full Content */}
-              <div className="bg-white/5 rounded-lg p-6 border border-white/10">
-                <p className="text-xl text-white/90 leading-relaxed italic text-center">
+              <div className="prose prose-lg prose-invert max-w-none">
+                <div className="text-white/80 leading-relaxed whitespace-pre-wrap text-justify text-sm md:text-base">
                   {selectedPost.content}
-                </p>
+                </div>
               </div>
             </div>
           )}

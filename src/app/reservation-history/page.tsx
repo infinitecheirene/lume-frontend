@@ -20,7 +20,7 @@ const ReservationsHistory = () => {
   const [filteredReservations, setFilteredReservations] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState<string>("all")
-
+  const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null)
   const user = useAuthStore((state) => state.user)
   const token = useAuthStore((state) => state.token)
 
@@ -208,7 +208,7 @@ const ReservationsHistory = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-[#d4a24c]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto relative z-10">
+      <div className="mx-3 md:max-w-7xl md:mx-auto relative z-10">
         {/* Header */}
         <div className="mb-8">
           <div className="text-center gap-4 mb-6">
@@ -222,54 +222,42 @@ const ReservationsHistory = () => {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
           <div className="space-y-2">
-            <div className="flex items-center gap-3 backdrop-blur-sm px-6 py-3 bg-[#0c222b] rounded-2xl p-8 border border-[#a47015]/60 text-center hover:border-[#d4a24c]/40 transition shadow-[0_0_20px_rgba(212,162,76,0.35)]">
-              <User className="w-5 h-5 text-[#d4a24c]" />
-              <div>
-                <p className="text-xs text-white/70">Welcome back,</p>
-                <p className="font-bold text-white">{user.name}</p>
-              </div>
-            </div>
-
             {/* Filters */}
-            <div className="backdrop-blur-sm h-fit lg:top-6 bg-[#0c222b] rounded-2xl p-8 border border-[#a47015]/60 text-center hover:border-[#d4a24c]/40 transition shadow-[0_0_20px_rgba(212,162,76,0.35)]">
+            <div className="mx-auto md:mx-10 lg:mx-auto backdrop-blur-sm h-fit lg:top-6 bg-[#0c222b] rounded-2xl p-8 border border-[#a47015]/60 text-center hover:border-[#d4a24c]/40 transition shadow-[0_0_20px_rgba(212,162,76,0.35)]">
               <div className="flex items-center gap-2 mb-2">
                 <Filter className="w-4 h-4 text-[#d4a24c]" />
-                <span className="text-xs font-semibold text-white uppercase tracking-wide">Status</span>
+                <span className="text-md font-semibold text-white uppercase tracking-wide">Status</span>
               </div>
 
               <div className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
                 <button
                   onClick={() => setActiveFilter("all")}
-                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                    activeFilter === "all" ? "bg-white text-[#0c222b] shadow" : "bg-white/10 text-white hover:bg-white/20"
-                  }`}
+                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${activeFilter === "all" ? "bg-white text-[#0c222b] shadow" : "bg-white/10 text-white hover:bg-white/20"
+                    }`}
                 >
                   All ({getStatusCount("all")})
                 </button>
 
                 <button
                   onClick={() => setActiveFilter("confirmed")}
-                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                    activeFilter === "confirmed" ? "bg-blue-500 text-white shadow" : "bg-white/10 text-white hover:bg-white/20"
-                  }`}
+                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${activeFilter === "confirmed" ? "bg-blue-500 text-white shadow" : "bg-white/10 text-white hover:bg-white/20"
+                    }`}
                 >
                   Confirmed ({getStatusCount("confirmed")})
                 </button>
 
                 <button
                   onClick={() => setActiveFilter("completed")}
-                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                    activeFilter === "completed" ? "bg-emerald-500 text-white shadow" : "bg-white/10 text-white hover:bg-white/20"
-                  }`}
+                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${activeFilter === "completed" ? "bg-emerald-500 text-white shadow" : "bg-white/10 text-white hover:bg-white/20"
+                    }`}
                 >
                   Completed ({getStatusCount("completed")})
                 </button>
 
                 <button
                   onClick={() => setActiveFilter("cancelled")}
-                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                    activeFilter === "cancelled" ? "bg-red-500 text-white shadow" : "bg-white/10 text-white hover:bg-white/20"
-                  }`}
+                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${activeFilter === "cancelled" ? "bg-red-500 text-white shadow" : "bg-white/10 text-white hover:bg-white/20"
+                    }`}
                 >
                   Cancelled ({getStatusCount("cancelled")})
                 </button>
@@ -324,40 +312,42 @@ const ReservationsHistory = () => {
               {filteredReservations.map((reservation) => (
                 <Card
                   key={reservation.id}
-                  className="group bg-[#162A3A]/40 backdrop-blur-xl border border-white/20 hover:border-[#d4a24c]/40 transition-all duration-500 hover:shadow-[0_0_30px_rgba(212,162,76,0.3)] rounded-2xl overflow-hidden"
+                  className="mx-5 group bg-[#162A3A]/40 backdrop-blur-xl border border-white/20 hover:border-[#d4a24c]/40 transition-all duration-500 hover:shadow-[0_0_30px_rgba(212,162,76,0.3)] rounded-2xl overflow-hidden"
                 >
 
                   {/* HEADER */}
-                  <div className="px-6 pb-3 border-b border-white/10">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="px-6 py-4 border-b border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 
-                      {/* Title */}
-                      <div>
-                        <div className="flex items-baseline gap-1">
-                          <h2 className="text-white font-black text-2xl">{reservation.occasion}&nbsp;</h2>
-                          <h3 className="text-white font-semnibold text-lg">#{reservation.reservation_number}</h3>
-                        </div>
-                        <p className="text-white/70 text-sm">
-                        Created at: &nbsp;
-                          {new Date(reservation.created_at).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </p>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="text-white font-black text-xl sm:text-2xl">
+                          {reservation.occasion}
+                        </h2>
+                        <span className="text-white/60 text-sm">
+                          #{reservation.reservation_number}
+                        </span>
                       </div>
 
-                      {/* Status */}
-                      <Badge
-                        className={`${getStatusColor(reservation.status)} flex items-center gap-2 px-3 py-1 border self-start sm:self-auto`}
-                      >
-                        {getStatusIcon(reservation.status)}
-                        <span className="capitalize font-semibold">
-                          {reservation.status}
-                        </span>
-                      </Badge>
+                      <p className="text-white/60 text-xs sm:text-sm mt-1">
+                        Created{" "}
+                        {new Date(reservation.created_at).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </p>
                     </div>
+
+                    <Badge
+                      className={`${getStatusColor(reservation.status)} px-3 py-1 border self-start sm:self-auto`}
+                    >
+                      {getStatusIcon(reservation.status)}
+                      <span className="ml-1 capitalize font-semibold">
+                        {reservation.status}
+                      </span>
+                    </Badge>
                   </div>
+
 
                   <CardContent className="p-6 space-y-6">
 
@@ -461,13 +451,12 @@ const ReservationsHistory = () => {
                       )}
 
                       {reservation.payment_receipt && (
-                        <a
-                          href={`/${reservation.payment_receipt}`}
-                          target="_blank"
+                        <button
+                          onClick={() => setSelectedReceipt(reservation.payment_receipt)}
                           className="text-xs text-[#d4a24c] underline ml-1"
                         >
                           View Receipt
-                        </a>
+                        </button>
                       )}
                     </div>
 
@@ -494,6 +483,37 @@ const ReservationsHistory = () => {
             </div>
           )}
         </div>
+
+        {selectedReceipt && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+
+            <div className="mx-5 md:mx-auto bg-[#0b1d26] border border-[#d4a24c]/30 rounded-2xl w-full max-w-3xl p-4 relative shadow-2xl">
+
+              {/* CLOSE */}
+              <button
+                onClick={() => setSelectedReceipt(null)}
+                className="absolute top-3 right-3 text-white hover:text-[#d4a24c]"
+              >
+                ✕
+              </button>
+
+              {/* TITLE */}
+              <h2 className="text-white font-bold text-lg mb-4">
+                Payment Receipt
+              </h2>
+
+              {/* CONTENT */}
+              <div className="w-full max-h-[80vh] overflow-auto rounded-xl border border-white/10 bg-black">
+                <img
+                  src={`/${selectedReceipt}`}
+                  alt="Receipt"
+                  className="w-full h-auto object-contain"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   )

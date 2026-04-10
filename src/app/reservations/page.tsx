@@ -499,7 +499,7 @@ export default function ReservationsPage() {
             </div>
 
             {/* Form Card */}
-            <div className="bg-white/5 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden border border-white/10 animate-in fade-in zoom-in duration-500">
+            <div className="mx-5 md:mx-auto bg-white/5 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden border border-white/10 animate-in fade-in zoom-in duration-500">
               <div className="bg-white h-1" />
 
               <div className="p-8 md:p-10">
