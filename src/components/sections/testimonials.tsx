@@ -114,7 +114,10 @@ export default function TestimonialsSection() {
 
             <h3 className={`${playfair.className} text-2xl font-semibold mb-2`}>No Reviews Yet</h3>
 
-            <p className="text-white/60 max-w-md">Be the first to share your experience with us. Your feedback helps us serve you better.</p>
+            <p className="text-white/60 max-w-md">
+              Be the first to share your experience with us.
+              <br />Your feedback helps us serve you better.
+            </p>
 
             <div className="mt-6 h-[1px] w-24 bg-[#d4a24c]/30" />
           </div>

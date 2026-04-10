@@ -1,47 +1,47 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { motion } from "framer-motion"
-import { useState, useEffect } from "react"
-import { Playfair_Display } from "next/font/google"
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { Playfair_Display } from "next/font/google";
+import { Bell, Coffee } from "lucide-react";
 
 const playfair = Playfair_Display({
     subsets: ["latin"],
     weight: ["400", "600", "700"],
-})
+});
 
 interface Announcement {
-    id: number
-    title: string
-    description: string
-    badge: string
-    type?: string
+    id: number;
+    title: string;
+    description: string;
+    badge: string;
+    type?: string;
 }
 
 export default function Announcements() {
-    const [posts, setPosts] = useState<Announcement[]>([])
-    const [loading, setLoading] = useState(true)
+    const [posts, setPosts] = useState<Announcement[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const res = await fetch("/api/announcements")
-                const data = await res.json()
-                setPosts(data || [])
+                const res = await fetch("/api/announcements");
+                const data = await res.json();
+                setPosts(data || []);
             } catch (err) {
-                console.error("Failed to fetch announcements", err)
+                console.error("Failed to fetch announcements", err);
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
-        }
+        };
 
-        fetchPosts()
-    }, [])
+        fetchPosts();
+    }, []);
 
     return (
         <section className="py-24 bg-[#0c222b] border-t border-yellow-500/10 text-white overflow-hidden">
             <div className="container mx-auto px-4 max-w-6xl">
-
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -52,7 +52,9 @@ export default function Announcements() {
                     <p className="text-[#d4a24c] tracking-[0.3em] uppercase text-sm mb-3">
                         What&apos;s Happening
                     </p>
-                    <h2 className={`${playfair.className} text-4xl md:text-5xl font-bold`}>
+                    <h2
+                        className={`${playfair.className} text-4xl md:text-5xl font-bold`}
+                    >
                         News & <span className="text-[#d4a24c] italic">Promos</span>
                     </h2>
                 </motion.div>
@@ -99,9 +101,7 @@ export default function Announcements() {
                                     </div>
 
                                     {/* Excerpt */}
-                                    <p className="text-white/70 text-md">
-                                        {item.description}
-                                    </p>
+                                    <p className="text-white/70 text-md">{item.description}</p>
                                 </motion.div>
                             ))}
                         </div>
@@ -125,11 +125,25 @@ export default function Announcements() {
 
                 {/* Empty State */}
                 {!loading && posts.length === 0 && (
-                    <div className="text-center text-white/60">
-                        No announcements available.
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+
+                        <div className="w-16 h-16 rounded-full bg-[#d4a24c]/10 flex items-center justify-center mb-6">
+                            <Bell className="w-8 h-8 text-[#d4a24c]" />
+                        </div>
+
+                        <h3 className={`${playfair.className} text-2xl font-semibold mb-2`}>
+                            No Announcement Yet
+                        </h3>
+
+                        <p className="text-white/60 max-w-md">
+                            Our latest announcements will appear here soon.
+                            <br/>Stay tuned for updates!
+                        </p>
+
+                        <div className="mt-6 h-[1px] w-24 bg-[#d4a24c]/30" />
                     </div>
                 )}
             </div>
         </section>
-    )
+    );
 }

@@ -5,7 +5,7 @@ import nodemailer from "nodemailer"
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: false,
+  secure: process.env.SMTP_SECURE === "true",
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -26,10 +26,10 @@ async function sendAdminNotification(reservationData: any) {
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .header { background: #162a3a; color: #e5a834; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
             .header h1 { margin: 0; font-size: 28px; }
             .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
-            .info-box { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ea580c; }
+            .info-box { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #162a3a; }
             .info-row { display: flex; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
             .info-row:last-child { border-bottom: none; }
             .info-label { font-weight: bold; color: #6b7280; min-width: 150px; }
@@ -42,17 +42,13 @@ async function sendAdminNotification(reservationData: any) {
         <body>
           <div class="container">
             <div class="header">
-              <h1>🎉 New Reservation Alert!</h1>
-              <p style="margin: 10px 0 0 0; font-size: 16px;">You have a new reservation at Izakaya Tori Ichizu</p>
+              <h1>🎉 Reservation Alert!</h1>
+              <p style="margin: 10px 0 0 0; font-size: 16px;">You have a Reservation!</p>
             </div>
             
             <div class="content">
-              <div style="text-align: center; margin-bottom: 20px;">
-                <span class="status-badge">📋 New Booking</span>
-              </div>
-
               <div class="info-box">
-                <h2 style="margin-top: 0; color: #ea580c;">Customer Details</h2>
+                <h2 style="margin-top: 0; color: #162a3a;">Customer Details</h2>
                 <div class="info-row">
                   <span class="info-label">Name:</span>
                   <span class="info-value">${reservationData.name}</span>
@@ -68,7 +64,7 @@ async function sendAdminNotification(reservationData: any) {
               </div>
 
               <div class="info-box">
-                <h2 style="margin-top: 0; color: #ea580c;"> Reservation Details</h2>
+                <h2 style="margin-top: 0; color: #162a3a;"> Reservation Details</h2>
                 <div class="info-row">
                   <span class="info-label">Date:</span>
                   <span class="info-value">${new Date(reservationData.date).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span>
@@ -91,7 +87,7 @@ async function sendAdminNotification(reservationData: any) {
                 </div>
                 <div class="info-row">
                   <span class="info-label">Reservation Fee:</span>
-                  <span class="info-value">₦${reservationData.reservation_fee || "0"}</span>
+                  <span class="info-value">₱${reservationData.reservation_fee || "0"}</span>
                 </div>
                 <div class="info-row">
                   <span class="info-label">Payment Method:</span>
@@ -100,6 +96,10 @@ async function sendAdminNotification(reservationData: any) {
                 <div class="info-row">
                   <span class="info-label">Reference:</span>
                   <span class="info-value">${reservationData.payment_reference || "N/A"}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Receipt:</span>
+                  <span class="info-value">${reservationData.payment_receipt || "N/A"}</span>
                 </div>
               </div>
 
@@ -111,8 +111,8 @@ async function sendAdminNotification(reservationData: any) {
               ` : ''}
 
               <div class="footer">
-                <p>This is an automated notification from Izakaya Tori Ichizu Reservation System</p>
-                <p style="margin: 5px 0;">📧 Questions? Reply to this email or contact your support team</p>
+                <p>This is an automated notification from Lumè Bean and Bar Reservation System</p>
+                <p style="margin: 5px 0;">Questions? Reply to this email or contact your support team</p>
               </div>
             </div>
           </div>
@@ -144,10 +144,10 @@ async function sendCustomerConfirmation(reservationData: any) {
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .header { background: #162a3a; color: #e5a834; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
             .header h1 { margin: 0; font-size: 28px; }
             .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
-            .info-box { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ea580c; }
+            .info-box { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #162a3a; }
             .info-row { display: flex; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
             .info-row:last-child { border-bottom: none; }
             .info-label { font-weight: bold; color: #6b7280; min-width: 120px; }
@@ -166,14 +166,10 @@ async function sendCustomerConfirmation(reservationData: any) {
             <div class="content">
               <p style="font-size: 16px;">Dear <strong>${reservationData.name}</strong>,</p>
               
-              <p>Thank you for choosing Izakaya Tori Ichizu! We're excited to host you and your guests.</p>
+              <p>Thank you for choosing Lumè Bean and Bar! We're excited to host you and your guests.</p>
 
               <div class="info-box">
-                <h2 style="margin-top: 0; color: #ea580c;">📋 Your Reservation Details</h2>
-                <div class="info-row">
-                  <span class="info-label">Reservation #:</span>
-                  <span class="info-value">${reservationData.reservation_number || "N/A"}</span>
-                </div>
+                <h2 style="margin-top: 0; color: #162a3a;">📋 Your Reservation Details</h2>
                 <div class="info-row">
                   <span class="info-label">Reservation #:</span>
                   <span class="info-value">${reservationData.reservation_number || "N/A"}</span>
@@ -213,7 +209,7 @@ async function sendCustomerConfirmation(reservationData: any) {
               </div>
 
               <div class="alert-box">
-                <h3 style="margin-top: 0; color: #1e40af;">✅ Reservation Confirmed</h3>
+                <h3 style="margin-top: 0; color: #162a3a;">✅ Reservation Confirmed</h3>
                 <p style="margin: 0;">Your reservation has been successfully submitted! Our team will review it and send you a confirmation shortly.</p>
               </div>
 
@@ -225,7 +221,7 @@ async function sendCustomerConfirmation(reservationData: any) {
               ` : ''}
 
               <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="margin-top: 0; color: #059669;">📧 What's Next?</h3>
+                <h3 style="margin-top: 0; color: #059669;">What's Next?</h3>
                 <ul style="margin: 10px 0; padding-left: 20px;">
                   <li>You'll receive a confirmation email from our team shortly</li>
                   <li>We recommend arriving 10-15 minutes before your reservation time</li>
@@ -235,12 +231,14 @@ async function sendCustomerConfirmation(reservationData: any) {
 
               <div style="text-align: center; margin-top: 30px;">
                 <p style="color: #6b7280;">Need to make changes or have questions?</p>
-                <p style="margin: 5px 0;"><strong>Contact us:</strong> ${reservationData.phone}</p>
+                <h4 style="margin: 5px 0;">Contact us:</h4>
+                <p style="margin: 5px 0;">+234 810 123 4567</p>
+                <p style="margin: 5px 0;"><a href="mailto:info@lumèbeanandbar.com">info@lumèbeanandbar.com</a></p>
               </div>
 
               <div class="footer">
                 <p>We look forward to serving you!</p>
-                <p style="margin: 5px 0;"><strong>Izakaya Tori Ichizu</strong></p>
+                <p style="margin: 5px 0;"><strong>Lumè Bean and Bar</strong></p>
                 <p style="margin: 5px 0; font-size: 12px;">This is an automated confirmation email</p>
               </div>
             </div>

@@ -5,6 +5,7 @@ import Image from "next/image"
 import { motion } from "framer-motion"
 import { useState, useEffect } from "react"
 import { Playfair_Display } from "next/font/google"
+import { Newspaper } from "lucide-react"
 
 const playfair = Playfair_Display({
     subsets: ["latin"],
@@ -143,8 +144,22 @@ export default function BlogPreview() {
 
                 {/* Empty */}
                 {!loading && posts.length === 0 && (
-                    <div className="text-center text-white/60">
-                        No blog posts available.
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+
+                        <div className="w-16 h-16 rounded-full bg-[#d4a24c]/10 flex items-center justify-center mb-6">
+                            <Newspaper className="w-8 h-8 text-[#d4a24c]" />
+                        </div>
+
+                        <h3 className={`${playfair.className} text-2xl font-semibold mb-2`}>
+                            No Blogs Available Yet
+                        </h3>
+
+                        <p className="text-white/60 max-w-md">
+                            Our latest stories and updates will appear here soon.
+                            <br/>Stay tuned for fresh content from our roastery!
+                        </p>
+
+                        <div className="mt-6 h-[1px] w-24 bg-[#d4a24c]/30" />
                     </div>
                 )}
             </div>

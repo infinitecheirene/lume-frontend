@@ -324,20 +324,21 @@ const ReservationsHistory = () => {
               {filteredReservations.map((reservation) => (
                 <Card
                   key={reservation.id}
-                  className="group bg-[#162A3A] backdrop-blur-xl border border-white/20 hover:border-[#d4a24c]/40 transition-all duration-500 hover:shadow-[0_0_30px_rgba(212,162,76,0.3)] rounded-2xl overflow-hidden"
+                  className="group bg-[#162A3A]/40 backdrop-blur-xl border border-white/20 hover:border-[#d4a24c]/40 transition-all duration-500 hover:shadow-[0_0_30px_rgba(212,162,76,0.3)] rounded-2xl overflow-hidden"
                 >
 
                   {/* HEADER */}
-                  <div className="px-6 py-5 border-b border-white/10">
+                  <div className="px-6 pb-3 border-b border-white/10">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 
                       {/* Title */}
                       <div>
-                        <div className="flex">
+                        <div className="flex items-baseline gap-1">
                           <h2 className="text-white font-black text-2xl">{reservation.occasion}&nbsp;</h2>
-                          <h3 className="text-white font-semnibold text-lg">- Reservation #{reservation.id}</h3>
+                          <h3 className="text-white font-semnibold text-lg">#{reservation.reservation_number}</h3>
                         </div>
                         <p className="text-white/70 text-sm">
+                        Created at: &nbsp;
                           {new Date(reservation.created_at).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
