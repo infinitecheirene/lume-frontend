@@ -13,12 +13,18 @@ import { usePathname } from "next/navigation"
 import FloatingSocialMedia from "@/components/FloatingSocialMedia"
 import CustomerServiceChatbot from "@/components/CustomerServiceChatbot"
 import { useAuthStore } from "@/store/authStore"
+import { useSettingsStore } from "@/store/settingsStore"
 
 const queryClient = new QueryClient()
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const showHeader = pathname !== "/login" && pathname !== "/register" && pathname !== "/admin" && !pathname.startsWith("/admin/")
+  const { fetchSettings } = useSettingsStore()
+
+  useEffect(() => {
+    fetchSettings()
+  }, [])
 
   // Initialize auth from storage on mount
   const initializeAuth = useAuthStore((state) => state.initializeAuth)

@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Playfair_Display } from "next/font/google"
+import { useSettingsStore } from "@/store/settingsStore"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -59,6 +60,7 @@ const Orders = () => {
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [orderToCancel, setOrderToCancel] = useState<Order | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const {deliveryFee} = useSettingsStore()
 
   useEffect(() => {
     const checkAuthAndFetchData = async () => {
@@ -498,7 +500,7 @@ const Orders = () => {
                         {/* Delivery Fee */}
                         <div className="flex justify-between border-t pt-4 font-bold text-lg">
                           <span>Delivery Fee</span>
-                          <span className="text-[#d4a24c]">₱{Number(selectedOrder.delivery_fee).toFixed(2)}</span>
+                          <span className="text-[#d4a24c]">₱{Number(deliveryFee).toFixed(2)}</span>
                         </div>
 
                         {/* Total */}
