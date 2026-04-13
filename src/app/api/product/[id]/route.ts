@@ -5,8 +5,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 // Helper to get auth token
 function getAuthToken(request: NextRequest): string | null {
   const authHeader = request.headers.get("authorization")
-  const cookieToken = request.cookies.get("auth_token")?.value
-  return authHeader?.replace("Bearer ", "") || cookieToken || null
+  return authHeader?.replace("Bearer ", "") || null
 }
 
 // GET - fetch a single product
@@ -63,7 +62,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const laravelFormData = new FormData()
     // Append fields with debug
-    const fields = ["name", "description", "price", "category", "is_spicy", "is_vegetarian", "is_featured", "best_seller"]
+    const fields = ["name", "description", "ingredients", "price", "category", "best_seller", "image"]
     fields.forEach((field) => {
       const value = formData.get(field)
       let convertedValue: string

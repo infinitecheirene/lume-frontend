@@ -216,7 +216,7 @@ export default function MenuPage() {
                           src={getImageUrl(item.image)}
                           alt={item.name}
                           fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="object-contain group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
 
@@ -315,7 +315,7 @@ export default function MenuPage() {
                 src={getImageUrl(selectedProduct?.image)}
                 alt={selectedProduct?.name || ""}
                 fill
-                className="object-cover"
+                className="object-contain"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0b1d26] via-black/40 to-transparent" />
 

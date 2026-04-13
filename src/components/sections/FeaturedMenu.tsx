@@ -20,6 +20,7 @@ interface Product {
   id: number
   name: string
   description: string
+  ingredients: string
   category: string
   price: number
   image?: string | null
@@ -130,43 +131,58 @@ export default function BestSellerPage() {
                 className="group cursor-pointer"
                 onClick={() => handleProductClick(item)}
               >
-                <div className="py-8 border-b border-white/10 flex items-start gap-6 hover:bg-gradient-to-r hover:from-white/5 hover:to-white/10 transition-all duration-300 px-4 rounded-xl backdrop-blur-sm hover:shadow-lg hover:shadow-[#d4a24c]/10">
-                  {/* Image */}
-                  <div className="relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                    <Image
-                      src={getImageUrl(item.image)}
-                      alt={item.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between">
-                      <h3 className={`${playfair.className} text-xl font-semibold group-hover:text-[#d4a24c] transition-colors duration-300`}>
-                        {item.name}
-                      </h3>
-                      <Star className="w-5 h-5 text-[#d4a24c] flex-shrink-0 ml-2" />
+                <div
+                  className="group cursor-pointer rounded-2xl bg-white/5 border border-white/10
+                            hover:border-[#d4a24c]/30 hover:bg-white/10 transition-all duration-300
+                            overflow-hidden"
+                >
+                  <div
+                    className="p-5 flex gap-5"
+                    onClick={() => handleProductClick(item)}
+                  >
+                    {/* IMAGE */}
+                    <div className="relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden">
+                      <Image
+                        src={getImageUrl(item.image)}
+                        alt={item.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
                     </div>
 
-                    <p className="text-sm text-white/70 mt-2 leading-relaxed">
-                      {item.description}
-                    </p>
+                    {/* CONTENT */}
+                    <div className="flex-1 flex flex-col justify-between">
 
-                    <div className="flex items-center justify-between mt-4">
-                      <span className="inline-flex items-center gap-2 text-xs px-4 py-2 rounded-full bg-gradient-to-r from-[#d4a24c]/20 to-[#d4a24c]/10 text-[#d4a24c] font-medium border border-[#d4a24c]/30">
-                        <Coffee className="w-3 h-3" />
-                        {item.category}
-                      </span>
+                      {/* TITLE */}
+                      <div>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex justify-center items-center gap-2">
+                          <h3 className={`${playfair.className} text-lg font-semibold group-hover:text-[#d4a24c] transition-colors`}>
+                            {item.name}
+                          </h3>
+                          <Star className="w-4 h-4 text-[#d4a24c]" />
+                          </div>
 
-                      <div className="text-[#d4a24c] font-bold text-xl">
-                        ₱{item.price}
+                          <span className="text-[#d4a24c] text-sm font-bold">
+                            ₱{item.price}
+                          </span>
+                        </div>
+
+                        <p className="text-sm text-white/60 mt-2 line-clamp-2">
+                          {item.description}
+                        </p>
+                      </div>
+
+                      {/* META */}
+                      <div className="flex items-center justify-between mt-4">
+                        <span className="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-[#d4a24c]/10 text-[#d4a24c] border border-[#d4a24c]/20">
+                          {item.category}
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
+
               </motion.div>
             ))}
           </motion.div>
@@ -193,61 +209,57 @@ export default function BestSellerPage() {
 
         {/* Product Detail Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-2xl bg-gradient-to-br from-[#0c222b] to-[#1a3441] border border-[#d4a24c]/20 text-white shadow-2xl">
-            <DialogHeader className="text-center">
-              <DialogTitle className={`${playfair.className} text-3xl font-bold text-[#d4a24c] mb-2`}>
-                {selectedProduct?.name}
-              </DialogTitle>
-            </DialogHeader>
+          <DialogContent className="max-w-3xl p-0 overflow-hidden bg-[#0c222b] text-white border border-white/10 rounded-2xl">
 
-            {selectedProduct && (
-              <div className="space-y-6">
-                {/* Image */}
-                <div className="relative w-full h-64 rounded-xl overflow-hidden shadow-2xl">
-                  <Image
-                    src={getImageUrl(selectedProduct.image)}
-                    alt={selectedProduct.name}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                </div>
+            {/* IMAGE HEADER */}
+            <div className="relative w-full h-72">
+              <Image
+                src={getImageUrl(selectedProduct?.image)}
+                alt={selectedProduct?.name || ""}
+                fill
+                className="object-contain"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0c222b] via-black/30 to-transparent" />
+            </div>
 
-                {/* Details */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-gradient-to-r from-[#d4a24c]/20 to-[#d4a24c]/10 text-[#d4a24c] font-medium border border-[#d4a24c]/30">
-                      <Coffee className="w-4 h-4" />
-                      {selectedProduct.category}
-                    </span>
-                    <div className="text-3xl font-bold text-[#d4a24c]">
-                      ₱{selectedProduct.price}
-                    </div>
-                  </div>
+            {/* CONTENT */}
+            <div className="p-6 space-y-5">
 
-                  <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                    <h4 className="text-[#d4a24c] font-semibold mb-2">Description</h4>
-                    <p className="text-white/80 leading-relaxed">
-                      {selectedProduct.description}
-                    </p>
-                  </div>
-                </div>
+              {/* TITLE + PRICE */}
+              <div className="flex items-start justify-between">
+                <DialogTitle className={`${playfair.className} text-2xl font-bold text-[#d4a24c]`}>
+                  {selectedProduct?.name}
+                </DialogTitle>
 
-                {/* Actions */}
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    onClick={() => {
-                      handleAddToCart(selectedProduct)
-                      setDialogOpen(false)
-                    }}
-                    className="flex-1 bg-gradient-to-r from-[#d4a24c] to-[#b8943a] hover:from-[#b8943a] hover:to-[#d4a24c] text-black font-semibold py-3 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"
-                  >
-                    Add to Cart
-                  </Button>
+                <div className="text-xl font-bold">
+                  ₱{selectedProduct?.price}
                 </div>
               </div>
-            )}
+
+              {/* CATEGORY */}
+              <span className="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/70">
+                <Coffee className="w-3 h-3" />
+                {selectedProduct?.category}
+              </span>
+
+              {/* DESCRIPTION */}
+              <p className="text-white/70 text-sm leading-relaxed">
+                {selectedProduct?.description}
+              </p>
+
+              {/* ACTION */}
+              <Button
+                onClick={() => {
+                  handleAddToCart(selectedProduct!)
+                  setDialogOpen(false)
+                }}
+                className="w-full bg-[#d4a24c] hover:bg-[#b8943a] text-black font-semibold py-3 rounded-xl"
+              >
+                Add to Cart
+              </Button>
+            </div>
           </DialogContent>
+
         </Dialog>
 
       </div>
