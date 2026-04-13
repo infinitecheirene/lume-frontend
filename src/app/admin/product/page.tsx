@@ -610,7 +610,7 @@ export default function ProductsAdminPage() {
   ]
 
   const table = useReactTable({
-    data: products,
+    data: filteredProducts,
     columns: columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
