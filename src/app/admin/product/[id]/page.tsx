@@ -13,24 +13,24 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Loader2, Upload, Flame, Leaf, Save, Star } from "lucide-react"
+import { useAuthStore } from "@/store/authStore"
 import { useToast } from "@/hooks/use-toast"
 
+// Product data type
 interface Product {
   id: number
   name: string
   description: string
+  ingredients: string
   price: number | string
   image: string
   category: string
-  is_spicy?: boolean
-  is_vegetarian?: boolean
-  is_featured?: boolean
   best_seller?: boolean
   created_at: string
   updated_at: string
 }
 
-const categories = ["Coffee", "Bar", "Food"]
+const categories = ["Signature", "Classic", "Drinks", "Coffee", "Refreshers", "Food"]
 
 const getImageUrl = (imagePath: string) => {
   if (!imagePath) return "/placeholder-food.jpg"
@@ -51,19 +51,18 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const fileInputRef = useRef<HTMLInputElement>(null)
   const resolvedParams = React.use(params) // unwrap the promise
   const productId = resolvedParams.id
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const token = useAuthStore((state) => state.token)
 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    ingredients: "",
     price: "",
     category: "",
-    is_spicy: false,
-    is_vegetarian: false,
-    is_featured: false,
     best_seller: false,
   })
-  const [selectedImage, setSelectedImage] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   // --- Effects ---
 
@@ -88,11 +87,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         setFormData({
           name: data.name || "",
           description: data.description || "",
+          ingredients: data.ingredients || "",
           price: data.price?.toString() || "",
           category: data.category || "",
-          is_spicy: data.is_spicy || false,
-          is_vegetarian: data.is_vegetarian || false,
-          is_featured: data.is_featured || false,
           best_seller: data.best_seller || false,
         })
       } catch (error) {
@@ -105,7 +102,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     }
 
     fetchProduct()
-  }, [params.id, router, toast])
+  }, [productId, router, toast])
 
   // --- Handlers ---
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -134,8 +131,14 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     e.preventDefault()
     setSaving(true)
 
+    if (!token) {
+      toast({ variant: "destructive", title: "Error", description: "You are not authenticated. Please log in again." })
+      router.push("/login")
+      return
+    }
+
     try {
-      console.log("Submitting form data...", formData)
+      console.log("Submitting form data...", FormData)
       if (selectedImage) console.log("Selected image:", selectedImage)
 
       const fd = new FormData()
@@ -149,8 +152,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       console.log(`Sending PUT request to /api/product/${productId}`)
       const res = await fetch(`/api/product/${productId}`, {
         method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: fd,
-        credentials: "include",
       })
 
       console.log("Raw response status:", res.status, res.statusText)
@@ -248,14 +253,16 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
               {/* Product Form */}
               <Card className="gap-0 p-0 bg-white/70 backdrop-blur-sm shadow-xl border-yellow-100">
-                <CardHeader className="bg-slate-800 text-white rounded-t-lg">
-                  <CardTitle className="flex py-2 items-center gap-2 text-xl font-bold">
-                    <span>Product Details</span>
+                <CardHeader className="bg-gradient-to-r from-[#162A3A] to-[#1f3a4d] text-white rounded-t-lg">
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl font-semibold">
+                    <Star className="w-5 h-5 text-yellow-400" />
+                    Product Details
                   </CardTitle>
                 </CardHeader>
+
                 <CardContent className="p-6 bg-white">
                   <ProductForm
-                    formData={formData}
+                    formData={FormData}
                     handleFormChange={handleFormChange}
                     handleSwitchChange={handleSwitchChange}
                     handleCategoryChange={handleCategoryChange}
@@ -333,7 +340,8 @@ function ProductForm({
             Product Image
           </Label>
           <div className="mt-2 space-y-4">
-            <div className="w-full aspect-square max-w-xs mx-auto lg:mx-0 rounded-xl overflow-hidden border-2 border-dashed border-yellow-300 bg-gradient-to-br from-yellow-50 to-yellow-50 shadow-lg">
+            <div className="relative w-full aspect-square max-w-xs mx-auto lg:mx-0 rounded-2xl overflow-hidden border border-yellow-200 bg-white shadow-lg group">
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-black/10 transition" />
               <Image
                 src={imagePreview || getImageUrl(product.image)}
                 alt={product.name}
@@ -370,11 +378,11 @@ function ProductForm({
               <Input
                 id="name"
                 name="name"
-                value={formData.name}
+                value={product?.name}
                 onChange={handleFormChange}
                 required
                 disabled={saving}
-                placeholder="e.g., Garlic Butter Shrimp"
+                placeholder="Product name"
                 className="mt-1 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
               />
             </div>
@@ -389,7 +397,7 @@ function ProductForm({
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.price}
+                value={product?.price}
                 onChange={handleFormChange}
                 required
                 disabled={saving}
@@ -402,7 +410,7 @@ function ProductForm({
               <Label htmlFor="category" className="text-gray-700 font-medium">
                 Category *
               </Label>
-              <Select value={formData.category} onValueChange={handleCategoryChange} disabled={saving}>
+              <Select value={product.category} onValueChange={handleCategoryChange} disabled={saving}>
                 <SelectTrigger className="mt-1 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
@@ -424,12 +432,30 @@ function ProductForm({
             <Textarea
               id="description"
               name="description"
-              value={formData.description}
+              value={product?.description}
               onChange={handleFormChange}
               required
               rows={4}
               disabled={saving}
               placeholder="Describe the dish, ingyellowients, and preparation..."
+              className="mt-1 resize-none border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="ingredients" className="text-gray-700 font-medium">
+              Ingredients * 
+              <span className="text-gray-400">(use | separator)</span>
+            </Label>
+            <Textarea
+              id="ingredients"
+              name="ingredients"
+              value={product?.ingredients}
+              onChange={handleFormChange}
+              required
+              rows={4}
+              disabled={saving}
+              placeholder="Enter ingredients (use | separator)"
               className="mt-1 resize-none border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
             />
           </div>
@@ -440,7 +466,7 @@ function ProductForm({
               <p className="text-sm text-gray-600">Mark this product as a bestseller item.</p>
             </div>
 
-            <Switch checked={formData.best_seller} onCheckedChange={(checked) => handleSwitchChange("best_seller", checked)} disabled={saving} />
+            <Switch value={product.best_seller} checked={formData.best_seller} onCheckedChange={(checked) => handleSwitchChange("best_seller", checked)} disabled={saving} />
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import type React from "react"
 import { AppSidebar } from "@/components/app-sidebar"
@@ -58,6 +59,7 @@ interface Product {
   id: number
   name: string
   description: string
+  ingredients: string
   price: number | string
   image: string
   category: string
@@ -66,7 +68,7 @@ interface Product {
   updated_at: string
 }
 
-const categories = ["Coffee", "Bar", "Food"]
+const categories = ["Signature", "Classic", "Drinks", "Coffee", "Refreshers", "Food"]
 
 const getImageUrl = (imagePath: string): string => {
   if (!imagePath) {
@@ -94,7 +96,7 @@ export default function ProductsAdminPage() {
   const { toast } = useToast()
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
-
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [globalFilter, setGlobalFilter] = useState("")
@@ -115,6 +117,7 @@ export default function ProductsAdminPage() {
   const [newFormData, setNewFormData] = useState({
     name: "",
     description: "",
+    ingredeints: "",
     price: "",
     category: "",
     best_seller: false,
@@ -163,6 +166,7 @@ export default function ProductsAdminPage() {
       const formData = new FormData()
       formData.append("name", newFormData.name)
       formData.append("description", newFormData.description)
+      formData.append("ingredients", newFormData.ingredeints)
       formData.append("price", newFormData.price)
       formData.append("category", newFormData.category)
       formData.append("best_seller", newFormData.best_seller ? "1" : "0")
@@ -209,6 +213,7 @@ export default function ProductsAdminPage() {
     setNewFormData({
       name: "",
       description: "",
+      ingredeints: "",
       price: "",
       category: "",
       best_seller: false,
@@ -274,6 +279,19 @@ export default function ProductsAdminPage() {
   useEffect(() => {
     fetchProducts()
   }, [])
+
+  // Filtered products based on search and category
+  const filteredProducts = useMemo(() => {
+    return products.filter((item) => {
+      const matchesSearch =
+        item.name.toLowerCase().includes((globalFilter || "").toLowerCase())
+
+      const matchesCategory =
+        selectedCategory === "all" || item.category === selectedCategory
+
+      return matchesSearch && matchesCategory
+    })
+  }, [products, globalFilter, selectedCategory])
 
   // Table columns
   const columns: ColumnDef<Product>[] = [
@@ -437,15 +455,16 @@ export default function ProductsAdminPage() {
                 </Button>
               </DialogTrigger>
 
-              <DialogContent className="w-full max-w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-6">
                 <DialogHeader className="bg-[#162A3A] text-white p-4 sm:p-6 -m-4 sm:-m-6 mb-4 rounded-t-lg">
                   <DialogTitle className="text-xl sm:text-2xl font-bold">Product Details</DialogTitle>
                 </DialogHeader>
 
                 {selectedProduct && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[360px]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 justify-between items-center gap-6 mt-3 min-h-[380px]">
+
                     {/* LEFT - IMAGE */}
-                    <div className="relative w-full m-auto aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                    <div className="relative w-full aspect-square rounded-2xl overflow-hidden">
                       <Image
                         src={getImageUrl(selectedProduct.image)}
                         alt={selectedProduct.name}
@@ -455,48 +474,85 @@ export default function ProductsAdminPage() {
                         priority
                       />
 
-                      {/* subtle overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
+                      {/* overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
 
-                      {/* name overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-5">
-                        <p className="text-xs uppercase tracking-widest text-white/70">Product</p>
-                        <h2 className="text-lg sm:text-2xl font-semibold text-white leading-tight">{selectedProduct.name}</h2>
+                      {selectedProduct.best_seller && (
+                        <span className="inline-flex text-xs px-3 py-1 rounded-full border border-[#d4a24c]/40 text-[#d4a24c] bg-[#d4a24c]/10">
+                          ⭐ Best Seller
+                        </span>
+                      )}
+
+                      {/* title overlay */}
+                      <div className="absolute bottom-0 left-0 right-0 p-5">
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-white/60">
+                          Featured Item
+                        </p>
+                        <h2 className="text-xl sm:text-2xl font-semibold text-white leading-tight">
+                          {selectedProduct.name}
+                        </h2>
                       </div>
                     </div>
 
                     {/* RIGHT - DETAILS */}
-                    <div className="flex flex-col p-4 sm:p-6">
-                      <div className="space-y-1">
-                        <p className="text-xs tracking-widest text-gray-500">Product Name</p>
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">{selectedProduct.name}</h3>
-                        {selectedProduct.best_seller && (
-                          <span>
-                            <Badge variant="outline" className="text-xs">
-                              Best Seller
-                            </Badge>
-                          </span>
+                    <div className="flex flex-col justify-between">
+
+                      <div className="space-y-5">
+                        {/* META */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="rounded-xl border bg-white p-3">
+                            <p className="text-[10px] uppercase tracking-wider text-gray-500">
+                              Category
+                            </p>
+                            <p className="mt-1 text-sm font-semibold text-gray-900 capitalize">
+                              {selectedProduct.category}
+                            </p>
+                          </div>
+
+                          <div className="rounded-xl border bg-white p-3">
+                            <p className="text-[10px] uppercase tracking-wider text-gray-500">
+                              Price
+                            </p>
+                            <p className="mt-1 text-lg font-bold text-[#d4a24c]">
+                              ₱{formatPrice(selectedProduct.price)}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* DESCRIPTION */}
+                        <div className="rounded-xl border bg-gray-50 p-4">
+                          <p className="text-[10px] uppercase tracking-wider text-gray-500">
+                            Description
+                          </p>
+                          <p className="mt-2 text-sm text-gray-700 leading-relaxed">
+                            {selectedProduct.description || "No description available."}
+                          </p>
+                        </div>
+
+                        {/* INGREDIENTS */}
+                        {selectedProduct.ingredients && (
+                          <div>
+                            <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-2">
+                              Ingredients
+                            </p>
+
+                            <div className="flex flex-wrap gap-2">
+                              {selectedProduct.ingredients
+                                .split("|")
+                                .slice(0, 6)
+                                .map((ing, i) => (
+                                  <span
+                                    key={i}
+                                    className="text-xs px-3 py-1 rounded-full bg-white border border-gray-200 text-gray-700"
+                                  >
+                                    {ing.trim()}
+                                  </span>
+                                ))}
+                            </div>
+                          </div>
                         )}
                       </div>
 
-                      <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="rounded-xl border bg-white p-4">
-                          <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Category</p>
-                          <p className="mt-2 text-sm font-semibold text-gray-900 capitalize">{selectedProduct.category}</p>
-                        </div>
-
-                        <div className="rounded-xl border bg-white p-4">
-                          <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Price</p>
-                          <p className="mt-2 text-lg font-bold text-green-600">₱{formatPrice(selectedProduct.price)}</p>
-                        </div>
-                      </div>
-
-                      <div className="mt-5 rounded-xl border bg-gray-50 p-4 flex-1">
-                        <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Description</p>
-                        <p className="mt-2 text-sm sm:text-base text-gray-800 leading-relaxed whitespace-pre-wrap">
-                          {selectedProduct.description || "No description available."}
-                        </p>
-                      </div>
                     </div>
                   </div>
                 )}
@@ -659,6 +715,25 @@ export default function ProductsAdminPage() {
                             className="pl-9 pr-3 py-2 w-full bg-blue-100 border-blue-950 text-gray-950 placeholder:text-gray-950 focus:bg-blue-50 focus:border-blue-500 transition-all duration-200"
                           />
                         </div>
+                      </div>
+
+                      {/* Category Filter */}
+                      <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                          <SelectTrigger className="w-[180px] bg-blue-100 border-blue-950 text-gray-950">
+                            <SelectValue placeholder="Filter category" />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            <SelectItem value="all">All Categories</SelectItem>
+
+                            {categories.map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
 
                       {/* Add Product Button */}
