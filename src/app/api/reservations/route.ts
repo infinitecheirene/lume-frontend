@@ -86,6 +86,10 @@ async function sendAdminNotification(reservationData: any) {
                   <span class="info-value">${reservationData.occasion || "Casual Dinner"}</span>
                 </div>
                 <div class="info-row">
+                  <span class="info-label">Package:</span>
+                  <span class="info-value">${reservationData.package || "Custom"}</span>
+                </div>
+                <div class="info-row">
                   <span class="info-label">Reservation Fee:</span>
                   <span class="info-value">₱${reservationData.reservation_fee || "0"}</span>
                 </div>

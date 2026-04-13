@@ -114,94 +114,94 @@ export default function Cart() {
                     key={item.id}
                     className="bg-[#0f2a33] border-white/10 rounded-xl"
                   >
-                    <CardContent className="p-5 flex gap-4">
+                    <CardContent className="p-5 flex flex-col md:flex-row gap-5">
 
-                      {/* Image */}
-                      <div className="relative w-24 h-24 rounded-lg overflow-hidden">
-                        <Image
-                          src={getImageUrl(item.image)}
-                          alt={item.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
+                      {/* LEFT - IMAGE + BASIC INFO */}
+                      <div className="flex gap-4 w-full md:w-auto">
 
-                      {/* Info */}
-                      <div className="flex-1 flex flex-col justify-between">
-
-                        {/* Top */}
-                        <div className="flex justify-between">
-                          <div>
-                            <h3 className="font-bold text-gray-200 text-2xl">{item.name}</h3>
-                            <p className="text-sm text-white/60 line-clamp-2">
-                              {item.description}
-                            </p>
-                          </div>
-
-                          <button
-                            onClick={() =>
-                              handleRemove(item.id, item.name)
-                            }
-                            className="text-white/50 hover:text-red-400"
-                          >
-                            <X size={16} />
-                          </button>
+                        {/* IMAGE */}
+                        <div className="relative w-28 h-28 md:w-32 md:h-32 rounded-xl overflow-hidden flex-shrink-0">
+                          <Image
+                            src={getImageUrl(item.image)}
+                            alt={item.name}
+                            fill
+                            className="object-cover"
+                          />
                         </div>
 
-                        {/* Bottom */}
-                        <div className="flex justify-between items-center">
+                        {/* NAME + DESCRIPTION */}
+                        <div className="flex flex-col justify-center">
+                          <h3 className="font-bold text-2xl text-gray-200">
+                            {item.name}
+                          </h3>
 
-                          <Badge className="inline-block text-sm px-3 py-1 rounded-full bg-[#d4a24c]/20 text-[#d4a24c]">
+                          <p className="text-sm text-white/60 line-clamp-2 max-w-xs">
+                            {item.description}
+                          </p>
+
+                          <Badge className="my-2 w-fit text-xs px-3 py-1 rounded-full bg-[#d4a24c]/20 text-[#d4a24c]">
                             {item.category}
                           </Badge>
 
-                          <div className="flex items-center gap-4">
-
-                            {/* Qty */}
-                            <div className="flex items-center text-white bg-white/10 rounded-full px-2">
-                              <button
-                                onClick={() =>
-                                  handleQuantityChange(
-                                    item.id,
-                                    item.quantity - 1
-                                  )
-                                }
-                                className="p-1"
-                              >
-                                <Minus size={22} />
-                              </button>
-
-                              <span className="px-2">
-                                {item.quantity}
-                              </span>
-
-                              <button
-                                onClick={() =>
-                                  handleQuantityChange(
-                                    item.id,
-                                    item.quantity + 1
-                                  )
-                                }
-                                className="p-1"
-                              >
-                                <Plus size={22} />
-                              </button>
-                            </div>
-
-                            {/* Price */}
-                            <div className="text-right">
-                              <p className="text-md text-gray-400">
-                                ₱{formatPrice(price)}
-                              </p>
-                              <p className="border-t border-white/20 font-bold text-xl text-gray-200">
-                                ₱{formatPrice(subtotal)}
-                              </p>
-                            </div>
-
-                          </div>
+                          <p className="my-2 text-sm text-gray-400">
+                            ₱{formatPrice(price)}
+                          </p>
                         </div>
                       </div>
+
+                      {/* RIGHT - ACTIONS */}
+                      <div className="flex flex-col justify-between ml-auto w-full md:w-auto gap-4">
+
+                        {/* REMOVE BUTTON */}
+                        <div className="flex justify-end">
+                          <button
+                            onClick={() => handleRemove(item.id, item.name)}
+                            className="text-white/40 hover:text-red-400 transition"
+                          >
+                            <X size={18} />
+                          </button>
+                        </div>
+
+                        {/* QUANTITY + PRICE */}
+                        <div className="flex items-center justify-between md:justify-end gap-6">
+
+                          {/* QTY */}
+                          <div className="flex items-center bg-white/10 rounded-full px-2">
+                            <button
+                              onClick={() =>
+                                handleQuantityChange(item.id, item.quantity - 1)
+                              }
+                              className="p-1 hover:text-[#d4a24c]"
+                            >
+                              <Minus size={18} />
+                            </button>
+
+                            <span className="px-3 text-white font-medium">
+                              {item.quantity}
+                            </span>
+
+                            <button
+                              onClick={() =>
+                                handleQuantityChange(item.id, item.quantity + 1)
+                              }
+                              className="p-1 hover:text-[#d4a24c]"
+                            >
+                              <Plus size={18} />
+                            </button>
+                          </div>
+
+                          {/* PRICE */}
+                          <div className="text-right min-w-[100px]">
+                            <p className="text-xl font-bold text-gray-200">
+                              ₱{formatPrice(subtotal)}
+                            </p>
+                          </div>
+
+                        </div>
+                      </div>
+
                     </CardContent>
+
                   </Card>
                 )
               })}

@@ -1,24 +1,115 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { ChevronRight, Users, Calendar, Clock, Mail, Phone, User, MessageSquare, CheckCircle, AlertCircle } from "lucide-react"
+import { useState, useEffect, useCallback } from "react"
+import { ChevronRight, Users, Calendar, Clock, Mail, Phone, User, MessageSquare, AlertCircle } from "lucide-react"
 import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
 import { useToast } from "@/hooks/use-toast"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 })
 
+const PACKAGES = [
+  {
+    id: "loft",
+    room: "The Loft",
+    name: "Skyline Social",
+    price: 5500,
+    description: "A stylish open-style loft perfect for barkada nights.",
+    details: [
+      "Open-style loft setup",
+      "Best for barkada (4–10 pax)",
+      "Great for casual events",
+      "Reservation Fee: ₱5,500",
+    ],
+  },
+  {
+    id: "amber",
+    room: "Amber Room",
+    name: "Golden Hour",
+    price: 4000,
+    description: "Warm-toned private room for intimate gatherings.",
+    details: [
+      "Cozy and aesthetic ambiance",
+      "Ideal for small groups (2–6 pax)",
+      "Private setup",
+      "Reservation Fee: ₱4,000",
+    ],
+  },
+  {
+    id: "aurora",
+    room: "Aurora Lounge",
+    name: "Neon Nights",
+    price: 8500,
+    description: "Vibrant lounge with dynamic lighting.",
+    details: [
+      "Color-shifting lights",
+      "Party-ready atmosphere",
+      "Great for big groups",
+      "Reservation Fee: ₱8,500",
+    ],
+    badge: "Most Picked",
+  },
+  {
+    id: "velvet",
+    room: "Velvet Room",
+    name: "Midnight Luxe",
+    price: 6500,
+    description: "Speakeasy-style premium private room.",
+    details: [
+      "Luxury interior",
+      "Speakeasy vibe",
+      "Ideal for premium events",
+      "Reservation Fee: ₱6,500",
+    ],
+  },
+  {
+    id: "custom",
+    name: "Custom Reservation",
+    description: "Full control over seating, time, and preferences",
+  },
+];
+
+const SEATING_CONFIG = {
+  regular: {
+    "Main Dining": 0,
+    "Lounge Seating": 100,
+    "High Table": 150,
+    "Bar Counter": 200,
+  },
+  vip: {
+    "The Loft": 1500,
+    "Amber Room": 1500,
+    "Aurora Lounge": 1500,
+    "Velvet Room": 1500,
+  },
+}
+
+const VIP_ROOMS = new Set(Object.keys(SEATING_CONFIG.vip))
+const REGULAR_SEATING = SEATING_CONFIG.regular
+
 export default function ReservationsPage() {
+
   const [step, setStep] = useState(1)
   const [user, setUser] = useState<any>(null)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  const [openReceipt, setOpenReceipt] = useState(false)
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null)
   const [formData, setFormData] = useState<{
     date: string
     time: string
     guests: string
+    package: string
     dining_preference: string
     name: string
     email: string
@@ -33,6 +124,7 @@ export default function ReservationsPage() {
     date: "",
     time: "",
     guests: "2",
+    package: "Custom",
     dining_preference: "Main Dining",
     name: "",
     email: "",
@@ -51,37 +143,100 @@ export default function ReservationsPage() {
   const [dailyBookingsCount, setDailyBookingsCount] = useState(0)
   const [checkingBookings, setCheckingBookings] = useState(false)
   const { toast } = useToast()
+  const [selectedPackage, setSelectedPackage] = useState<string | null>(null)
 
-  const calculateReservationFee = (occasionType: string, guests: number) => {
+  // Safe derived value
+  const isVIP = VIP_ROOMS.has(formData.dining_preference)
+
+  // Stable function (no ESLint warning)
+  const calculateReservationFee = useCallback((
+    occasionType: string,
+    guests: number,
+    diningPreference: string
+  ) => {
     let baseFee = 0
 
     switch (occasionType) {
-      case "Birthday":
-        baseFee = 500 // base fee for birthday
+      case "Celebration":
+        baseFee = 500
         break
-      case "Anniversary":
-        baseFee = 700 // base fee for anniversary
+      case "Romantic":
+        baseFee = 700
         break
-      case "Business Meeting":
-        baseFee = 1000 // base fee for business meetings
+      case "Night Life":
+        baseFee = 1000
         break
-      case "Casual Dinner":
-        baseFee = 0 // no fee for casual dinner
+      case "Professional":
+        baseFee = 2000
+        break
+      case "Casual":
+        baseFee = 0
         break
       case "Other":
-        baseFee = 300 // generic fee
+        baseFee = 300
         break
       default:
         baseFee = 0
-        break
     }
 
-    // Add extra charge per guest above 4
+    const isVipRoom = VIP_ROOMS.has(diningPreference)
+
+    if (isVipRoom) {
+      baseFee += SEATING_CONFIG.vip[diningPreference] ?? 1500
+    } else {
+      baseFee += REGULAR_SEATING[diningPreference] ?? 0
+    }
+
     const extraGuests = guests > 4 ? guests - 4 : 0
     const extraFeePerGuest = 200
 
     return baseFee + extraGuests * extraFeePerGuest
+  }, [])
+
+
+  useEffect(() => {
+    if (!selectedPackage) {
+      const guestsNum = Number(formData.guests) || 1
+
+      const fee = calculateReservationFee(
+        formData.occasion,
+        guestsNum,
+        formData.dining_preference
+      )
+
+      setFormData((prev) => ({
+        ...prev,
+        reservation_fee: fee.toString(),
+      }))
+    }
+  }, [
+    formData.occasion,
+    formData.guests,
+    formData.dining_preference,
+    selectedPackage,
+    calculateReservationFee,
+  ])
+
+
+  const calculateTotalBill = (reservationFee: number, guests: number) => {
+    const serviceChargeRate = 0.1 // 10% service charge
+    const serviceCharge = reservationFee * serviceChargeRate
+
+    const total = reservationFee + serviceCharge
+
+    return {
+      serviceCharge,
+      total,
+    }
   }
+
+  const reservationFeeNum = Number(formData.reservation_fee || 0)
+  const guestsNum = Number(formData.guests || 1)
+
+  const { serviceCharge, total } = calculateTotalBill(reservationFeeNum, guestsNum)
+
+  const [packageDialogOpen, setPackageDialogOpen] = useState(false)
+  const [selectedPkgForDialog, setSelectedPkgForDialog] = useState<any>(null)
 
   useEffect(() => {
     const userData = localStorage.getItem("user_data")
@@ -185,13 +340,12 @@ export default function ReservationsPage() {
       return
     }
 
-    // Handle occasion or guests change to update reservation fee
-    if (name === "occasion" || name === "guests") {
+    // Handle occasion, guests, or dining_preference change to update reservation fee (only for custom reservations)
+    if (!selectedPackage && (name === "occasion" || name === "guests" || name === "dining_preference")) {
       setFormData((prev) => {
         const updated = { ...prev, [name]: value }
         const guestsNum = Number(updated.guests) || 1
-        // Convert number to string to match formData type
-        updated.reservation_fee = calculateReservationFee(updated.occasion || "", guestsNum).toString()
+        updated.reservation_fee = calculateReservationFee(updated.occasion || "", guestsNum, updated.dining_preference).toString()
         return updated
       })
       return
@@ -217,13 +371,6 @@ export default function ReservationsPage() {
     return undefined
   }
 
-  const isPastDateTime = () => {
-    if (!formData.date || !formData.time) return false
-    const selectedDateTime = new Date(`${formData.date}T${formData.time}`)
-    const now = new Date()
-    return selectedDateTime <= now
-  }
-
   const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     return emailRegex.test(email)
@@ -233,13 +380,23 @@ export default function ReservationsPage() {
     return dailyBookingsCount >= 2
   }
 
+  const handleSelect = (pkg: any) => {
+    setSelectedPackage(pkg.name)
+    setFormData((prev) => ({
+      ...prev,
+      package: pkg.name,
+      dining_preference: pkg.room || prev.dining_preference,
+      reservation_fee: pkg.price?.toString() || "0",
+    }))
+    setStep(2)
+    setPackageDialogOpen(false)
+  }
+
   const isStepValid = () => {
     switch (step) {
-      case 1:
-        // Reservation Details
+      case 2: // Reservation Details
         return formData.date.trim() !== "" && formData.time.trim() !== "" && formData.guests.trim() !== "" && formData.dining_preference.trim() !== ""
-      case 2:
-        // Guest Information
+      case 3: // Guest Information
         const phoneDigits = formData.phone.replace(/\D/g, "")
         return (
           formData.name.trim() !== "" &&
@@ -250,16 +407,17 @@ export default function ReservationsPage() {
           !phoneError &&
           !emailError
         )
-      case 3:
-        // Occasion Details
+      case 4: // Occasion Details
         return formData.occasion && formData.occasion !== ""
-      case 4:
+      case 5: // Payment Details
         if (isDailyLimitReached()) return false
         if (formData.reservation_fee && (isNaN(Number(formData.reservation_fee)) || Number(formData.reservation_fee) < 0)) return false
         if (!formData.payment_method) return false
         if (!formData.payment_reference) return false
         if (!formData.payment_receipt) return false
         return true
+      case 1: // Package Details
+        return selectedPackage !== null
       default:
         return false
     }
@@ -364,6 +522,7 @@ export default function ReservationsPage() {
           date: "",
           time: "",
           guests: "2",
+          package: "",
           dining_preference: "Main Dining",
           special_requests: "",
           occasion: "",
@@ -372,6 +531,7 @@ export default function ReservationsPage() {
           payment_reference: "",
           payment_receipt: undefined,
         })
+        setSelectedPackage(null)
         setMessage("")
         setDailyBookingsCount(0)
 
@@ -390,6 +550,14 @@ export default function ReservationsPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    return () => {
+      if (receiptPreview) {
+        URL.revokeObjectURL(receiptPreview)
+      }
+    }
+  }, [receiptPreview])
 
   return (
     <div className="min-h-screen py-24 bg-[#0b1d26] text-white">
@@ -454,19 +622,19 @@ export default function ReservationsPage() {
               <div className="relative">
                 <div className="relative w-full px-5 mt-10">
                   {/* Progress Line Background */}
-                  <div className="absolute top-5 left-5 right-5 h-1 bg-white/20 rounded"></div>
+                  <div className="absolute top-5 left-15 right-15 h-1 bg-white/20 rounded"></div>
 
                   {/* Progress Line Fill */}
                   <div
-                    className="absolute top-5 left-5 h-1 bg-white rounded transition-all duration-500"
+                    className="absolute top-5 h-1 bg-white rounded transition-all duration-500"
                     style={{
-                      width: `calc(${((step - 1) / 4) * 100}%)`,
+                      width: `calc(${((step - 1) / 5) * 100}%)`,
                     }}
                   ></div>
 
                   {/* Step Circles */}
                   <div className="relative flex justify-between">
-                    {[1, 2, 3, 4, 5].map((s) => (
+                    {[1, 2, 3, 4, 5, 6].map((s) => (
                       <div
                         key={s}
                         className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 transform ${s <= step ? "bg-white text-[#0f4764] shadow-xl scale-110" : "bg-white/20 text-white/50"
@@ -479,6 +647,9 @@ export default function ReservationsPage() {
                 </div>
 
                 <div className="flex justify-between text-center">
+                  <div className="text-center text-xs text-white/70 font-medium" style={{ width: "50px" }}>
+                    Package Selection
+                  </div>
                   <div className="text-center text-xs text-white/70 font-medium" style={{ width: "50px" }}>
                     Reservation Details
                   </div>
@@ -503,8 +674,114 @@ export default function ReservationsPage() {
               <div className="bg-white h-1" />
 
               <div className="p-8 md:p-10">
-                {/* Step 1: Reservation Details */}
+                {/* Step 1: Package Selection */}
                 {step === 1 && (
+                  <div className="max-w-3xl mx-auto">
+                    <div className="text-center mb-10">
+                      <p className="text-[#d4a24c] tracking-[0.3em] uppercase text-sm">
+                        Reservation Packages
+                      </p>
+                      <h2 className="text-4xl font-bold text-white mt-2">
+                        Choose Your <span className="text-[#d4a24c] italic">Experience</span>
+                      </h2>
+                      <p className="text-white/70 mt-3">
+                        Select a curated package or proceed with custom reservation
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {PACKAGES.filter(pkg => pkg.id !== "custom").map((pkg) => (
+                        <div
+                          key={pkg.id}
+                          onClick={() => {
+                            setSelectedPkgForDialog(pkg)
+                            setPackageDialogOpen(true)
+                          }}
+                          className={`relative cursor-pointer group bg-white/5 border rounded-2xl p-6 transition-all hover:scale-[1.02]
+          ${pkg.badge ? "border-[#d4a24c]" : "border-white/20 hover:border-[#d4a24c]/50"}
+        `}>
+
+                          {/* Badge */}
+                          {pkg.badge && (
+                            <span className="absolute -top-3 right-3 text-[10px] tracking-wider uppercase bg-[#d4a24c] text-gray-700 px-2 py-1 rounded-full font-semibold">
+                              {pkg.badge}
+                            </span>
+                          )}
+
+                          <h3 className="text-xl font-bold text-white mb-2">
+                            {pkg.name}
+                          </h3>
+
+                          <p className="text-white/70 text-sm mb-4">
+                            {pkg.description}
+                          </p>
+
+                          <p className="text-[#d4a24c] font-semibold">
+                            {pkg.price ? `₱${pkg.price.toLocaleString()}` : "Standard Rates"}
+                          </p>
+
+                        </div>
+                      ))}
+
+                      <Dialog open={packageDialogOpen} onOpenChange={setPackageDialogOpen}>
+                        <DialogContent className="bg-black text-white border border-white/20">
+                          {selectedPkgForDialog && (
+                            <>
+                              <DialogHeader>
+                                <DialogTitle>{selectedPkgForDialog.name}</DialogTitle>
+                                <DialogDescription>{selectedPkgForDialog.description}</DialogDescription>
+                              </DialogHeader>
+
+                              {selectedPkgForDialog.room && (
+                                <div className="text-sm text-white/60 mb-2">
+                                  Room: {selectedPkgForDialog.room}
+                                </div>
+                              )}
+
+                              {selectedPkgForDialog.details && (
+                                <div className="space-y-2 text-sm text-white/80">
+                                  {selectedPkgForDialog.details.map((item: string, i: number) => (
+                                    <p key={i}>• {item}</p>
+                                  ))}
+                                </div>
+                              )}
+
+                              <button
+                                onClick={() => handleSelect(selectedPkgForDialog)}
+                                className="mt-4 w-full bg-[#d4a24c] text-black py-2 rounded-lg font-semibold"
+                              >
+                                Select Package
+                              </button>
+                            </>
+                          )}
+                        </DialogContent>
+                      </Dialog>
+
+                      {PACKAGES.filter(pkg => pkg.id === "custom").map((pkg) => (
+                        <div
+                          key={pkg.id}
+                          onClick={() => {
+                            setSelectedPackage("Custom")
+                            setFormData((prev) => ({
+                              ...prev,
+                              package: "Custom",
+                            }))
+                            setStep(2)
+                          }}
+                          className="cursor-pointer group bg-white/5 border border-white/20 hover:border-white/60 rounded-2xl p-6 transition-all hover:scale-[1.02]"
+                        >
+                          <h3 className="text-xl font-bold text-white mb-2">{pkg.name}</h3>
+                          <p className="text-white/70 text-sm mb-4">{pkg.description}</p>
+                          <p className="text-white/60 font-semibold">Standard Rates</p>
+                        </div>
+                      ))}
+                    </div>
+
+                  </div>
+                )}
+
+                {/* Step 2: Reservation Details */}
+                {step === 2 && (
                   <div>
                     <div className="mb-8">
                       <h2 className="text-2xl font-bold text-white mb-2">Reservation Details</h2>
@@ -557,9 +834,10 @@ export default function ReservationsPage() {
                               max={50} // optional, adjust max as needed
                               onChange={(e) => {
                                 const value = e.target.value
-                                // Allow only positive numbers
                                 if (/^\d*$/.test(value)) {
-                                  setFormData((prev) => ({ ...prev, guests: value }))
+                                  handleChange({
+                                    target: { name: "guests", value }
+                                  })
                                 }
                               }}
                               placeholder="Number of Guests"
@@ -580,19 +858,33 @@ export default function ReservationsPage() {
                               className="w-full md:w-auto min-w-[120px] pl-12 pr-8 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white appearance-none"
                               required
                             >
-                              {[
-                                "Main Dining",
-                                "Private Tatami Room",
-                                "Chef's Counter",
-                                "Window Seat",
-                                "Celebration Area",
-                                "Family Seating",
-                                "Group Dining",
-                              ].map((option) => (
-                                <option key={option} value={option} className="bg-blue-250 text-gray-900">
-                                  {option}
-                                </option>
-                              ))}
+                              {/* REGULAR SEATING (Standard Allocation) */}
+                              <optgroup label="Standard Seating (Auto-Assigned)">
+                                {[
+                                  "Main Dining",
+                                  "Lounge Seating",
+                                  "High Table",
+                                  "Bar Counter",
+                                ].map((option) => (
+                                  <option key={option} value={option} className="text-gray-900">
+                                    {option}
+                                  </option>
+                                ))}
+                              </optgroup>
+
+                              {/* VIP ROOMS (Priority / Private Allocation) */}
+                              <optgroup label="VIP Private Rooms">
+                                {[
+                                  "The Loft",
+                                  "Amber Room",
+                                  "Aurora Lounge",
+                                  "Velvet Room",
+                                ].map((option) => (
+                                  <option key={option} value={option} className="text-gray-900 font-semibold">
+                                    {option}
+                                  </option>
+                                ))}
+                              </optgroup>
                             </select>
                           </div>
                         </div>
@@ -601,8 +893,8 @@ export default function ReservationsPage() {
                   </div>
                 )}
 
-                {/* Step 2: Guest Information */}
-                {step === 2 && (
+                {/* Step 3: Guest Information */}
+                {step === 3 && (
                   <div>
                     <div className="mb-8">
                       <h2 className="text-2xl font-bold text-white mb-2">Guest Information</h2>
@@ -643,8 +935,8 @@ export default function ReservationsPage() {
                             required
                             placeholder="your@email.com"
                             className={`w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none transition-all text-lg disabled:bg-white/5 disabled:text-white/50 text-white placeholder-white/40 bg-white/10 backdrop-blur-sm ${emailError
-                                ? "border-white focus:border-white focus:ring-2 focus:ring-white/30"
-                                : "border-white/20 focus:border-white focus:ring-2 focus:ring-white/30"
+                              ? "border-white focus:border-white focus:ring-2 focus:ring-white/30"
+                              : "border-white/20 focus:border-white focus:ring-2 focus:ring-white/30"
                               } border`}
                           />
                         </div>
@@ -693,8 +985,8 @@ export default function ReservationsPage() {
                   </div>
                 )}
 
-                {/* Step 3: Occasion Details */}
-                {step === 3 && (
+                {/* Step 4: Occasion Details */}
+                {step === 4 && (
                   <div>
                     <div className="mb-8">
                       <h2 className="text-2xl font-bold text-white mb-2">Occasion Details</h2>
@@ -713,7 +1005,7 @@ export default function ReservationsPage() {
                             required
                             className="w-full pl-12 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg appearance-none text-white"
                           >
-                            {["Select Occasion", "Birthday", "Anniversary", "Business Meeting", "Casual Dinner", "Other"].map((option) => (
+                            {["Celebration", "Romantic", "Professional", "Night Life", "Casual", "Other"].map((option) => (
                               <option key={option} value={option} className="bg-blue-250 text-gray-900">
                                 {option}
                               </option>
@@ -725,8 +1017,8 @@ export default function ReservationsPage() {
                   </div>
                 )}
 
-                {/* Step 4: Payment Details */}
-                {step === 4 && (
+                {/* Step 5: Payment Details */}
+                {step === 5 && (
                   <div>
                     <div className="mb-8">
                       <h2 className="text-2xl font-bold text-white mb-2">Payment Details</h2>
@@ -754,7 +1046,8 @@ export default function ReservationsPage() {
                           required
                           className="w-full pl-4 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg appearance-none text-white"
                         >
-                          {["Select Payment Method", "GCash", "BPI", "Security Bank", "Other"].map((option) => (
+                          <option value="" disabled>Select Payment Method</option>
+                          {["GCash", "BPI", "Security Bank", "Other"].map((option) => (
                             <option key={option} value={option} className="bg-blue-250 text-gray-900">
                               {option}
                             </option>
@@ -786,6 +1079,7 @@ export default function ReservationsPage() {
                             const file = e.target.files?.[0]
                             if (file) {
                               setFormData((prev) => ({ ...prev, payment_receipt: file }))
+                              setReceiptPreview(URL.createObjectURL(file))
                             }
                           }}
                           className="w-full pl-4 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white placeholder-white/40"
@@ -796,39 +1090,28 @@ export default function ReservationsPage() {
                   </div>
                 )}
 
-                {/* Step 5: Reservation Details (Confirmation) */}
-                {step === 5 && (
+                {/* Step 6: Reservation Details (Confirmation) */}
+                {step === 6 && (
                   <div className="space-y-8">
                     {/* Header */}
                     <div className="mb-4">
-                      <h2 className="text-3xl font-extrabold text-white mb-1">Review & Confirm</h2>
-                      <p className="text-white/70 text-md">Please review your reservation details before submitting.</p>
+                      <h2 className="text-3xl font-extrabold text-white mb-1">
+                        Review & Confirm
+                      </h2>
+                      <p className="text-white/70 text-md">
+                        Please review your reservation details before submitting.
+                      </p>
                     </div>
 
                     {/* Receipt Container */}
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-lg space-y-6">
-                      {/* Reservation Details */}
-                      <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-2">
-                        <h3 className="text-lg font-semibold text-white mb-2">Reservation Details</h3>
-                        <div className="grid grid-cols-2 gap-4 text-white/80">
-                          <span>
-                            <span className="font-semibold">Date:</span> {formData.date}
-                          </span>
-                          <span>
-                            <span className="font-semibold">Time:</span> {formData.time}
-                          </span>
-                          <span>
-                            <span className="font-semibold">Guests:</span> {formData.guests}
-                          </span>
-                          <span>
-                            <span className="font-semibold">Dining:</span> {formData.dining_preference}
-                          </span>
-                        </div>
-                      </div>
 
                       {/* Guest Information */}
                       <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-2">
-                        <h3 className="text-lg font-semibold text-white mb-2">Guest Information</h3>
+                        <h3 className="text-lg font-semibold text-white mb-2">
+                          Guest Information
+                        </h3>
+
                         <div className="flex flex-col gap-4 text-white/80">
                           <span>
                             <span className="font-semibold">Name:</span> {formData.name}
@@ -842,33 +1125,74 @@ export default function ReservationsPage() {
                         </div>
                       </div>
 
-                      {/* Occasion */}
+                      {/* Reservation Details */}
                       <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-2">
-                        <h3 className="text-lg font-semibold text-white mb-2">Occasion</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white/80">
-                          <span>
-                            <span className="font-semibold">Type:</span> {formData.occasion}
-                          </span>
+                        <h3 className="text-lg font-semibold text-white mb-2">
+                          Reservation Details
+                        </h3>
+
+                        <div className="grid grid-cols-2 gap-4 text-white/80">
+                          <span><span className="font-semibold">Date:</span> {formData.date}</span>
+                          <span><span className="font-semibold">Time:</span> {formData.time}</span>
+                          <span><span className="font-semibold">Guests:</span> {formData.guests}</span>
+                          <span><span className="font-semibold">Dining:</span> {formData.dining_preference}</span>
+                          <span><span className="font-semibold">VIP Package:</span> {isVIP ? "Yes" : "No"}</span>
+                          <span><span className="font-semibold">Package:</span> {selectedPackage || "-"}</span>
+                          <span><span className="font-semibold">Occasion:</span> {formData.occasion || "-"}</span>
                         </div>
                       </div>
 
                       {/* Payment */}
-                      <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-2">
+                      <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-4">
                         <h3 className="text-lg font-semibold text-white mb-2">Payment</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white/80">
-                          <span>
-                            <span className="font-semibold">Reservation Fee:</span> ₱{formData.reservation_fee || "0.00"}
-                          </span>
-                          <span>
-                            <span className="font-semibold">Payment Method:</span> {formData.payment_method}
-                          </span>
-                          <span>
-                            <span className="font-semibold">Reference:</span> {formData.payment_reference || "-"}
-                          </span>
-                          {formData.payment_receipt && (
-                            <span>
-                              <span className="font-semibold">Receipt:</span> {formData.payment_receipt.name}
+
+                        <div className="space-y-3 text-white/80">
+                          {/* Reservation Fee */}
+                          <div className="flex justify-between items-center bg-white/5 px-4 py-3 rounded-xl border border-white/10">
+                            <span className="font-semibold">Reservation Fee</span>
+                            <span>₱{formData.reservation_fee || "0.00"}</span>
+                          </div>
+
+                          {/* Service Charge */}
+                          <div className="flex justify-between items-center bg-white/5 px-4 py-3 rounded-xl border border-white/10">
+                            <span className="font-semibold">Service Charge (10%)</span>
+                            <span>₱{serviceCharge.toFixed(2)}</span>
+                          </div>
+
+                          {/* Total */}
+                          <div className="flex justify-between items-center bg-white/10 px-4 py-4 rounded-xl border border-white/20">
+                            <span className="font-bold text-white">Total Bill</span>
+                            <span className="font-bold text-white text-lg">
+                              ₱{total.toFixed(2)}
                             </span>
+                          </div>
+
+                          <div className="border-t border-white/10 my-2" />
+
+                          {/* Payment Method */}
+                          <div className="flex gap-6 items-center">
+                            <span className="font-semibold">Payment Method:</span>
+                            <span>{formData.payment_method || "-"}</span>
+                          </div>
+
+                          {/* Reference */}
+                          <div className="flex gap-6 items-center">
+                            <span className="font-semibold">Reference:</span>
+                            <span>{formData.payment_reference || "-"}</span>
+                          </div>
+
+                          {/* Receipt */}
+                          {formData.payment_receipt && (
+                            <div className="flex gap-6 items-center">
+                              <span className="font-semibold">Receipt:</span>
+                              <button
+                                type="button"
+                                onClick={() => setOpenReceipt(true)}
+                                className="text-white underline hover:text-white/70 transition"
+                              >
+                                {formData.payment_receipt.name}
+                              </button>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -876,7 +1200,9 @@ export default function ReservationsPage() {
                       {/* Special Requests */}
                       {formData.special_requests && (
                         <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                          <h3 className="text-lg font-semibold text-white mb-2">Special Requests</h3>
+                          <h3 className="text-lg font-semibold text-white mb-2">
+                            Special Requests
+                          </h3>
                           <p className="text-white/80">{formData.special_requests}</p>
                         </div>
                       )}
@@ -895,7 +1221,7 @@ export default function ReservationsPage() {
                     </button>
                   )}
 
-                  {step < 5 ? (
+                  {step < 6 ? (
                     <button
                       onClick={() => setStep(step + 1)}
                       disabled={!isStepValid()}
@@ -914,6 +1240,40 @@ export default function ReservationsPage() {
                     </button>
                   )}
                 </div>
+
+                {openReceipt && receiptPreview && (
+                  <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black"
+                    onClick={() => setOpenReceipt(false)}
+                  >
+                    <div
+                      className="relative w-full max-w-3xl bg-[#0b1d26] border border-white/20 rounded-2xl overflow-hidden"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {/* Header */}
+                      <div className="flex justify-between items-center px-5 py-4 border-b border-white/20">
+                        <h2 className="text-white font-semibold">Receipt Preview</h2>
+
+                        <button
+                          onClick={() => setOpenReceipt(false)}
+                          className="text-white text-xl hover:text-white/70"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      {/* Image */}
+                      <div className="p-4 flex justify-center bg-[#08141a]">
+                        <img
+                          src={receiptPreview}
+                          alt="Receipt"
+                          className="max-h-[75vh] object-contain rounded-lg"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
               </div>
             </div>
           </div>
