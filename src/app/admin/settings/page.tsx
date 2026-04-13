@@ -516,7 +516,9 @@ export default function SettingsPage() {
                             <div className="space-y-4">
                               {/* Mode */}
                               <div className="space-y-1">
-                                <Label className="text-gray-700">Mode</Label>
+                                <Label className="text-gray-700">
+                                  Mode<span className="text-red-500"> *</span>
+                                </Label>
                                 <Input
                                   placeholder="e.g. gcash, cash, bpi"
                                   value={paymentform.key}
@@ -526,9 +528,11 @@ export default function SettingsPage() {
 
                               {/* Display Name */}
                               <div className="space-y-1">
-                                <Label className="text-gray-700">Display Name</Label>
+                                <Label className="text-gray-700">
+                                  Display Name<span className="text-red-500"> *</span>
+                                </Label>
                                 <Input
-                                  placeholder="J**** G****"
+                                  placeholder="e.g. GCash, BPI, Security Bank"
                                   value={paymentform.display_name}
                                   onChange={(e) => setPaymentForm({ ...paymentform, display_name: e.target.value })}
                                 />
@@ -536,7 +540,9 @@ export default function SettingsPage() {
 
                               {/* Type */}
                               <div className="space-y-1">
-                                <Label className="text-gray-700">Type</Label>
+                                <Label className="text-gray-700">
+                                  Type<span className="text-red-500"> *</span>
+                                </Label>
                                 <select
                                   className="w-full border rounded p-2 focus:ring-2 focus:ring-yellow-500 text-gray-700"
                                   value={paymentform.type}
@@ -563,7 +569,7 @@ export default function SettingsPage() {
                               <div className="space-y-1">
                                 <Label className="text-gray-700">Account Name</Label>
                                 <Input
-                                  placeholder="Optional"
+                                  placeholder="L**** B*** B****"
                                   value={paymentform.account_name}
                                   onChange={(e) => setPaymentForm({ ...paymentform, account_name: e.target.value })}
                                 />
@@ -610,7 +616,7 @@ export default function SettingsPage() {
                               <div className="flex flex-col gap-1 p-3">
                                 {/* Header: Key + Status */}
                                 <div className="flex items-center">
-                                  <p className="font-semibold text-gray-900 text-lg">{m.key}</p>
+                                  <p className="font-semibold text-gray-900 text-lg">{m.display_name}</p>
                                   <Badge
                                     className={
                                       m.is_enabled
@@ -624,8 +630,8 @@ export default function SettingsPage() {
 
                                 {/* Metadata */}
                                 <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                                  <span className="px-2 py-0.5 rounded bg-yellow-100 text-yellow-700 font-medium">{m.type}</span>
-                                  <span className="text-gray-500">• {m.display_name}</span>
+                                  <span className="px-2 py-0.5 rounded bg-yellow-100 text-yellow-700 font-medium capitalize">{m.type}</span>
+                                  <span className="text-gray-500 capitalize">{m.account_name ? `• ${m.account_name}` : ""}</span>
                                 </div>
                               </div>
 
