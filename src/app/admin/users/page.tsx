@@ -894,7 +894,7 @@ export default function UsersAdminPage() {
       </Dialog>
 
       <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
-        <DialogContent>
+        <DialogContent className="text-black">
           <DialogHeader>
             <DialogTitle className="text-black">Send Email to {selectedUser?.name}</DialogTitle>
             <DialogDescription>Compose and send an email to this customer</DialogDescription>
