@@ -13,9 +13,11 @@ import { useRouter } from "next/navigation"
 import { toast } from "@/hooks/use-toast"
 import { Banknote, Lock, Package, LogIn, Upload, X, Copy, Check } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
+import { useSettingsStore } from "@/store/settingsStore"
 
 interface ExtendedCheckoutInfo extends Omit<CheckoutInfo, "paymentMethod"> {
-  paymentMethod: "cash" | "gcash" | "security_bank"
+  paymentMethod: string
   notes?: string
 }
 
@@ -44,6 +46,9 @@ const Checkout = () => {
   const [copiedGcash, setCopiedGcash] = useState(false)
   const [copiedBank, setCopiedBank] = useState(false)
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false)
+  const [paymentMethods, setPaymentMethods] = useState<any[]>([])
+  const [loadingPayments, setLoadingPayments] = useState(true)
+  const { maintenanceMode, deliveryFee, fetchSettings } = useSettingsStore()
 
   const [checkoutInfo, setCheckoutInfo] = useState<ExtendedCheckoutInfo>({
     name: "",
@@ -125,7 +130,6 @@ const Checkout = () => {
             zipCode: parsedUserData.zip_code || "",
           }))
         }
-
       } catch (error) {
         console.error("Error checking auth:", error)
         localStorage.removeItem("auth_token")
@@ -139,6 +143,9 @@ const Checkout = () => {
     checkAuthAndFillForm()
   }, [])
 
+  useEffect(() => {
+    fetchSettings()
+  }, [])
 
   useEffect(() => {
     if (total > 1000 && checkoutInfo.paymentMethod === "cash") {
@@ -150,6 +157,27 @@ const Checkout = () => {
       })
     }
   }, [total, checkoutInfo.paymentMethod])
+
+  useEffect(() => {
+    const fetchPaymentMethods = async () => {
+      try {
+        setLoadingPayments(true)
+
+        const res = await fetch("/api/payment-methods?is_enabled=1")
+        const json = await res.json()
+
+        if (!json.success) throw new Error(json.message)
+
+        setPaymentMethods(json.data || [])
+      } catch (err) {
+        console.error("Failed to fetch payment methods:", err)
+      } finally {
+        setLoadingPayments(false)
+      }
+    }
+
+    fetchPaymentMethods()
+  }, [])
 
   const handleInputChange = (field: keyof ExtendedCheckoutInfo, value: string) => {
     setCheckoutInfo((prev) => ({ ...prev, [field]: value }))
@@ -219,7 +247,7 @@ const Checkout = () => {
       return
     }
 
-    if ((checkoutInfo.paymentMethod === "gcash" || checkoutInfo.paymentMethod === "security_bank") && !receiptFile) {
+    if (checkoutInfo.paymentMethod !== "cash" && !receiptFile) {
       toast({
         title: "Receipt Required",
         description: "Please upload your payment receipt to proceed.",
@@ -277,11 +305,7 @@ const Checkout = () => {
 
       if (response.ok) {
         const orderNumber =
-          result.data?.order?.order_number ||
-          result.data?.order_number ||
-          result.order?.order_number ||
-          result.order_number ||
-          "your order"
+          result.data?.order?.order_number || result.data?.order_number || result.order?.order_number || result.order_number || "your order"
 
         clearCart()
         setIsOrderComplete(true)
@@ -343,8 +367,6 @@ const Checkout = () => {
           price: item.price,
           quantity: item.quantity,
           category: item.category || "",
-          is_spicy: Boolean(item.isSpicy),
-          is_vegetarian: Boolean(item.isVegetarian),
           image_url: typeof item.image === "string" ? item.image : "",
         })),
         total,
@@ -371,17 +393,16 @@ const Checkout = () => {
         throw new Error("Failed to place order")
       }
 
-      // ✅ Clear cart
+      // Clear cart
       clearCart()
 
-      // ✅ Show success screen
+      // Show success screen
       setIsOrderComplete(true)
 
       toast({
         title: "Order placed successfully",
         description: "Your order has been confirmed",
       })
-
     } catch (error) {
       console.error(error)
       toast({
@@ -394,22 +415,33 @@ const Checkout = () => {
     }
   }
 
+  if (maintenanceMode) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0b1d26] text-white px-4">
+        <div className="text-center max-w-md bg-[#0f2a33] p-10 rounded-2xl border border-[#d4a24c]/30 shadow-xl">
+          <h1 className="text-2xl font-bold mb-3 text-[#d4a24c]">Maintenance Mode</h1>
+
+          <p className="text-white/70 mb-6">Sorry, we are currently under maintenance. Please try again later.</p>
+
+          <Button onClick={() => (window.location.href = "/")} className="bg-[#d4a24c] text-black rounded-full px-6">
+            Go Back Home
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   if (isOrderComplete) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0b1d26] text-white px-4">
         <div className="text-center max-w-md bg-[#0f2a33] p-10 rounded-2xl border border-[#d4a24c]/30 shadow-xl">
-
           <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#d4a24c] flex items-center justify-center">
             <Check className="w-8 h-8 text-black" />
           </div>
 
-          <h1 className="text-2xl font-bold mb-3">
-            Order Successful 🎉
-          </h1>
+          <h1 className="text-2xl font-bold mb-3">Order Successful 🎉</h1>
 
-          <p className="text-white/70 mb-6">
-            Your order has been placed successfully. A confirmation email has been sent to your inbox.
-          </p>
+          <p className="text-white/70 mb-6">Your order has been placed successfully. A confirmation email has been sent to your inbox.</p>
 
           <Button asChild className="bg-[#d4a24c] text-black rounded-full px-6">
             <Link href="/orders">View My Orders</Link>
@@ -425,9 +457,7 @@ const Checkout = () => {
         <div className="text-center space-y-4">
           <div className="w-10 h-10 border-2 border-[#d4a24c] border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-white/70">Preparing checkout...</p>
-          <p className="text-xs text-white/40">
-            Loading your account and address
-          </p>
+          <p className="text-xs text-white/40">Loading your account and address</p>
         </div>
       </div>
     )
@@ -463,10 +493,7 @@ const Checkout = () => {
                   </div>
                   <div className="flex gap-2">
                     <Link href="/login">
-                      <Button
-                        variant="outline"
-                        className="border-white/30 text-white hover:bg-white/10 hover:border-white/50 bg-transparent"
-                      >
+                      <Button variant="outline" className="border-white/30 text-white hover:bg-white/10 hover:border-white/50 bg-transparent">
                         <LogIn className="w-4 h-4 mr-2" />
                         Login
                       </Button>
@@ -491,9 +518,7 @@ const Checkout = () => {
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
-                    <h3 className="font-semibold text-xl text-white border-b border-white/20 pb-2">
-                      Personal Information
-                    </h3>
+                    <h3 className="font-semibold text-xl text-white border-b border-white/20 pb-2">Personal Information</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 space-y-4">
                       <div>
@@ -544,9 +569,7 @@ const Checkout = () => {
                   <Separator className="bg-white/20" />
 
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-xl text-white border-b border-white/20 pb-2">
-                      Delivery Address
-                    </h3>
+                    <h3 className="font-semibold text-xl text-white border-b border-white/20 pb-2">Delivery Address</h3>
 
                     <div>
                       <Label htmlFor="address" className="text-white py-2">
@@ -595,9 +618,7 @@ const Checkout = () => {
                   <Separator className="bg-white/20" />
 
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-xl text-white border-b border-white/20 pb-2">
-                      Payment Method
-                    </h3>
+                    <h3 className="font-semibold text-xl text-white border-b border-white/20 pb-2">Payment Method</h3>
 
                     {total > 1000 && (
                       <div className="p-3 bg-[#ff6b6b]/20 border border-[#ff6b6b]/50 rounded-lg mb-3">
@@ -608,139 +629,129 @@ const Checkout = () => {
                     )}
 
                     <div className="space-y-3">
-                      <div
-                        className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${total > 1000
-                          ? "bg-white/5 border-white/10 opacity-50 cursor-not-allowed"
-                          : checkoutInfo.paymentMethod === "cash"
-                            ? "bg-white/10 border-white"
-                            : "bg-white/5 border-white/20 hover:border-white/40"
-                          }`}
-                        onClick={() => total <= 1000 && handleInputChange("paymentMethod", "cash")}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${checkoutInfo.paymentMethod === "cash" ? "border-white" : "border-white/30"
+                      {loadingPayments ? (
+                        <p className="text-white/60 text-sm">Loading payment methods...</p>
+                      ) : paymentMethods.length === 0 ? (
+                        <p className="text-white/60 text-sm">No payment methods available</p>
+                      ) : (
+                        paymentMethods
+                          .filter((m) => m.is_enabled)
+                          .map((method) => (
+                            <div
+                              key={method.id}
+                              className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                                checkoutInfo.paymentMethod === method.key
+                                  ? "bg-white/10 border-white"
+                                  : "bg-white/5 border-white/20 hover:border-white/40"
                               }`}
-                          >
-                            {checkoutInfo.paymentMethod === "cash" && (
-                              <div className="w-3 h-3 rounded-full bg-white"></div>
-                            )}
-                          </div>
-                          <Banknote className="h-5 w-5 text-white/70" />
-                          <div>
-                            <p className="font-medium text-white">Cash on Delivery</p>
-                            <p className="text-sm text-white/70">Pay when you receive your order</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div
-                        className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${checkoutInfo.paymentMethod === "gcash"
-                          ? "bg-white/10 border-white"
-                          : "bg-white/5 border-white/20 hover:border-white/40"
-                          }`}
-                        onClick={() => handleInputChange("paymentMethod", "gcash")}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${checkoutInfo.paymentMethod === "gcash" ? "border-white" : "border-white/30"
-                              }`}
-                          >
-                            {checkoutInfo.paymentMethod === "gcash" && (
-                              <div className="w-3 h-3 rounded-full bg-white"></div>
-                            )}
-                          </div>
-                          <div className="h-5 w-5 bg-blue-500 rounded text-white text-xs flex items-center justify-center font-bold">
-                            G
-                          </div>
-                          <div>
-                            <p className="font-medium text-white">GCash</p>
-                            <p className="text-sm text-white/70">Pay via GCash mobile wallet</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div
-                        className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${checkoutInfo.paymentMethod === "security_bank"
-                          ? "bg-white/10 border-white"
-                          : "bg-white/5 border-white/20 hover:border-white/40"
-                          }`}
-                        onClick={() => handleInputChange("paymentMethod", "security_bank")}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${checkoutInfo.paymentMethod === "security_bank" ? "border-white" : "border-white/30"
-                              }`}
-                          >
-                            {checkoutInfo.paymentMethod === "security_bank" && (
-                              <div className="w-3 h-3 rounded-full bg-white"></div>
-                            )}
-                          </div>
-                          <Lock className="h-5 w-5 text-white/70" />
-                          <div>
-                            <p className="font-medium text-white">Bank Transfer</p>
-                            <p className="text-sm text-white/70">Transfer to our bank account</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {(checkoutInfo.paymentMethod === "gcash" || checkoutInfo.paymentMethod === "security_bank") && (
-                      <div className="mt-4 p-4 bg-white/10 rounded-lg border border-white/20">
-                        <p className="text-sm text-white mb-3">
-
-                          {checkoutInfo.paymentMethod === "gcash"
-                            ? "Send payment to: 0945-675-4591"
-                            : "Account: 0000-075486-863"}
-                        </p>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            copyToClipboard(
-                              checkoutInfo.paymentMethod === "gcash" ? "09456754591" : "0000075486863",
-                              checkoutInfo.paymentMethod === "gcash" ? "gcash" : "bank",
-                            )
-                          }
-                          className="border-white/30 text-white hover:bg-white/10 bg-transparent"
-                        >
-                          {(checkoutInfo.paymentMethod === "gcash" ? copiedGcash : copiedBank) ? (
-                            <Check className="w-4 h-4 mr-2" />
-                          ) : (
-                            <Copy className="w-4 h-4 mr-2" />
-                          )}
-                          Copy
-                        </Button>
-
-                        <div className="mt-4">
-                          <Label className="text-white">Upload Receipt *</Label>
-                          <div className="mt-2">
-                            {receiptFile ? (
-                              <div className="flex items-center gap-2 p-3 bg-white/10 rounded-lg border border-white/30">
-                                <Check className="w-4 h-4 text-[#ff6b6b]" />
-                                <span className="text-white text-sm">Receipt uploaded</span>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={removeReceipt}
-                                  className="ml-auto text-[#ff6b6b] hover:bg-white/10"
+                              onClick={() => handleInputChange("paymentMethod", method.key as any)}
+                            >
+                              {/* HEADER ROW */}
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                    checkoutInfo.paymentMethod === method.key ? "border-white" : "border-white/30"
+                                  }`}
                                 >
-                                  <X className="w-4 h-4" />
-                                </Button>
+                                  {checkoutInfo.paymentMethod === method.key && <div className="w-3 h-3 rounded-full bg-white" />}
+                                </div>
+
+                                <div className="flex-1">
+                                  <p className="font-medium text-white capitalize">{method.display_name}</p>
+                                  <p className="text-sm text-white/70 capitalize">
+                                    {method.type === "cash" ? "Pay when you receive your order" : method.type}
+                                  </p>
+                                </div>
+
+                                {checkoutInfo.paymentMethod === method.key && <Check className="w-5 h-5 text-white" />}
                               </div>
-                            ) : (
-                              <label className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-white/30 rounded-lg cursor-pointer hover:border-white/50 transition-colors">
-                                <Upload className="w-5 h-5 text-white/70" />
-                                <span className="text-white/70">Click to upload receipt</span>
-                                <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                              </label>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
+
+                              {/* DETAILS (ONLY WHEN SELECTED) */}
+                              {checkoutInfo.paymentMethod === method.key && method.type !== "cash" && (
+                                <div className="mt-3 space-y-2 text-sm text-white/80">
+                                  {method.account_name ? (
+                                    <p>
+                                      <span className="text-white/60">Name:</span> {method.account_name}
+                                    </p>
+                                  ) : method.display_name ? (
+                                    <p>
+                                      <span className="text-white/60">Name:</span> {method.display_name}
+                                    </p>
+                                  ) : null}
+
+                                  {method.account_number && (
+                                    <p>
+                                      <span className="text-white/60">Account Number:</span> {method.account_number}
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          copyToClipboard(
+                                            (checkoutInfo.paymentMethod = method.account_number),
+                                            (checkoutInfo.paymentMethod = method.key),
+                                          )
+                                        }
+                                        className="ml-2 border-white/30 text-white hover:bg-white/10 bg-transparent"
+                                      >
+                                        {(checkoutInfo.paymentMethod === "gcash" ? copiedGcash : copiedBank) ? (
+                                          <Check className="w-4 h-4 mr-2" />
+                                        ) : (
+                                          <Copy className="w-4 h-4 mr-2" />
+                                        )}
+                                        Copy
+                                      </Button>
+                                    </p>
+                                  )}
+
+                                  {method.qr_code && (
+                                    <div className="mt-2 w-full">
+                                      {method.qr_code && (
+                                        <div className="mt-2 w-full">
+                                          <Image
+                                            src={`${process.env.NEXT_PUBLIC_API_URL}/${method.qr_code}`}
+                                            alt="QR Code"
+                                            width={360}
+                                            height={360}
+                                            className="rounded border border-white/20 object-cover"
+                                          />
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+
+                                  <div className="mt-4">
+                                    <Label className="text-white">Upload Receipt *</Label>
+                                    <div className="mt-2">
+                                      {receiptFile ? (
+                                        <div className="flex items-center gap-2 p-3 bg-white/10 rounded-lg border border-white/30">
+                                          <Check className="w-4 h-4 text-[#ff6b6b]" />
+                                          <span className="text-white text-sm">Receipt uploaded</span>
+                                          <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={removeReceipt}
+                                            className="ml-auto text-[#ff6b6b] hover:bg-white/10"
+                                          >
+                                            <X className="w-4 h-4" />
+                                          </Button>
+                                        </div>
+                                      ) : (
+                                        <label className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-white/30 rounded-lg cursor-pointer hover:border-white/50 transition-colors">
+                                          <Upload className="w-5 h-5 text-white/70" />
+                                          <span className="text-white/70">Click to upload receipt</span>
+                                          <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                                        </label>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))
+                      )}
+                    </div>
                   </div>
 
                   <Button
@@ -765,7 +776,6 @@ const Checkout = () => {
               <CardContent>
                 <div className="w-full overflow-x-auto">
                   <table className="w-full text-left border-collapse">
-
                     {/* HEADERS */}
                     <thead>
                       <tr className="border-b border-white/10 text-white/70 text-sm">
@@ -778,38 +788,32 @@ const Checkout = () => {
                     {/* BODY */}
                     <tbody>
                       {items.map((item) => (
-                        <tr
-                          key={item.id}
-                          className="border-b border-white/10 hover:bg-white/5 transition"
-                        >
+                        <tr key={item.id} className="border-b border-white/10 hover:bg-white/5 transition">
                           {/* PRODUCT NAME */}
                           <td className="py-3 text-white font-medium">
-                            <div className="max-w-[220px] truncate">
-                              {item.name}
-                            </div>
+                            <div className="max-w-[220px] truncate">{item.name}</div>
                           </td>
 
                           {/* QUANTITY */}
-                          <td className="py-3 text-white/70 text-center">
-                            {item.quantity}
-                          </td>
+                          <td className="py-3 text-white/70 text-center">{item.quantity}</td>
 
                           {/* SUBTOTAL */}
-                          <td className="py-3 text-white text-right font-medium">
-                            ₱{formatPrice(Number(item.price) * item.quantity)}
-                          </td>
+                          <td className="py-3 text-white text-right font-medium">₱{formatPrice(Number(item.price) * item.quantity)}</td>
                         </tr>
                       ))}
                     </tbody>
-
                   </table>
                 </div>
 
                 <Separator className="bg-white/20" />
+                <div className="flex justify-between font-bold text-lg pt-6">
+                  <span className="text-white">Delivery Fee</span>
+                  <span className="text-white">₱{formatPrice(deliveryFee)}</span>
+                </div>
 
-                <div className="flex justify-between font-bold text-lg py-6">
+                <div className="flex justify-between font-bold text-lg pb-6">
                   <span className="text-white">Total</span>
-                  <span className="text-white">₱{formatPrice(total)}</span>
+                  <span className="text-white">₱{formatPrice(total + deliveryFee)}</span>
                 </div>
               </CardContent>
             </Card>

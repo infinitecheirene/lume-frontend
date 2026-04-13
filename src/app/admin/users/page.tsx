@@ -33,15 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogTrigger, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -490,21 +482,13 @@ export default function UsersAdminPage() {
           <div className="flex items-center gap-1">
             <Dialog>
               <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedUser(user)}
-                  className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-2"
-                >
+                <Button variant="ghost" size="sm" onClick={() => setSelectedUser(user)} className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-2">
                   <Eye className="h-4 w-4" />
-                  <span className="ml-1 sr-only sm:not-sr-only hidden sm:inline">
-                    View
-                  </span>
+                  <span className="ml-1 sr-only sm:not-sr-only hidden sm:inline">View</span>
                 </Button>
               </DialogTrigger>
 
               <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl">
-
                 {selectedUser && (
                   <>
                     <DialogHeader>
@@ -525,19 +509,12 @@ export default function UsersAdminPage() {
                         <CardContent className="space-y-4 pt-4">
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <p className="text-md font-semibold text-gray-800">
-                                Full Name
-                              </p>
-                              <p className="font-medium">
-                                {selectedUser.name}
-                              </p>
+                              <p className="text-md font-semibold text-gray-800">Full Name</p>
+                              <p className="font-medium">{selectedUser.name}</p>
                             </div>
 
-
                             <div>
-                              <p className="text-md font-semibold text-gray-800">
-                                Role
-                              </p>
+                              <p className="text-md font-semibold text-gray-800">Role</p>
                               <Badge variant="outline" className="text-sm">
                                 {selectedUser.role}
                               </Badge>
@@ -574,20 +551,15 @@ export default function UsersAdminPage() {
                             <Calendar className="w-4 h-4 text-gray-400" />
                             <p className="text-gray-600">
                               Joined on{" "}
-                              {new Date(selectedUser.created_at).toLocaleDateString(
-                                "en-US",
-                                {
-                                  month: "long",
-                                  day: "2-digit",
-                                  year: "numeric",
-                                }
-                              )}
+                              {new Date(selectedUser.created_at).toLocaleDateString("en-US", {
+                                month: "long",
+                                day: "2-digit",
+                                year: "numeric",
+                              })}
                             </p>
                           </div>
-
                         </CardContent>
                       </Card>
-
                     </div>
                   </>
                 )}
@@ -645,15 +617,11 @@ export default function UsersAdminPage() {
     return (
       <SidebarProvider defaultOpen={!isDesktop}>
         <div className="flex min-h-screen w-full bg-amber-50">
-
           <AppSidebar />
 
           <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
-
             <div className="flex items-center justify-center min-h-screen w-full">
-
               <div className="flex flex-col items-center gap-4 bg-[#162A3A] backdrop-blur-xl px-8 py-8 rounded-2xl border border-[#d4a24c]/70 shadow-2xl">
-
                 {/* Spinner */}
                 <div className="relative">
                   <Loader2 className="h-8 w-8 animate-spin text-[#d4a24c]" />
@@ -662,12 +630,8 @@ export default function UsersAdminPage() {
 
                 {/* Text */}
                 <div className="text-center">
-                  <p className="text-lg font-semibold text-white">
-                    Loading Customers
-                  </p>
-                  <p className="text-sm text-white/60">
-                    Please wait while we fetch the data...
-                  </p>
+                  <p className="text-lg font-semibold text-white">Loading Customers</p>
+                  <p className="text-sm text-white/60">Please wait while we fetch the data...</p>
                 </div>
 
                 {/* Animated dots */}
@@ -676,11 +640,8 @@ export default function UsersAdminPage() {
                   <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.15s]" />
                   <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce" />
                 </div>
-
               </div>
-
             </div>
-
           </div>
         </div>
       </SidebarProvider>
@@ -695,13 +656,7 @@ export default function UsersAdminPage() {
           {isDesktop && (
             <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-[#162A3A] px-4 shadow-sm">
               <SidebarTrigger className="-ml-1" />
-              <Image
-                src="/logo.jpg"
-                alt="Lumè Bean and Bar Logo"
-                width={40}
-                height={40}
-                className="object-contain rounded-full"
-              />
+              <Image src="/logo.jpg" alt="Lumè Bean and Bar Logo" width={40} height={40} className="object-contain rounded-full" />
               <h1 className={`${playfair.className} text-lg font-semibold text-white`}>Lumè Bean and Bar</h1>
             </div>
           )}
@@ -753,10 +708,7 @@ export default function UsersAdminPage() {
                             <tr className="border-b border-blue-200">
                               {table.getHeaderGroups().map((headerGroup) =>
                                 headerGroup.headers.map((header) => (
-                                  <th
-                                    key={header.id}
-                                    className="text-left p-2 sm:p-3 text-md font-semibold text-gray-700"
-                                  >
+                                  <th key={header.id} className="text-left p-2 sm:p-3 text-md font-semibold text-gray-700">
                                     {header.isPlaceholder ? null : (
                                       <div>
                                         {typeof header.column.columnDef.header === "function"
@@ -875,6 +827,7 @@ export default function UsersAdminPage() {
                           </Badge>
                         </div>
                       </div>
+                      <p className="font-bold text-md text-gray-600">Delivery Fee: ₱{(order.delivery_fee ?? 0).toFixed(2)}</p>
 
                       {/* Order Items */}
                       {order.order_items?.length > 0 && (
@@ -941,7 +894,7 @@ export default function UsersAdminPage() {
       </Dialog>
 
       <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
-        <DialogContent>
+        <DialogContent className="text-black">
           <DialogHeader>
             <DialogTitle className="text-black">Send Email to {selectedUser?.name}</DialogTitle>
             <DialogDescription>Compose and send an email to this customer</DialogDescription>
