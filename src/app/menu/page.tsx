@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
 import { toast } from "@/hooks/use-toast"
@@ -20,6 +20,7 @@ interface Product {
   id: number
   name: string
   description: string
+  ingredients: string
   category: string
   price: number
   image?: string | null
@@ -30,16 +31,19 @@ export default function MenuPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [activeMainCategory, setActiveMainCategory] =
-    useState<"Kitchen" | "Coffee" | "Bar">("Kitchen")
+    useState<"Signature" | "Classic" | "Drinks" | "Coffee" | "Refreshers" | "Food">("Signature")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
   const { addItem } = useCartStore()
 
   const mainCategoryMap = {
-    Kitchen: ["food"],
-    Coffee: ["coffee"],
-    Bar: ["bar"],
+    Signature: ["Signature"],
+    Classic: ["Classic"],
+    Drinks: ["Drinks"],
+    Coffee: ["Coffee"],
+    Refreshers: ["Refreshers"],
+    Food: ["Food"],
   }
 
   const fetchProducts = async () => {
@@ -106,16 +110,46 @@ export default function MenuPage() {
     setDialogOpen(true)
   }
 
+  const stars = useMemo(() => {
+    return Array.from({ length: 140 }).map((_, i) => ({
+      id: i,
+      cx: Math.random() * 100,
+      cy: Math.random() * 100,
+      r: Math.random() * 3 + 0.8,
+      duration: Math.random() * 4 + 2,
+      delay: Math.random() * 5,
+      opacity: Math.random() * 0.4 + 0.3,
+    }))
+  }, [])
+
+
   if (loading) return <LumeLoaderMinimal />
 
   return (
-    <section className="py-28 bg-[#0b1d26] min-h-screen">
+    <section className="relative py-28 bg-[#0b1d26] min-h-screen overflow-hidden">
+
       {/* Background decoration */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-10 left-10 w-32 h-32 bg-[#d4a24c]/10 rounded-full blur-2xl" />
-        <div className="absolute top-1/3 right-20 w-24 h-24 bg-[#d4a24c]/5 rounded-full blur-xl" />
-        <div className="absolute bottom-20 left-1/3 w-40 h-40 bg-[#d4a24c]/8 rounded-full blur-3xl" />
-        <div className="absolute bottom-10 right-10 w-28 h-28 bg-[#d4a24c]/6 rounded-full blur-2xl" />
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
+        {/* Glow layer */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(212,162,76,0.08),transparent_40%)]" />
+        <svg width="100%" height="100%">
+          {stars.map((star) => (
+            <circle
+              key={star.id}
+              cx={`${star.cx}%`}
+              cy={`${star.cy}%`}
+              r={star.r}
+              fill="hsl(40, 80%, 75%)"
+              className="animate-twinkle"
+              style={{
+                animationDuration: `${star.duration}s`,
+                animationDelay: `${star.delay}s`,
+                opacity: star.opacity,
+                filter: star.r > 2.5 ? "drop-shadow(0 0 6px rgba(212,162,76,0.4))" : "none",
+              }}
+            />
+          ))}
+        </svg>
       </div>
 
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
@@ -167,61 +201,86 @@ export default function MenuPage() {
                   className="group cursor-pointer"
                   onClick={() => handleProductClick(item)}
                 >
-                  <div className="py-8 border-b border-white/10 flex items-start gap-6 hover:bg-gradient-to-r hover:from-white/5 hover:to-white/10 transition-all duration-300 px-4 rounded-xl backdrop-blur-sm hover:shadow-lg hover:shadow-[#d4a24c]/10">
-                    {/* Image */}
-                    <div className="relative w-28 h-28 flex-shrink-0 rounded-xl overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                      <Image
-                        src={getImageUrl(item.image)}
-                        alt={item.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-2">
-                        <h4 className={`${playfair.className} text-xl font-semibold group-hover:text-[#d4a24c] transition-colors duration-300 flex items-center gap-2`}>
-                          {item.name}
-                          {item.best_seller && (
-                            <span className="inline-flex items-center gap-1">
-                              <Star className="w-4 h-4 text-[#d4a24c] flex-shrink-0" />
-                              <p className="text-[#d4a24c] font-medium text-sm">Best Seller</p>
-                            </span>
-                          )}
-                        </h4>
+                  <div
+                    className="group cursor-pointer rounded-2xl bg-white/5 backdrop-blur-md border border-white/10
+                            hover:border-[#d4a24c]/30 hover:bg-white/10 transition-all duration-300
+                              hover:shadow-lg hover:shadow-[#d4a24c]/10 overflow-hidden"
+                  >
+                    <div
+                      className="p-5 flex gap-5"
+                      onClick={() => handleProductClick(item)}
+                    >
+                      {/* IMAGE */}
+                      <div className="relative w-28 h-28 md:w-32 md:h-32 flex-shrink-0 rounded-xl overflow-hidden">
+                        <Image
+                          src={getImageUrl(item.image)}
+                          alt={item.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
                       </div>
 
-                      <p className="text-sm text-white/70 mt-2 leading-relaxed line-clamp-2">
-                        {item.description}
-                      </p>
+                      {/* CONTENT */}
+                      <div className="flex-1 flex flex-col justify-between">
 
-                      <div className="flex items-center justify-between mt-4">
-                        <span className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-[#d4a24c]/20 text-[#d4a24c] font-medium border border-[#d4a24c]/30">
-                          <Coffee className="w-3 h-3" />
-                          {item.category}
-                        </span>
+                        {/* TITLE + BADGE */}
+                        <div>
+                          <div className="flex items-start justify-between gap-3">
+                            <h4 className={`${playfair.className} text-xl font-semibold group-hover:text-[#d4a24c] transition-colors`}>
+                              {item.name}
+                            </h4>
 
-                        <div className="text-right">
-                          <div className="text-[#d4a24c] font-bold text-xl mb-2">
-                            ₱{item.price}
+                            {item.best_seller && (
+                              <span className="flex items-center gap-1 text-[#d4a24c] text-xs font-medium">
+                                <Star className="w-4 h-4" />
+                                Best Seller
+                              </span>
+                            )}
                           </div>
+
+                          <p className="text-sm text-white/60 mt-2 line-clamp-2">
+                            {item.description}
+                          </p>
+                        </div>
+
+                        {/* PRICE + BUTTON */}
+                        <div className="flex items-center justify-between mt-4">
+                          <span className="text-[#d4a24c] font-bold text-lg">
+                            ₱{item.price}
+                          </span>
+
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
                               handleAddToCart(item)
                             }}
-                            className="px-4 py-2 rounded-full bg-gradient-to-r from-[#d4a24c] to-[#b8943a] text-black text-xs font-semibold hover:from-[#b8943a] hover:to-[#d4a24c] transition-all duration-300 shadow-md hover:shadow-lg"
+                            className="px-4 py-2 rounded-full bg-[#d4a24c] text-black text-xs font-semibold
+                                    hover:bg-[#b8943a] transition"
                           >
-                            + Add to Cart
+                            + Add
                           </button>
                         </div>
                       </div>
                     </div>
+
+                    {/* INGREDIENTS */}
+                    <div className="px-5 pb-5 pt-3 border-t border-white/10">
+                      <div className="flex flex-wrap gap-2">
+                        {item.ingredients.split("|").slice(0, 5).map((ing, i) => (
+                          <span
+                            key={i}
+                            className="text-[11px] px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/60"
+                          >
+                            {ing.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
+
                 </motion.div>
               ))}
+
             </div>
           </motion.div>
         ))}
@@ -248,72 +307,98 @@ export default function MenuPage() {
 
         {/* Product Detail Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-2xl bg-gradient-to-br from-[#0b1d26] to-[#1a2e3a] border border-[#d4a24c]/20 text-white shadow-2xl">
-            <DialogHeader className="text-center">
-              <DialogTitle className={`${playfair.className} text-3xl font-bold text-[#d4a24c] mb-2`}>
-                {selectedProduct?.name}
-              </DialogTitle>
-            </DialogHeader>
+          <DialogContent className="max-w-3xl bg-[#0b1d26] border border-white/10 text-white rounded-2xl overflow-hidden p-0">
 
-            {selectedProduct && (
-              <div className="space-y-6">
-                {/* Image */}
-                <div className="relative w-full h-64 rounded-xl overflow-hidden shadow-2xl">
-                  <Image
-                    src={getImageUrl(selectedProduct.image)}
-                    alt={selectedProduct.name}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+            {/* IMAGE HEADER */}
+            <div className="relative w-full h-72">
+              <Image
+                src={getImageUrl(selectedProduct?.image)}
+                alt={selectedProduct?.name || ""}
+                fill
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0b1d26] via-black/40 to-transparent" />
+
+              {/* BADGE */}
+              {selectedProduct?.best_seller && (
+                <div className="absolute top-4 left-4 bg-[#d4a24c] text-black px-3 py-1 rounded-full text-xs font-semibold">
+                  ⭐ Best Seller
                 </div>
+              )}
+            </div>
 
-                {/* Details */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-gradient-to-r from-[#d4a24c]/20 to-[#d4a24c]/10 text-[#d4a24c] font-medium border border-[#d4a24c]/30">
-                      <Coffee className="w-4 h-4" />
-                      {selectedProduct.category}
-                    </span>
-                    <div className="flex items-center justify-center gap-2">
-                      {selectedProduct?.best_seller && (
-                        <>
-                          <Star className="w-5 h-5 text-[#d4a24c] fill-current" />
-                          <span className="text-sm text-[#d4a24c] font-medium">Best Seller</span>
-                        </>
-                      )}
-                    </div>
-                    <div className="text-3xl font-bold text-[#d4a24c]">
-                      ₱{selectedProduct.price}
-                    </div>
-                  </div>
+            {/* CONTENT */}
+            <div className="p-6 space-y-5">
 
-                  <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                    <h4 className="text-[#d4a24c] font-semibold mb-2">Description</h4>
-                    <p className="text-white/80 leading-relaxed">
-                      {selectedProduct.description}
-                    </p>
-                  </div>
-                </div>
+              {/* TITLE + PRICE */}
+              <div className="flex items-start justify-between gap-4">
+                <DialogTitle className={`${playfair.className} text-2xl md:text-3xl font-bold text-[#d4a24c]`}>
+                  {selectedProduct?.name}
+                </DialogTitle>
 
-                {/* Actions */}
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    onClick={() => {
-                      handleAddToCart(selectedProduct)
-                      setDialogOpen(false)
-                    }}
-                    className="flex-1 bg-gradient-to-r from-[#d4a24c] to-[#b8943a] hover:from-[#b8943a] hover:to-[#d4a24c] text-black font-semibold py-3 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"
-                  >
-                    Add to Cart
-                  </Button>
+                <div className="text-xl font-bold text-white">
+                  ₱{selectedProduct?.price}
                 </div>
               </div>
-            )}
-          </DialogContent>
-        </Dialog>
 
+              {/* DESCRIPTION */}
+              <div className="text-white/70 text-sm leading-relaxed">
+                {selectedProduct?.description}
+              </div>
+
+              {/* INGREDIENTS */}
+              <div>
+                <p className="text-xs uppercase tracking-widest text-white/40 mb-2">
+                  Ingredients
+                </p>
+
+                <div className="flex flex-wrap gap-2">
+                  {selectedProduct?.ingredients.split("|").map((ing, i) => (
+                    <span
+                      key={i}
+                      className="text-xs px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/70"
+                    >
+                      {ing.trim()}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* ACTION */}
+              <div className="pt-2">
+                <Button
+                  onClick={() => {
+                    handleAddToCart(selectedProduct!)
+                    setDialogOpen(false)
+                  }}
+                  className="w-full bg-[#d4a24c] hover:bg-[#b8943a] text-black font-semibold py-3 rounded-xl"
+                >
+                  Add to Cart
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+
+        </Dialog>
       </div>
+
+      <style>
+        {`
+          
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.animate-twinkle {
+  animation: twinkle ease-in-out infinite;
+}
+        `}
+      </style>
     </section>
   )
 }
