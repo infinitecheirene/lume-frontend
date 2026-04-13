@@ -14,6 +14,7 @@ import Image from "next/image"
 import { Playfair_Display } from "next/font/google"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Switch } from "@/components/ui/switch"
+import { useToast } from "@/hooks/use-toast"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -74,6 +75,7 @@ export default function ReservationsAdmin() {
   const [statusUpdate, setStatusUpdate] = useState<Reservation["reservation_status"]>("pending")
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null)
   const [paymentFile, setPaymentFile] = useState<File | null>(null)
+  const { toast } = useToast()
 
   const initialFormData = {
     name: "",
@@ -256,13 +258,23 @@ export default function ReservationsAdmin() {
 
   async function handleCreateReservation() {
     try {
+      const isValidEmail = (email: string) => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+      }
+      if (!formData.is_walkin && formData.email && !isValidEmail(formData.email)) {
+        toast({
+          title: "Invalid Email",
+          description: "Please enter a valid email address.",
+          variant: "destructive",
+        })
+        return
+      }
+
       const form = new FormData()
 
-      // Loop through all fields in formData
       Object.entries(formData).forEach(([key, value]) => {
         if (value === null || value === undefined) return
 
-        // If it's a File (e.g., payment_receipt), append directly
         if (value instanceof File) {
           form.append(key, value)
         } else if (typeof value === "boolean") {
@@ -272,7 +284,6 @@ export default function ReservationsAdmin() {
         }
       })
 
-      // Append the image file if a new one is selected
       if (paymentFile) {
         form.append("payment_receipt", paymentFile)
       }
@@ -280,9 +291,9 @@ export default function ReservationsAdmin() {
       const response = await fetch("/api/reservations", {
         method: "POST",
         headers: {
-          ...getAuthHeaders(), // Important: do NOT set 'Content-Type'
+          ...getAuthHeaders(),
         },
-        body: form, // FormData automatically sets Content-Type with boundary
+        body: form,
       })
 
       if (!response.ok) {
@@ -318,14 +329,33 @@ export default function ReservationsAdmin() {
       setIsAddingReservation(false)
       setPaymentFile(null)
       fetchReservations()
+      toast({
+        title: "Reservation Added",
+        description: "The reservation list has been updated.",
+      })
     } catch (error) {
       console.error("Error creating reservation:", error)
+      toast({
+        title: "Error",
+        description: "Failed to create reservation. Please try again.",
+        variant: "destructive",
+      })
     }
   }
 
   async function handleUpdateReservation() {
     if (!editingReservation) return
-
+    const isValidEmail = (email: string) => {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    }
+    if (!formData.is_walkin && formData.email && !isValidEmail(formData.email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      })
+      return
+    }
     try {
       const payload = new FormData()
 
@@ -378,6 +408,10 @@ export default function ReservationsAdmin() {
           console.error("Failed to send reservation confirmation email:", await emailResponse.text())
         }
       }
+      toast({
+        title: "Success",
+        description: "Reservation updated successfully.",
+      })
 
       // Refresh and reset
       fetchReservations()
@@ -387,6 +421,11 @@ export default function ReservationsAdmin() {
       setPaymentFile(null)
     } catch (error) {
       console.error("Error updating reservation:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update reservation.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -407,6 +446,11 @@ export default function ReservationsAdmin() {
       if (!response.ok) {
         throw new Error("Failed to update reservation status")
       }
+
+      toast({
+        title: "Status Updated",
+        description: `Reservation marked as ${statusUpdate}.`,
+      })
 
       if (!statusDialogReservation.is_walkin && statusUpdate === "confirmed" && statusDialogReservation.email) {
         const emailResponse = await fetch("/api/send-email/reservation", {
@@ -437,6 +481,11 @@ export default function ReservationsAdmin() {
       setStatusDialogReservation(null)
     } catch (error) {
       console.error("Error updating reservation status:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update reservation status.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -448,7 +497,10 @@ export default function ReservationsAdmin() {
       })
 
       if (!response.ok) throw new Error("Failed to delete")
-
+      toast({
+        title: "Deleted",
+        description: "Reservation has been deleted successfully.",
+      })
       setSelectedReservation(null)
       setDeleteOpen(false)
       setDeleteId(null)
@@ -456,6 +508,11 @@ export default function ReservationsAdmin() {
       fetchReservations()
     } catch (error) {
       console.error("Error deleting reservation:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete reservation.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -623,6 +680,15 @@ export default function ReservationsAdmin() {
                                     <DropdownMenuContent className="w-40 bg-white border shadow-md" onClick={(e) => e.stopPropagation()}>
                                       <DropdownMenuItem
                                         onClick={() => {
+                                          setViewingReservation(reservation)
+                                          setOpenView(true)
+                                        }}
+                                      >
+                                        View
+                                      </DropdownMenuItem>
+
+                                      <DropdownMenuItem
+                                        onClick={() => {
                                           setStatusDialogReservation(reservation)
                                           setStatusUpdate(reservation.reservation_status)
                                           setOpenStatusDialog(true)
@@ -716,22 +782,24 @@ export default function ReservationsAdmin() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <span className="text-md font-semibold text-gray-800">Email Address*</span>
+                          <span className="text-md font-semibold text-gray-800">Email Address</span>
                           <Input
                             type="email"
                             placeholder="Email Address"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             className="bg-gray-100 border-gray-600 text-gray-800"
+                            required={!formData.is_walkin}
                           />
                         </div>
                         <div>
-                          <span className="text-md font-semibold text-gray-800">Phone Number*</span>
+                          <span className="text-md font-semibold text-gray-800">Phone Number</span>
                           <Input
                             placeholder="Phone Number"
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                             className="bg-gray-100 border-gray-600 text-gray-800"
+                            required={!formData.is_walkin}
                           />
                         </div>
                       </div>
