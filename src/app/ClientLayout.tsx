@@ -37,7 +37,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             <main className="flex-1">{children}</main>
             {showHeader && <Footer />}
           </div>
-          <FloatingSocialMedia />
+          {showHeader && <FloatingSocialMedia />}
           {showHeader && <CustomerServiceChatbot />}
           <Toaster />
           <SonnerToaster />
