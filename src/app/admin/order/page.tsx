@@ -1,4 +1,5 @@
 "use client"
+
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import type React from "react"
 
@@ -6,12 +7,10 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   ChevronLeft,
   ChevronRight,
-  Bolt,
   Eye,
   Search,
   Loader2,
@@ -29,6 +28,7 @@ import {
   Mail,
   X,
   Trash2,
+  FileText,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -38,7 +38,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -54,7 +53,7 @@ import {
 } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import Image from "next/image"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -72,7 +71,6 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 })
-
 
 interface OrderItem {
   id: number
@@ -117,28 +115,17 @@ interface Order {
 }
 
 const orderStatuses = [
-  { value: "pending", label: "Pending", color: "bg-yellow-100 text-yellow-800", icon: Clock },
-  { value: "confirmed", label: "Confirmed", color: "bg-blue-100 text-blue-800", icon: CheckCircle },
-  { value: "preparing", label: "Preparing", color: "bg-orange-100 text-orange-800", icon: Package },
-  { value: "ready", label: "Ready", color: "bg-green-100 text-green-800", icon: CheckCircle },
-  { value: "out_for_delivery", label: "Out for Delivery", color: "bg-purple-100 text-purple-800", icon: Truck },
-  { value: "delivered", label: "Delivered", color: "bg-green-100 text-green-800", icon: Package },
-  { value: "cancelled", label: "Cancelled", color: "bg-yellow-100 text-yellow-800", icon: XCircle },
-]
-
-const paymentMethods = [
-  { value: "cash", label: "Cash on Delivery" },
-  { value: "gcash", label: "GCash" },
-  { value: "paypal", label: "PayPal" },
-  { value: "bpi", label: "BPI" },
-  { value: "security_bank", label: "Security Bank" },
-  { value: "maya", label: "Maya" },
+  { value: "pending", label: "Pending", icon: Clock },
+  { value: "confirmed", label: "Confirmed", icon: CheckCircle },
+  { value: "preparing", label: "Preparing", icon: Package },
+  { value: "ready", label: "Ready", icon: CheckCircle },
+  { value: "out_for_delivery", label: "Out for Delivery", icon: Truck },
+  { value: "delivered", label: "Delivered", icon: Package },
+  { value: "cancelled", label: "Cancelled", icon: XCircle },
 ]
 
 const getImageUrl = (imagePath: string): string => {
-  if (!imagePath) {
-    return "/placeholder-food.jpg"
-  }
+  if (!imagePath) return "/placeholder-food.jpg"
 
   if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
     return imagePath
@@ -158,11 +145,13 @@ const ITEMS_PER_PAGE = 10
 
 export default function OrdersAdminPage() {
   const [orders, setOrders] = useState<Order[]>([])
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([])
   const [loading, setLoading] = useState(true)
+
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsLoading, setItemsLoading] = useState(false)
+  const [lastPage, setLastPage] = useState(1)
+  const [totalOrders, setTotalOrders] = useState(0)
 
   const { toast } = useToast()
   const router = useRouter()
@@ -174,37 +163,21 @@ export default function OrdersAdminPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all")
   const [statusCounts, setStatusCounts] = useState<Record<string, number>>({})
-  const [selectedImage, setSelectedImage] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [paymentMethods, setPaymentMethods] = useState<{ value: string; label: string }[]>([])
 
-  // State for desktop detection
   const [isDesktop, setIsDesktop] = useState(false)
+
   useEffect(() => {
     const checkDesktop = () => {
-      setIsDesktop(window.innerWidth < 1024) // lg breakpoint
+      setIsDesktop(window.innerWidth < 1024)
     }
     checkDesktop()
     window.addEventListener("resize", checkDesktop)
     return () => window.removeEventListener("resize", checkDesktop)
   }, [])
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setSelectedImage(file)
-      const reader = new FileReader()
-      reader.onload = () => {
-        setImagePreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  // Helper function to safely calculate total revenue
   const calculateTotalRevenue = (orders: Order[]): string => {
-    if (!Array.isArray(orders) || orders.length === 0) {
-      return "0.00"
-    }
+    if (!Array.isArray(orders) || orders.length === 0) return "0.00"
 
     try {
       const total = orders.reduce((sum, order) => {
@@ -219,10 +192,8 @@ export default function OrdersAdminPage() {
     }
   }
 
-  // Helper function to get status badge
   const getStatusBadge = (status: string) => {
     const statusInfo = orderStatuses.find((s) => s.value === status)
-
     return (
       <Badge variant="outline" className="text-xs">
         {statusInfo?.label || status}
@@ -230,7 +201,6 @@ export default function OrdersAdminPage() {
     )
   }
 
-  // Helper function to get payment method badge
   const getPaymentMethodBadge = (method: string) => {
     const methodInfo = paymentMethods.find((m) => m.value === method)
     return (
@@ -242,9 +212,9 @@ export default function OrdersAdminPage() {
 
   const [updatingStatus, setUpdatingStatus] = useState<number | null>(null)
 
-  // Update order status
   const handleStatusUpdate = async (orderId: number, newStatus: string) => {
     try {
+      setUpdatingStatus(orderId)
       const token = localStorage.getItem("auth_token")
 
       const response = await fetch(`/api/orders/${orderId}`, {
@@ -270,7 +240,7 @@ export default function OrdersAdminPage() {
         description: "Order status updated",
       })
 
-      fetchOrders() // refresh list
+      fetchOrders()
     } catch (error) {
       console.error("Error updating order status:", error)
       toast({
@@ -278,13 +248,15 @@ export default function OrdersAdminPage() {
         title: "Error",
         description: "Failed to update order status",
       })
+    } finally {
+      setUpdatingStatus(null)
     }
   }
 
-  // Fetch orders
   const fetchOrders = async () => {
     try {
       setLoading(true)
+
       const token = localStorage.getItem("auth_token")
 
       if (!token) {
@@ -297,31 +269,29 @@ export default function OrdersAdminPage() {
         return
       }
 
-      let url = "/api/orders?per_page=100"
-
-      // Add filters to URL
       const params = new URLSearchParams()
-      if (statusFilter !== "all") params.append("status", statusFilter)
+      params.append("per_page", ITEMS_PER_PAGE.toString())
+      params.append("page", currentPage.toString())
+
+      if (statusFilter !== "all") params.append("order_status", statusFilter)
       if (paymentMethodFilter !== "all") params.append("payment_method", paymentMethodFilter)
       if (globalFilter) params.append("search", globalFilter)
 
-      if (params.toString()) {
-        url += `&${params.toString()}`
-      }
+      const url = `/api/orders?${params.toString()}`
 
-      console.log("Fetching orders from:", url) // Debug log
+      console.log("Fetching orders:", url)
 
       const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "X-Admin-Request": "true", // Add admin header to force admin view
+          "X-Admin-Request": "true",
           "Content-Type": "application/json",
         },
       })
 
       if (!response.ok) {
         const errorText = await response.text()
-        console.error("Orders API error response:", errorText)
+        console.error("Orders API error:", errorText)
 
         if (response.status === 401) {
           localStorage.removeItem("auth_token")
@@ -333,107 +303,47 @@ export default function OrdersAdminPage() {
       }
 
       const result = await response.json()
-      console.log("Orders API response:", result) // Debug log
+      console.log("Orders API response:", result)
 
       if (result.success) {
-        // Handle the transformed response structure
-        const ordersData = result.data || []
-        console.log("Setting orders:", ordersData) // Debug log
+        setOrders(result.data || [])
 
-        // Ensure we have an array and validate the data structure
-        if (Array.isArray(ordersData)) {
-          const validatedOrders = ordersData.map((order) => ({
-            ...order,
-            total: typeof order.total === "number" ? order.total : 0,
-            subtotal: typeof order.subtotal === "number" ? order.subtotal : 0,
-            delivery_fee: typeof order.delivery_fee === "number" ? order.delivery_fee : 0,
-            items: Array.isArray(order.items) ? order.items : [],
-          }))
-
-          setOrders(validatedOrders)
-        } else {
-          console.error("Orders data is not an array:", ordersData)
-          setOrders([])
+        if (result.pagination) {
+          setLastPage(result.pagination.last_page || 1)
+          setTotalOrders(result.pagination.total || 0)
         }
       } else {
         throw new Error(result.message || "Failed to fetch orders")
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to fetch orders:", error)
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to load orders. Please check your authentication.",
+        description: error?.message || "Failed to load orders",
       })
-
       setOrders([])
-
-      // If authentication error, redirect to login
-      if (error instanceof Error && error.message.includes("401")) {
-        localStorage.removeItem("auth_token")
-        router.push("/login")
-      }
     } finally {
       setLoading(false)
     }
   }
 
-  // Fetch order items
-  // const fetchOrderItems = async (orderId: number) => {
-  //   try {
-  //     setItemsLoading(true) // ✅ DO NOT use page-level loading
-
-  //     const token = localStorage.getItem("auth_token")
-  //     if (!token) {
-  //       toast({
-  //         variant: "destructive",
-  //         title: "Authentication Required",
-  //         description: "Please log in.",
-  //       })
-  //       return
-  //     }
-
-  //     const response = await fetch(`/api/orders/${orderId}`, {
-  //       method: "GET",
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //         Accept: "application/json",
-  //         "X-Admin-Request": "true",
-  //       },
-  //       cache: "no-store",
-  //     })
-
-  //     if (!response.ok) {
-  //       const text = await response.text()
-  //       throw new Error(`HTTP ${response.status}: ${text}`)
-  //     }
-
-  //     const result = await response.json()
-
-  //     console.log("Order items response:", result) // 🔍 keep for now
-
-  //     setOrderItems(
-  //       result?.data?.items ??
-  //       result?.data?.data?.items ??
-  //       []
-  //     )
-  //   } catch (error) {
-  //     console.error("Failed to fetch order items:", error)
-
-  //     toast({
-  //       variant: "destructive",
-  //       title: "Error",
-  //       description: "Failed to load order items.",
-  //     })
-
-  //     setOrderItems([])
-  //   } finally {
-  //     setItemsLoading(false)
-  //   }
-  // }
+  useEffect(() => {
+    fetchOrders()
+  }, [currentPage])
 
   useEffect(() => {
-    // Calculate counts whenever orders change
+    const timeoutId = setTimeout(() => {
+      setCurrentPage(1)
+      fetchOrders()
+    }, 500)
+
+    return () => clearTimeout(timeoutId)
+  }, [globalFilter, statusFilter, paymentMethodFilter])
+
+  useEffect(() => {
+    if (!orders.length) return
+
     const counts: Record<string, number> = {
       pending: 0,
       out_for_delivery: 0,
@@ -448,71 +358,41 @@ export default function OrdersAdminPage() {
       }
     })
 
+    const uniqueMethods = Array.from(new Set(orders.map((o) => o.payment_method).filter(Boolean)))
+
+    const formatted = uniqueMethods.map((method) => ({
+      value: method,
+      label: method.charAt(0).toUpperCase() + method.slice(1).replace(/_/g, " "),
+    }))
     setStatusCounts(counts)
+    setPaymentMethods(formatted)
   }, [orders])
-
-  const filteredOrders = orders.filter((t) => {
-    const searchTerm = globalFilter.toLowerCase()
-
-    const matchesSearch =
-      t.order_number.toLowerCase().includes(searchTerm) ||
-      t.payment_method.toLowerCase().includes(searchTerm) ||
-      t.delivery_address.toLowerCase().includes(searchTerm) ||
-      t.delivery_city.toLowerCase().includes(searchTerm) ||
-      t.customer_name.toLowerCase().includes(searchTerm) ||
-      t.customer_email.toLowerCase().includes(searchTerm) ||
-      t.customer_phone.toLowerCase().includes(searchTerm)
-
-    const matchesStatus = statusFilter === "all" || t.order_status?.toString() === statusFilter
-
-    const matchesPayment = paymentMethodFilter === "all" || t.payment_method === paymentMethodFilter
-
-    return matchesSearch && matchesStatus && matchesPayment
-  })
-
-  // Pagination
-  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE)
-  const startIdx = (currentPage - 1) * ITEMS_PER_PAGE
-  const endIdx = startIdx + ITEMS_PER_PAGE
-  const paginatedOrders = filteredOrders.slice(startIdx, endIdx)
 
   const handlePreviousPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1))
   }
 
   const handleNextPage = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+    setCurrentPage((prev) => Math.min(prev + 1, lastPage))
   }
 
-  // Debounce search
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (globalFilter !== undefined) {
-        fetchOrders()
-      }
-    }, 500)
+  const startIdx = (currentPage - 1) * ITEMS_PER_PAGE + 1
+  const endIdx = Math.min(currentPage * ITEMS_PER_PAGE, totalOrders)
 
-    return () => clearTimeout(timeoutId)
-  }, [globalFilter])
-
-  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [deletingId, setDeletingId] = useState<number[] | null>(null)
 
   const handleBulkDelete = async () => {
-    // `table` is your table instance
-    const selectedOrderIds = table.getSelectedRowModel().rows.map((row) => row.original.id) // <- `original` has your actual order object
+    const selectedOrderIds = table.getSelectedRowModel().rows.map((row) => row.original.id)
 
     if (selectedOrderIds.length === 0) return
 
-    // Call your bulk delete
     await handleDelete(selectedOrderIds)
-
-    // Clear selection
     table.resetRowSelection()
   }
 
   const handleDelete = async (ids: number | number[]) => {
     const deletingIds = Array.isArray(ids) ? ids : [ids]
-    setDeletingId(deletingIds) // can handle multiple IDs if needed
+    setDeletingId(deletingIds)
 
     try {
       const response = await fetch(`/api/orders`, {
@@ -548,7 +428,6 @@ export default function OrdersAdminPage() {
     }
   }
 
-  // Define columns for DataTable
   const columns: ColumnDef<Order>[] = [
     {
       id: "select",
@@ -566,9 +445,8 @@ export default function OrdersAdminPage() {
     },
     {
       accessorKey: "action1",
-      header: ({ column }) => (
+      header: () => (
         <div className="w-8">
-          {/* Bulk Delete */}
           {Object.keys(rowSelection).length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -588,42 +466,15 @@ export default function OrdersAdminPage() {
 
                 <AlertDialogFooter className="flex flex-col sm:flex-row gap-2">
                   <AlertDialogCancel className="text-black">Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleBulkDelete} className="bg-red-600">Delete</AlertDialogAction>
+                  <AlertDialogAction onClick={handleBulkDelete} className="bg-red-600">
+                    Delete
+                  </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           )}
         </div>
       ),
-      cell: ({ row }) => {
-        const order = row.original
-        return (
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <SquarePen className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Order Actions</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-
-                {orderStatuses.map((status) => (
-                  <DropdownMenuItem
-                    key={status.value}
-                    onClick={() => handleStatusUpdate(order.id, status.value)}
-                    disabled={updatingStatus === order.id || order.order_status === status.value}
-                  >
-                    <status.icon className="mr-2 h-4 w-4" />
-                    Mark as {status.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )
-      },
     },
     {
       accessorKey: "order_number",
@@ -699,9 +550,10 @@ export default function OrdersAdminPage() {
     },
     {
       accessorKey: "action2",
-      header: ({ column }) => <Button variant="ghost">Actions</Button>,
+      header: () => <Button variant="ghost">Actions</Button>,
       cell: ({ row }) => {
         const order = row.original
+
         return (
           <div className="flex items-center gap-1">
             <Dialog>
@@ -711,7 +563,6 @@ export default function OrdersAdminPage() {
                   size="sm"
                   onClick={() => {
                     setSelectedOrder(order)
-                    setOrderItems(order.order_items)
                   }}
                   className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-3 sm:py-1"
                 >
@@ -722,7 +573,6 @@ export default function OrdersAdminPage() {
               <DialogContent className="w-full sm:max-w-5xl p-0 overflow-hidden rounded-lg shadow-lg">
                 {selectedOrder && (
                   <>
-                    {/* HEADER */}
                     <div className="sticky top-0 z-10 bg-white border-b px-6 py-4">
                       <DialogHeader>
                         <DialogTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -732,6 +582,7 @@ export default function OrdersAdminPage() {
                             {getPaymentMethodBadge(selectedOrder.payment_method)}
                           </div>
                         </DialogTitle>
+
                         <DialogDescription className="text-sm text-gray-500 mt-1">
                           Placed on{" "}
                           {new Date(selectedOrder.created_at).toLocaleDateString("en-US", {
@@ -742,6 +593,7 @@ export default function OrdersAdminPage() {
                             minute: "2-digit",
                           })}
                         </DialogDescription>
+
                         <DialogClose asChild>
                           <button className="absolute right-2 top-2 rounded-md p-2 text-gray-400 hover:text-gray-600 transition" aria-label="Close">
                             <X className="h-5 w-5" />
@@ -750,9 +602,7 @@ export default function OrdersAdminPage() {
                       </DialogHeader>
                     </div>
 
-                    {/* BODY */}
                     <div className="px-6 py-6 space-y-10 max-h-[80vh] overflow-y-auto">
-                      {/* CUSTOMER & DELIVERY */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <Card className="shadow-sm">
                           <CardHeader>
@@ -795,14 +645,18 @@ export default function OrdersAdminPage() {
                         </Card>
                       </div>
 
-                      {/* ORDER ITEMS */}
                       <div>
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
                           <h3 className="text-lg font-semibold flex items-center gap-2 text-black">
                             <Package className="w-5 h-5 text-gray-600" />
                             {selectedOrder.order_items.length} Items
                           </h3>
+
                           <div className="flex flex-wrap gap-6">
+                            <div className="text-right sm:text-left">
+                              <p className="text-xs text-gray-500">Delivery Fee</p>
+                              <p className="text-2xl font-bold text-black">₱{(selectedOrder.delivery_fee ?? 0).toFixed(2)}</p>
+                            </div>
                             <div className="text-right sm:text-left">
                               <p className="text-xs text-gray-500">Total</p>
                               <p className="text-2xl font-bold text-green-600">₱{(selectedOrder.total_amount ?? 0).toFixed(2)}</p>
@@ -810,72 +664,126 @@ export default function OrdersAdminPage() {
                           </div>
                         </div>
 
-                        <div>
-                          {selectedOrder.order_items.length === 0 ? (
-                            <Card>
-                              <CardContent className="text-center py-12">
-                                <div className="bg-gradient-to-r from-orange-100 to-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                  <Package className="w-8 h-8 text-orange-500" />
-                                </div>
-                                <p className="text-lg font-medium text-gray-700">No order items found</p>
-                                <p className="text-sm mt-1 text-gray-500">Your order items will appear here</p>
-                              </CardContent>
-                            </Card>
-                          ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                              {selectedOrder.order_items.map((item) => (
-                                <Card key={item.id} className="p-3 overflow-hidden hover:shadow-md transition-shadow rounded-lg">
-                                  <CardHeader className="p-0">
-                                    <div className="relative h-48 w-full">
-                                      <Image src={getImageUrl(item.image_url)} alt={item.name} fill className="object-cover border rounded-lg" />
-                                    </div>
-                                  </CardHeader>
-                                  <CardContent className="p-4 space-y-3">
+                        {selectedOrder.order_items.length === 0 ? (
+                          <Card>
+                            <CardContent className="text-center py-12">
+                              <div className="bg-gradient-to-r from-orange-100 to-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Package className="w-8 h-8 text-orange-500" />
+                              </div>
+                              <p className="text-lg font-medium text-gray-700">No order items found</p>
+                              <p className="text-sm mt-1 text-gray-500">Your order items will appear here</p>
+                            </CardContent>
+                          </Card>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {selectedOrder.order_items.map((item) => (
+                              <Card key={item.id} className="p-3 overflow-hidden hover:shadow-md transition-shadow rounded-lg">
+                                <CardHeader className="p-0">
+                                  <div className="relative h-48 w-full">
+                                    <Image src={getImageUrl(item.image_url)} alt={item.name} fill className="object-cover border rounded-lg" />
+                                  </div>
+                                </CardHeader>
+
+                                <CardContent className="p-4 space-y-3">
+                                  <div>
+                                    <h3 className="font-semibold text-base sm:text-lg">{item.name}</h3>
+                                    <p className="text-xs text-gray-500 line-clamp-2">{item.description}</p>
+                                  </div>
+
+                                  <div className="flex flex-wrap gap-2">
+                                    <Badge variant="outline">{item.category}</Badge>
+                                    {item.is_spicy && <Badge variant="destructive">Spicy</Badge>}
+                                    {item.is_vegetarian && <Badge className="bg-green-100 text-green-700">Vegetarian</Badge>}
+                                  </div>
+
+                                  <div className="flex items-center justify-between pt-3 border-t text-sm">
                                     <div>
-                                      <h3 className="font-semibold text-base sm:text-lg">{item.name}</h3>
-                                      <p className="text-xs text-gray-500 line-clamp-2">{item.description}</p>
+                                      <p className="text-gray-500">Price</p>
+                                      <p className="font-medium">₱{item.price.toFixed(2)}</p>
                                     </div>
-                                    <div className="flex flex-wrap gap-2">
-                                      <Badge variant="outline">{item.category}</Badge>
-                                      {item.is_spicy && <Badge variant="destructive">Spicy</Badge>}
-                                      {item.is_vegetarian && <Badge className="bg-green-100 text-green-700">Vegetarian</Badge>}
+                                    <div>
+                                      <p className="text-gray-500">Quantity</p>
+                                      <p className="font-medium">{item.quantity}</p>
                                     </div>
-                                    <div className="flex items-center justify-between pt-3 border-t text-sm">
-                                      <div>
-                                        <p className="text-gray-500">Price</p>
-                                        <p className="font-medium">₱{item.price.toFixed(2)}</p>
-                                      </div>
-                                      <div>
-                                        <p className="text-gray-500">Quantity</p>
-                                        <p className="font-medium">{item.quantity}</p>
-                                      </div>
-                                      <div>
-                                        <p className="text-gray-500">Subtotal</p>
-                                        <p className="font-semibold text-green-600">₱{item.subtotal.toFixed(2)}</p>
-                                      </div>
+                                    <div>
+                                      <p className="text-gray-500">Subtotal</p>
+                                      <p className="font-semibold text-green-600">₱{item.subtotal.toFixed(2)}</p>
                                     </div>
-                                  </CardContent>
-                                </Card>
-                              ))}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        )}
+
+                        {selectedOrder.receipt_file && (
+                          <div className="mt-10">
+                            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                              <FileText className="w-5 h-5 text-gray-500" />
+                              Receipt
+                            </h3>
+
+                            <div className="border rounded-lg p-4 bg-gray-50 space-y-4">
+                              <a
+                                href={process.env.NEXT_PUBLIC_API_URL + selectedOrder.receipt_file}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-yellow-600 hover:underline"
+                              >
+                                <FileText className="w-4 h-4" />
+                                View Receipt
+                              </a>
+
+                              <div className="relative w-full max-w-sm h-[350px] rounded-lg overflow-hidden border bg-white">
+                                <Image
+                                  src={process.env.NEXT_PUBLIC_API_URL + selectedOrder.receipt_file}
+                                  alt="Receipt"
+                                  fill
+                                  className="object-contain"
+                                />
+                              </div>
                             </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </>
                 )}
               </DialogContent>
             </Dialog>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <SquarePen className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Order Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+
+                {orderStatuses.map((status) => (
+                  <DropdownMenuItem
+                    key={status.value}
+                    onClick={() => handleStatusUpdate(order.id, status.value)}
+                    disabled={updatingStatus === order.id || order.order_status === status.value}
+                  >
+                    <status.icon className="mr-2 h-4 w-4" />
+                    Mark as {status.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )
       },
     },
   ]
 
-  // Initialize table instance
   const table = useReactTable({
     data: orders,
-    columns: columns,
+    columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -893,42 +801,20 @@ export default function OrdersAdminPage() {
     return (
       <SidebarProvider defaultOpen={!isDesktop}>
         <div className="flex min-h-screen w-full bg-amber-50">
-
           <AppSidebar />
-
           <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
-
             <div className="flex items-center justify-center min-h-screen w-full">
-
               <div className="flex flex-col items-center gap-4 bg-[#162A3A] backdrop-blur-xl px-8 py-8 rounded-2xl border border-[#d4a24c]/70 shadow-2xl">
-
-                {/* Spinner */}
                 <div className="relative">
                   <Loader2 className="h-8 w-8 animate-spin text-[#d4a24c]" />
-                  <div className="absolute inset-0 rounded-full border border-[#d4a24c]/20 blur-sm" />
                 </div>
 
-                {/* Text */}
                 <div className="text-center">
-                  <p className="text-lg font-semibold text-white">
-                    Loading Orders
-                  </p>
-                  <p className="text-sm text-white/60">
-                    Please wait while we fetch the data...
-                  </p>
+                  <p className="text-lg font-semibold text-white">Loading Orders</p>
+                  <p className="text-sm text-white/60">Please wait while we fetch the data...</p>
                 </div>
-
-                {/* Animated dots */}
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.3s]" />
-                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.15s]" />
-                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce" />
-                </div>
-
               </div>
-
             </div>
-
           </div>
         </div>
       </SidebarProvider>
@@ -939,24 +825,18 @@ export default function OrdersAdminPage() {
     <SidebarProvider defaultOpen={!isDesktop}>
       <div className="flex min-h-screen w-full bg-amber-50">
         <AppSidebar />
+
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
           {isDesktop && (
             <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-[#162A3A] px-4 shadow-sm">
               <SidebarTrigger className="-ml-1" />
-              <Image
-                src="/logo.jpg"
-                alt="Lumè Bean and Bar Logo"
-                width={40}
-                height={40}
-                className="object-contain rounded-full"
-              />
+              <Image src="/logo.jpg" alt="Lumè Bean and Bar Logo" width={40} height={40} className="object-contain rounded-full" />
               <h1 className={`${playfair.className} text-lg font-semibold text-white`}>Lumè Bean and Bar</h1>
             </div>
           )}
 
           <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6">
             <div className="max-w-full space-y-4 sm:space-y-6">
-              {/* Header */}
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                   <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Order Management</h1>
@@ -972,7 +852,6 @@ export default function OrdersAdminPage() {
                 </div>
               </div>
 
-              {/* Stats Cards */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {["pending", "out_for_delivery", "delivered", "cancelled"].map((status) => {
                   const statusInfo = orderStatuses.find((s) => s.value === status)
@@ -1001,7 +880,6 @@ export default function OrdersAdminPage() {
                 })}
               </div>
 
-              {/* Filters and Search */}
               <Card className="bg-white/70 backdrop-blur-sm shadow-xl p-0 pb-5 border-blue-100">
                 <CardHeader className="p-3 bg-[#162A3A] text-white rounded-t-lg">
                   <div className="flex flex-col gap-4">
@@ -1017,7 +895,13 @@ export default function OrdersAdminPage() {
                       </div>
 
                       <div className="flex gap-2">
-                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <Select
+                          value={statusFilter}
+                          onValueChange={(value) => {
+                            setStatusFilter(value)
+                            setCurrentPage(1)
+                          }}
+                        >
                           <SelectTrigger className="w-32 border-white/20 bg-blue-200/60 text-white focus:bg-white/30 focus:border-white/50">
                             <SelectValue placeholder="Status" />
                           </SelectTrigger>
@@ -1031,7 +915,13 @@ export default function OrdersAdminPage() {
                           </SelectContent>
                         </Select>
 
-                        <Select value={paymentMethodFilter} onValueChange={setPaymentMethodFilter}>
+                        <Select
+                          value={paymentMethodFilter}
+                          onValueChange={(value) => {
+                            setPaymentMethodFilter(value)
+                            setCurrentPage(1)
+                          }}
+                        >
                           <SelectTrigger className="w-32 border-white/20 bg-blue-200/60 text-white focus:bg-white/30 focus:border-white/50">
                             <SelectValue placeholder="Payment" />
                           </SelectTrigger>
@@ -1048,12 +938,12 @@ export default function OrdersAdminPage() {
                     </div>
                   </div>
                 </CardHeader>
+
                 <CardContent>
                   <div className="text-sm text-gray-600 mb-4 font-medium">
-                    Showing {table.getFilteredRowModel().rows.length} of {orders.length} orders
+                    Showing {orders.length} of {totalOrders} orders
                   </div>
 
-                  {/* Orders Table */}
                   <div className="w-full">
                     <div className="rounded-lg border border-blue-200 overflow-hidden shadow-lg">
                       <div className="overflow-x-auto">
@@ -1075,11 +965,14 @@ export default function OrdersAdminPage() {
                               )}
                             </tr>
                           </thead>
+
                           <tbody>
                             {table.getRowModel().rows.map((row, index) => (
                               <tr
                                 key={row.id}
-                                className={`border-b border-orange-100 hover:bg-gradient-to-r hover:from-orange-50 hover:to-blue-50 transition-all duration-200 ${index % 2 === 0 ? "bg-white" : "bg-orange-25"}`}
+                                className={`border-b border-orange-100 hover:bg-gradient-to-r hover:from-orange-50 hover:to-blue-50 transition-all duration-200 ${
+                                  index % 2 === 0 ? "bg-white" : "bg-orange-25"
+                                }`}
                               >
                                 {row.getVisibleCells().map((cell) => (
                                   <td key={cell.id} className="p-2 sm:p-3 text-xs sm:text-sm">
@@ -1094,6 +987,7 @@ export default function OrdersAdminPage() {
                         </table>
                       </div>
                     </div>
+
                     {table.getRowModel().rows.length === 0 && (
                       <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-orange-200 mt-4">
                         <div className="bg-gradient-to-r from-orange-100 to-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -1103,29 +997,22 @@ export default function OrdersAdminPage() {
                         {globalFilter && <p className="text-sm mt-1 text-gray-500">Try adjusting your search terms or filters</p>}
                       </div>
                     )}
-                    {/* Pagination */}
+
                     <div className="flex items-center justify-between mt-6 pt-4 border-t">
                       <div className="text-sm text-gray-600">
-                        Showing {startIdx + 1} to {Math.min(endIdx, filteredOrders.length)} of {filteredOrders.length} results
+                        Showing {startIdx} to {endIdx} of {totalOrders} results
                       </div>
+
                       <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" onClick={handlePreviousPage} disabled={currentPage === 1}>
                           <ChevronLeft className="w-4 h-4" />
                         </Button>
-                        <div className="flex items-center gap-2">
-                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                            <Button
-                              key={page}
-                              variant={currentPage === page ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setCurrentPage(page)}
-                              className="w-8 h-8 p-0 bg-[#162A3A] text-white hover:bg-[#162A3A]/90"
-                            >
-                              {page}
-                            </Button>
-                          ))}
-                        </div>
-                        <Button variant="outline" size="sm" onClick={handleNextPage} disabled={currentPage === totalPages}>
+
+                        <p className="text-sm font-medium text-gray-700">
+                          Page {currentPage} of {lastPage}
+                        </p>
+
+                        <Button variant="outline" size="sm" onClick={handleNextPage} disabled={currentPage === lastPage}>
                           <ChevronRight className="w-4 h-4" />
                         </Button>
                       </div>
