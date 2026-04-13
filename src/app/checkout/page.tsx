@@ -48,7 +48,7 @@ const Checkout = () => {
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false)
   const [paymentMethods, setPaymentMethods] = useState<any[]>([])
   const [loadingPayments, setLoadingPayments] = useState(true)
-  const { maintenanceMode, deliveryFee, fetchSettings } = useSettingsStore()
+  const { maintenanceMode, deliveryFee } = useSettingsStore()
 
   const [checkoutInfo, setCheckoutInfo] = useState<ExtendedCheckoutInfo>({
     name: "",
@@ -144,21 +144,6 @@ const Checkout = () => {
   }, [])
 
   useEffect(() => {
-    fetchSettings()
-  }, [])
-
-  useEffect(() => {
-    if (total > 1000 && checkoutInfo.paymentMethod === "cash") {
-      setCheckoutInfo((prev) => ({ ...prev, paymentMethod: "gcash" }))
-      toast({
-        title: "Payment Method Changed",
-        description: "Cash on Delivery is not available for orders above ₱1,000. Switched to GCash.",
-        variant: "destructive",
-      })
-    }
-  }, [total, checkoutInfo.paymentMethod])
-
-  useEffect(() => {
     const fetchPaymentMethods = async () => {
       try {
         setLoadingPayments(true)
@@ -242,6 +227,15 @@ const Checkout = () => {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (checkoutInfo.paymentMethod === "cash" && items.some((item) => item.price * item.quantity > 1000)) {
+      toast({
+        title: "COD Not Available",
+        description: "Please use a different payment method for orders over ₱1,000.",
         variant: "destructive",
       })
       return
@@ -623,7 +617,7 @@ const Checkout = () => {
                     {total > 1000 && (
                       <div className="p-3 bg-[#ff6b6b]/20 border border-[#ff6b6b]/50 rounded-lg mb-3">
                         <p className="text-sm text-white font-medium">
-                          Cash on Delivery is not available for orders above ₱1,000. Please use GCash or Bank Transfer.
+                          Cash on Delivery is not available for orders above ₱1,000. Please use other payment methods.
                         </p>
                       </div>
                     )}
