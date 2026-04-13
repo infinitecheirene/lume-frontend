@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, Package, Megaphone, Users, ShoppingCart, LogOut, ChevronDown, Calendar, Mail, Phone } from "lucide-react"
+import { Home, Package, Megaphone, Users, ShoppingCart, LogOut, ChevronDown, Calendar, Mail, Settings } from "lucide-react"
 import logo from "@/assets/logo.jpg"
 import {
   Sidebar,
@@ -39,6 +39,7 @@ const items = [
       { title: "Testimonials", url: "/admin/testimonials" },
     ],
   },
+   { title: "Settings", url: "/admin/settings", icon: Settings },
 ]
 
 export function AppSidebar() {
