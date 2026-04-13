@@ -20,6 +20,7 @@ interface Product {
   id: number
   name: string
   description: string
+  ingredients: string
   category: string
   price: number
   image?: string | null
@@ -30,16 +31,19 @@ export default function MenuPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [activeMainCategory, setActiveMainCategory] =
-    useState<"Kitchen" | "Coffee" | "Bar">("Kitchen")
+    useState<"Signature" | "Classic" | "Drinks" | "Coffee" | "Refreshers" | "Food">("Signature")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
   const { addItem } = useCartStore()
 
   const mainCategoryMap = {
-    Kitchen: ["food"],
-    Coffee: ["coffee"],
-    Bar: ["bar"],
+    Signature : ["Signature"],
+    Classic : ["Classic"],
+    Drinks : ["Drinks"],
+    Coffee : ["Coffee"],
+    Refreshers : ["Refreshers"],
+    Food : ["Food"],
   }
 
   const fetchProducts = async () => {
@@ -195,6 +199,10 @@ export default function MenuPage() {
 
                       <p className="text-sm text-white/70 mt-2 leading-relaxed line-clamp-2">
                         {item.description}
+                      </p>
+
+                      <p className="text-sm text-white/70 mt-2 leading-relaxed line-clamp-2">
+                        {item.ingredients}
                       </p>
 
                       <div className="flex items-center justify-between mt-4">

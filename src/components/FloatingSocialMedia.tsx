@@ -25,7 +25,7 @@ export default function FloatingSocialMedia() {
     {
       name: "Instagram",
       icon: Instagram,
-      href: "https://www.instagram.com/ipponyari/?hl=en",
+      href: "https://www.instagram.com/lumebeanandbar/",
       bgColor: "bg-[#E4405F]",
       hoverColor: "hover:bg-[#d62957]",
     },
