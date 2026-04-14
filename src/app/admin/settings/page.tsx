@@ -450,7 +450,7 @@ export default function SettingsPage() {
 
               {/* Pricing Settings */}
               <Card className="gap-0 p-0 bg-white/70 backdrop-blur-sm shadow-lg border-yellow-100">
-                <CardHeader className="p-4 bg-gradient-to-r from-yellow-500 to-yellow-500 text-white rounded-t-lg">
+                        <CardHeader className="p-4 bg-[#162A3A] text-white rounded-t-lg">
                   <CardTitle className="flex items-center gap-2">
                     <DollarSign className="w-5 h-5" />
                     Pricing Settings
@@ -480,7 +480,7 @@ export default function SettingsPage() {
 
               {/* System Settings */}
               <Card className="gap-0 p-0 bg-white/70 backdrop-blur-sm shadow-lg border-yellow-100">
-                <CardHeader className="p-4 bg-gradient-to-r from-yellow-500 to-yellow-500 text-white rounded-t-lg">
+                     <CardHeader className="p-4 bg-[#162A3A] text-white rounded-t-lg">
                   <CardTitle className="flex items-center gap-2">
                     <Shield className="w-5 h-5" />
                     System Settings
@@ -519,7 +519,7 @@ export default function SettingsPage() {
               <div className="p-0 space-y-6">
                 {/* ================= LIST ================= */}
                 <Card className="gap-0 p-0 bg-white/70 backdrop-blur-sm shadow-lg border-yellow-100">
-                  <CardHeader className="p-4 bg-gradient-to-r from-yellow-500 to-yellow-500 text-white rounded-t-lg flex items-center justify-between">
+                  <CardHeader className="p-4 bg-[#162A3A] text-white rounded-t-lg flex items-center justify-between">
                     <div className="flex flex-col">
                       <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                         <DollarSign className="w-5 h-5" />
