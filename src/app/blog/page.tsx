@@ -6,6 +6,7 @@ import { X, ChefHat, Newspaper, ChevronLeft, ChevronRight } from "lucide-react"
 import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import Image from "next/image"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -19,7 +20,9 @@ interface BlogPost {
   content: string
   author: string
   created_at: string
-  image_url?: string
+  image?: string
+  thumbnail?: string
+  video_url?: string
 }
 
 export default function BlogPage() {
@@ -35,7 +38,7 @@ export default function BlogPage() {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch("/api/blog-posts")
+        const response = await fetch("/api/blog-posts?draft=0")
         if (!response.ok) throw new Error("Failed to fetch blog posts")
         const data = await response.json()
         setPosts(data)
@@ -67,7 +70,27 @@ export default function BlogPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const getImageUrl = (imagePath?: string): string => {
+    if (!imagePath) return "/placeholder.jpg"
+    if (imagePath.startsWith("http")) return imagePath
+
+    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+    const clean = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath
+
+    return `${base}/${clean}`
+  }
+
+  const getVideoUrl = (videoPath?: string): string => {
+    if (!videoPath) return "/placeholder.jpg"
+    if (videoPath.startsWith("http")) return videoPath
+
+    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+    const clean = videoPath.startsWith("/") ? videoPath.slice(1) : videoPath
+
+    return `${base}/${clean}`
   }
 
   return (
@@ -93,7 +116,10 @@ export default function BlogPage() {
         {loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8 max-w-7xl mx-auto">
             {[...Array(POSTS_PER_PAGE)].map((_, i) => (
-              <div key={i} className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl border border-[#d4a24c]/30 overflow-hidden animate-pulse">
+              <div
+                key={i}
+                className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl border border-[#d4a24c]/30 overflow-hidden animate-pulse"
+              >
                 <div className="aspect-video bg-gradient-to-br from-white/20 to-white/10"></div>
                 <div className="p-4 md:p-6">
                   <div className="flex items-center gap-2 md:gap-3 mb-3">
@@ -135,27 +161,45 @@ export default function BlogPage() {
                 transition={{ delay: index * 0.1 }}
                 className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl border border-[#d4a24c]/30 overflow-hidden group hover:border-[#d4a24c]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#d4a24c]/10"
               >
-                <div className="aspect-video overflow-hidden">
-                  {post.image_url ? (
-                    <img
-                      src={`${process.env.NEXT_PUBLIC_API_URL}${post.image_url}`}
+                <div className="relative aspect-video overflow-hidden rounded-md">
+                  {post.video_url ? (
+                    <>
+                      <video
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        poster={post.thumbnail ? getImageUrl(post.thumbnail) : "/placeholder.svg"}
+                        muted
+                        preload="metadata"
+                      >
+                        <source src={getVideoUrl(post.video_url)} type="video/mp4" />
+                      </video>
+                      <span className="absolute top-2 left-2 bg-yellow-500 text-black text-xs font-semibold px-2 py-1 rounded-md shadow">Video</span>
+                    </>
+                  ) : post.image ? (
+                    <Image
+                      src={getImageUrl(post.image)}
                       alt={post.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.currentTarget.src = "/placeholder.svg"
-                      }}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 768px) 100vw, 33vw"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl md:text-6xl bg-gradient-to-br from-[#d4a24c]/20 to-[#d4a24c]/10">🍽️</div>
+                    <div className="w-full h-full flex items-center justify-center text-4xl md:text-6xl bg-gradient-to-br from-[#d4a24c]/20 to-[#d4a24c]/10">
+                      🍽️
+                    </div>
                   )}
                 </div>
                 <div className="p-4 md:p-6">
                   <div className="flex items-center gap-2 md:gap-3 mb-3">
                     <span className="text-xs font-medium text-[#d4a24c] bg-[#d4a24c]/10 px-2 md:px-3 py-1 rounded-full">Blog</span>
-                    <span className="text-xs text-white/60">{new Date(post.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
+                    <span className="text-xs text-white/60">
+                      {new Date(post.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                    </span>
                   </div>
-                  <h2 className={`${playfair.className} text-lg md:text-xl font-semibold mb-2 text-white group-hover:text-[#d4a24c] transition-colors leading-tight`}>{post.title}</h2>
+                  <h2
+                    className={`${playfair.className} text-lg md:text-xl font-semibold mb-2 text-white group-hover:text-[#d4a24c] transition-colors leading-tight`}
+                  >
+                    {post.title}
+                  </h2>
                   <p className="text-white/70 text-sm leading-relaxed mb-4 line-clamp-3">{post.excerpt}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-white/60">By {post.author}</span>
@@ -228,50 +272,62 @@ export default function BlogPage() {
         )}
       </div>
 
-      {/* Blog Post Dialog */}
+      {/* Blog Post View Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-[95vw] sm:max-w-2xl md:max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-[#0b1d26] to-[#1a2e3a] border border-[#d4a24c]/20 text-white mx-4">
           <DialogHeader className="text-center pb-4 md:pb-6">
-            <DialogTitle className={`${playfair.className} text-2xl md:text-3xl font-bold text-[#d4a24c] mb-2`}>
-              {selectedPost?.title}
-            </DialogTitle>
+            <DialogTitle className={`${playfair.className} text-2xl md:text-3xl font-bold text-[#d4a24c] mb-2`}>{selectedPost?.title}</DialogTitle>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs md:text-sm text-white/60">
               <span>By {selectedPost?.author}</span>
               <span className="hidden sm:inline">•</span>
-              <span>{selectedPost ? new Date(selectedPost.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : ""}</span>
+              <span>
+                {selectedPost
+                  ? new Date(selectedPost.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+                  : ""}
+              </span>
             </div>
           </DialogHeader>
 
           {selectedPost && (
             <div className="space-y-4 md:space-y-6">
-              {/* Featured Image */}
               <div className="relative w-full h-48 sm:h-64 md:h-96 rounded-xl overflow-hidden shadow-2xl">
-                {selectedPost.image_url ? (
-                  <img
-                    src={`${process.env.NEXT_PUBLIC_API_URL}${selectedPost.image_url}`}
+                {selectedPost.video_url ? (
+                  <>
+                    <video
+                      className="w-full h-full object-cover"
+                      controls
+                      muted
+                      playsInline
+                      preload="metadata"
+                      poster={selectedPost.thumbnail ? getImageUrl(selectedPost.thumbnail) : "/placeholder.svg"}
+                    >
+                      <source src={getVideoUrl(selectedPost.video_url)} type="video/mp4" />
+                      Your browser does not support video playback.
+                    </video>
+                  </>
+                ) : selectedPost.image ? (
+                  <Image
+                    src={getImageUrl(selectedPost.image)}
                     alt={selectedPost.title}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src = "/placeholder.svg"
-                    }}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 768px) 100vw, 33vw"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-6xl md:text-8xl bg-gradient-to-br from-[#d4a24c]/20 to-[#d4a24c]/10">🍽️</div>
+                  <div className="w-full h-full flex items-center justify-center text-4xl md:text-6xl bg-gradient-to-br from-[#d4a24c]/20 to-[#d4a24c]/10">
+                    🍽️
+                  </div>
                 )}
               </div>
 
               {/* Excerpt */}
               <div className="bg-white/5 rounded-lg p-4 md:p-6 border border-white/10">
-                <p className="text-lg md:text-xl text-white/90 leading-relaxed italic text-center">
-                  {selectedPost.excerpt}
-                </p>
+                <p className="text-lg md:text-xl text-white/90 leading-relaxed italic text-center">{selectedPost.excerpt}</p>
               </div>
 
               {/* Full Content */}
               <div className="prose prose-lg prose-invert max-w-none">
-                <div className="text-white/80 leading-relaxed whitespace-pre-wrap text-justify text-sm md:text-base">
-                  {selectedPost.content}
-                </div>
+                <div className="text-white/80 leading-relaxed whitespace-pre-wrap text-justify text-sm md:text-base">{selectedPost.content}</div>
               </div>
             </div>
           )}

@@ -1,10 +1,21 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const response = await fetch(`${API_URL}/api/blog-posts`, {
+    const { searchParams } = new URL(req.url)
+
+    const draft = searchParams.get("draft")
+
+    const backendUrl = new URL(`${API_URL}/api/blog-posts`)
+
+    if (draft !== null) {
+      backendUrl.searchParams.set("draft", draft)
+    }
+
+    const response = await fetch(backendUrl.toString(), {
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json", 
       },
     })
 
