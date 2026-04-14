@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { ChevronRight, Users, Calendar, Clock, Mail, Phone, User, MessageSquare, AlertCircle } from "lucide-react"
 import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
@@ -13,6 +13,7 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import LumeLoaderMinimal from "@/components/oppa-loader"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -124,7 +125,7 @@ export default function ReservationsPage() {
     date: "",
     time: "",
     guests: "2",
-    package: "Custom",
+    package: "",
     dining_preference: "Main Dining",
     name: "",
     email: "",
@@ -394,6 +395,8 @@ export default function ReservationsPage() {
 
   const isStepValid = () => {
     switch (step) {
+      case 1: // Package Details
+        return selectedPackage !== null
       case 2: // Reservation Details
         return formData.date.trim() !== "" && formData.time.trim() !== "" && formData.guests.trim() !== "" && formData.dining_preference.trim() !== ""
       case 3: // Guest Information
@@ -416,8 +419,6 @@ export default function ReservationsPage() {
         if (!formData.payment_reference) return false
         if (!formData.payment_receipt) return false
         return true
-      case 1: // Package Details
-        return selectedPackage !== null
       default:
         return false
     }
@@ -522,7 +523,7 @@ export default function ReservationsPage() {
           date: "",
           time: "",
           guests: "2",
-          package: "",
+          package: selectedPackage || "",
           dining_preference: "Main Dining",
           special_requests: "",
           occasion: "",
@@ -559,8 +560,46 @@ export default function ReservationsPage() {
     }
   }, [receiptPreview])
 
+  const stars = useMemo(() => {
+    return Array.from({ length: 140 }).map((_, i) => ({
+      id: i,
+      cx: Math.random() * 100,
+      cy: Math.random() * 100,
+      r: Math.random() * 3 + 0.8,
+      duration: Math.random() * 4 + 2,
+      delay: Math.random() * 5,
+      opacity: Math.random() * 0.4 + 0.3,
+    }))
+  }, [])
+
+  if (loading) return <LumeLoaderMinimal />
+
   return (
-    <div className="min-h-screen py-24 bg-[#0b1d26] text-white">
+    <div className="relative py-28 bg-[#0b1d26] min-h-screen overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
+        {/* Glow layer */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(212,162,76,0.08),transparent_40%)]" />
+        <svg width="100%" height="100%">
+          {stars.map((star) => (
+            <circle
+              key={star.id}
+              cx={`${star.cx}%`}
+              cy={`${star.cy}%`}
+              r={star.r}
+              fill="hsl(40, 80%, 75%)"
+              className="animate-twinkle"
+              style={{
+                animationDuration: `${star.duration}s`,
+                animationDelay: `${star.delay}s`,
+                opacity: star.opacity,
+                filter: star.r > 2.5 ? "drop-shadow(0 0 6px rgba(212,162,76,0.4))" : "none",
+              }}
+            />
+          ))}
+        </svg>
+      </div>
+
       {/* Authentication Loading State */}
       {isAuthenticated === null && (
         <div className="fixed inset-0 bg-[#0b1d26] flex items-center justify-center z-50">
@@ -584,12 +623,6 @@ export default function ReservationsPage() {
       {/* Main Content - Only show when authenticated */}
       {isAuthenticated === true && (
         <>
-          {/* Background decoration */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-            <div className="absolute top-0 left-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#d4a24c]/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          </div>
-
           <div className="max-w-2xl mx-auto relative z-10">
             {/* Header */}
             <div className="flex flex-col items-center">
@@ -859,6 +892,7 @@ export default function ReservationsPage() {
                               required
                             >
                               {/* REGULAR SEATING (Standard Allocation) */}
+                              <option value="" disabled>--REGULAR SEATING--</option>
                               <optgroup label="Standard Seating (Auto-Assigned)">
                                 {[
                                   "Main Dining",
@@ -873,6 +907,7 @@ export default function ReservationsPage() {
                               </optgroup>
 
                               {/* VIP ROOMS (Priority / Private Allocation) */}
+                              <option value="" disabled>--VIP ROOMS--</option>
                               <optgroup label="VIP Private Rooms">
                                 {[
                                   "The Loft",
@@ -1005,7 +1040,15 @@ export default function ReservationsPage() {
                             required
                             className="w-full pl-12 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg appearance-none text-white"
                           >
-                            {["Celebration", "Romantic", "Professional", "Night Life", "Casual", "Other"].map((option) => (
+                            <option value="" disabled>Select Occasion</option>
+                            {[
+                              "Celebration",
+                              "Romantic",
+                              "Professional",
+                              "Night Life",
+                              "Casual",
+                              "Other"
+                            ].map((option) => (
                               <option key={option} value={option} className="bg-blue-250 text-gray-900">
                                 {option}
                               </option>

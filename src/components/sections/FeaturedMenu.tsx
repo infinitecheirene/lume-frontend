@@ -6,7 +6,6 @@ import { Playfair_Display } from "next/font/google"
 import { Coffee, Star, X } from "lucide-react"
 import Image from "next/image"
 import { toast } from "@/hooks/use-toast"
-import LumeLoaderMinimal from "@/components/oppa-loader"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useCartStore } from "@/store/cartStore"
@@ -27,13 +26,22 @@ interface Product {
   best_seller?: boolean
 }
 
-export default function BestSellerPage() {
+export default function FeaturedMenu() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
-
   const { addItem } = useCartStore()
+
+  const ITEMS_PER_PAGE = 4
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE)
+
+  const paginatedProducts = products.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  )
 
   const fetchBestSellers = async () => {
     try {
@@ -86,8 +94,6 @@ export default function BestSellerPage() {
     return `${base}/images/products/${imagePath}`
   }
 
-  if (loading) return <LumeLoaderMinimal />
-
   return (
     <section className="relative py-24 bg-gradient-to-br from-[#0c222b] via-[#0f2833] to-[#1a3441] text-white overflow-hidden">
       {/* Background decoration */}
@@ -115,79 +121,154 @@ export default function BestSellerPage() {
 
         </motion.div>
 
-        {/* ✅ CONTENT */}
-        {products.length > 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="grid md:grid-cols-2 gap-x-16 gap-y-6"
-          >
-            {products.map((item) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="group cursor-pointer"
-                onClick={() => handleProductClick(item)}
+        {/* LOADING STATE */}
+        {loading && (
+          <div className="grid md:grid-cols-2 gap-x-16 gap-y-6 animate-pulse">
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="flex gap-5 p-5 rounded-2xl bg-white/5 border border-white/10"
               >
-                <div
-                  className="group cursor-pointer rounded-2xl bg-white/5 border border-white/10
-                            hover:border-[#d4a24c]/30 hover:bg-white/10 transition-all duration-300
-                            overflow-hidden"
+                {/* image skeleton */}
+                <div className="w-24 h-24 rounded-xl bg-white/10" />
+
+                {/* content skeleton */}
+                <div className="flex-1 space-y-3">
+                  <div className="flex justify-between">
+                    <div className="h-4 w-1/2 bg-white/10 rounded" />
+                    <div className="h-4 w-10 bg-white/10 rounded" />
+                  </div>
+
+                  <div className="h-3 w-full bg-white/10 rounded" />
+                  <div className="h-3 w-3/4 bg-white/10 rounded" />
+
+                  <div className="h-5 w-24 bg-white/10 rounded-full mt-4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* CONTENT */}
+        {!loading && products.length > 0 && (
+          <>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="grid md:grid-cols-2 gap-x-16 gap-y-6"
+            >
+              {paginatedProducts.map((item) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="group cursor-pointer"
+                  onClick={() => handleProductClick(item)}
                 >
                   <div
-                    className="p-5 flex gap-5"
-                    onClick={() => handleProductClick(item)}
+                    className="group cursor-pointer rounded-2xl bg-white/5 border border-white/10
+                            hover:border-[#d4a24c]/30 hover:bg-white/10 transition-all duration-300
+                            overflow-hidden"
                   >
-                    {/* IMAGE */}
-                    <div className="relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden">
-                      <Image
-                        src={getImageUrl(item.image)}
-                        alt={item.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-
-                    {/* CONTENT */}
-                    <div className="flex-1 flex flex-col justify-between">
-
-                      {/* TITLE */}
-                      <div>
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex justify-center items-center gap-2">
-                          <h3 className={`${playfair.className} text-lg font-semibold group-hover:text-[#d4a24c] transition-colors`}>
-                            {item.name}
-                          </h3>
-                          <Star className="w-4 h-4 text-[#d4a24c]" />
-                          </div>
-
-                          <span className="text-[#d4a24c] text-sm font-bold">
-                            ₱{item.price}
-                          </span>
-                        </div>
-
-                        <p className="text-sm text-white/60 mt-2 line-clamp-2">
-                          {item.description}
-                        </p>
+                    <div
+                      className="p-5 flex gap-5"
+                      onClick={() => handleProductClick(item)}
+                    >
+                      {/* IMAGE */}
+                      <div className="relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden">
+                        <Image
+                          src={getImageUrl(item.image)}
+                          alt={item.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
                       </div>
 
-                      {/* META */}
-                      <div className="flex items-center justify-between mt-4">
-                        <span className="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-[#d4a24c]/10 text-[#d4a24c] border border-[#d4a24c]/20">
-                          {item.category}
-                        </span>
+                      {/* CONTENT */}
+                      <div className="flex-1 flex flex-col justify-between">
+
+                        {/* TITLE */}
+                        <div>
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                              <h3 className={`${playfair.className} text-lg font-semibold group-hover:text-[#d4a24c] transition-colors`}>
+                                {item.name}
+                              </h3>
+
+                              {item.best_seller === true && (
+                                <Star className="w-4 h-4 text-[#d4a24c]" />
+                              )}
+                            </div>
+
+                            <span className="text-[#d4a24c] text-sm font-bold">
+                              ₱{item.price}
+                            </span>
+                          </div>
+
+                          <p className="text-sm text-white/60 mt-2 line-clamp-2">
+                            {item.description}
+                          </p>
+                        </div>
+
+                        {/* META */}
+                        <div className="flex items-center justify-between mt-4">
+                          <span className="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-[#d4a24c]/10 text-[#d4a24c] border border-[#d4a24c]/20">
+                            {item.category}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-              </motion.div>
-            ))}
-          </motion.div>
-        ) : (
-          /* ✅ EMPTY STATE */
+                </motion.div>
+              ))}
+            </motion.div>
+
+            <div className="flex flex-col gap-3 items-center justify-center">
+              {/* PAGINATION */}
+              <div className="text-center flex items-center justify-center">
+                {products.length > ITEMS_PER_PAGE && (
+                  <div className="flex items-center justify-center gap-4 mt-10">
+
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="px-4 py-2 rounded-lg bg-white/10 border border-white/10 disabled:opacity-40"
+                    >
+                      Prev
+                    </button>
+
+                    <span className="text-sm text-white/60">
+                      Page {currentPage} of {totalPages}
+                    </span>
+
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="px-4 py-2 rounded-lg bg-white/10 border border-white/10 disabled:opacity-40"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* CTA */}
+              <div className="text-center flex items-center justify-center">
+                <button
+                  onClick={() => window.location.href = "/menu"}
+                  className="px-8 py-3 rounded-full bg-[#e5a834]/80 border border-white/20 hover:bg-[#d4a24c]/40 transition"
+                >
+                  View Full Menu
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Empty */}
+        {!loading && products.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
 
             <div className="w-16 h-16 rounded-full bg-[#d4a24c]/10 flex items-center justify-center mb-6">
@@ -225,22 +306,21 @@ export default function BestSellerPage() {
             {/* CONTENT */}
             <div className="p-6 space-y-5">
 
-              {/* TITLE + PRICE */}
+              {/* TITLE + PRICE + CATEGORY */}
               <div className="flex items-start justify-between">
-                <DialogTitle className={`${playfair.className} text-2xl font-bold text-[#d4a24c]`}>
-                  {selectedProduct?.name}
+                <DialogTitle className="text-2xl font-bold text-[#d4a24c] flex justify-center items-center">
+                  <span className={`${playfair.className}`}>{selectedProduct?.name}</span>
+
+                  {/* CATEGORY */}
+                  <span className="inline-flex items-center gap-2 text-sm px-3 py-1 mx-2 rounded-full bg-white/5 border border-white/10 text-white/70">
+                    {selectedProduct?.category}
+                  </span>
                 </DialogTitle>
 
                 <div className="text-xl font-bold">
                   ₱{selectedProduct?.price}
                 </div>
               </div>
-
-              {/* CATEGORY */}
-              <span className="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/70">
-                <Coffee className="w-3 h-3" />
-                {selectedProduct?.category}
-              </span>
 
               {/* DESCRIPTION */}
               <p className="text-white/70 text-sm leading-relaxed">
@@ -250,7 +330,7 @@ export default function BestSellerPage() {
               {/* ACTION */}
               <Button
                 onClick={() => {
-                  handleAddToCart(selectedProduct!)
+                  selectedProduct && handleAddToCart(selectedProduct)
                   setDialogOpen(false)
                 }}
                 className="w-full bg-[#d4a24c] hover:bg-[#b8943a] text-black font-semibold py-3 rounded-xl"

@@ -26,11 +26,12 @@ interface Product {
   image: string
   category: string
   best_seller?: boolean
+  set?: boolean
   created_at: string
   updated_at: string
 }
 
-const categories = ["Signature", "Classic", "Drinks", "Coffee", "Refreshers", "Food"]
+const categories = ["Signature", "Classics", "Drinks", "Coffee", "Refreshers", "Food", "Desserts"]
 
 const getImageUrl = (imagePath: string) => {
   if (!imagePath) return "/placeholder-food.jpg"
@@ -62,6 +63,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     price: "",
     category: "",
     best_seller: false,
+    set: false,
   })
 
   // --- Effects ---
@@ -91,6 +93,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           price: data.price?.toString() || "",
           category: data.category || "",
           best_seller: data.best_seller || false,
+          set: data.set || false,
         })
       } catch (error) {
         console.error(error)
@@ -253,8 +256,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
               {/* Product Form */}
               <Card className="gap-0 p-0 bg-white/70 backdrop-blur-sm shadow-xl border-yellow-100">
-                <CardHeader className="bg-gradient-to-r from-[#162A3A] to-[#1f3a4d] text-white rounded-t-lg">
-                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl font-semibold">
+                <CardHeader className="bg-gradient-to-r from-[#162A3A] to-[#1f3a4d] text-white rounded-t-lg py-3">
+                  <CardTitle className="flex items-center gap-2 text-xl font-semibold">
                     <Star className="w-5 h-5 text-yellow-400" />
                     Product Details
                   </CardTitle>
@@ -444,7 +447,7 @@ function ProductForm({
 
           <div>
             <Label htmlFor="ingredients" className="text-gray-700 font-medium">
-              Ingredients * 
+              Ingredients *
               <span className="text-gray-400">(use | separator)</span>
             </Label>
             <Textarea
@@ -460,13 +463,24 @@ function ProductForm({
             />
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border border-yellow-600 p-4 bg-white/40">
-            <div className="space-y-1">
-              <Label className="text-gray-700 font-bold text-md">Bestseller</Label>
-              <p className="text-sm text-gray-600">Mark this product as a bestseller item.</p>
+          <div className="flex gap-3">
+            <div className="flex items-center justify-between rounded-lg border border-yellow-600 p-4 bg-white/40">
+              <div className="space-y-1">
+                <Label className="text-gray-700 font-bold text-md">Bestseller</Label>
+                <p className="text-sm text-gray-600">Mark this product as a Best Seller Item</p>
+              </div>
+
+              <Switch value={product.best_seller} checked={formData.best_seller} onCheckedChange={(checked) => handleSwitchChange("best_seller", checked)} disabled={saving} />
             </div>
 
-            <Switch value={product.best_seller} checked={formData.best_seller} onCheckedChange={(checked) => handleSwitchChange("best_seller", checked)} disabled={saving} />
+            <div className="flex items-center justify-between rounded-lg border border-yellow-600 p-4 bg-white/40">
+              <div className="space-y-1">
+                <Label className="text-gray-700 font-bold text-md">Set</Label>
+                <p className="text-sm text-gray-600">Mark this product as a Set Item</p>
+              </div>
+
+              <Switch value={product.set} checked={formData.set} onCheckedChange={(checked) => handleSwitchChange("set", checked)} disabled={saving} />
+            </div>
           </div>
         </div>
       </div>

@@ -64,11 +64,12 @@ interface Product {
   image: string
   category: string
   best_seller?: boolean
+  set?: boolean
   created_at: string
   updated_at: string
 }
 
-const categories = ["Signature", "Classic", "Drinks", "Coffee", "Refreshers", "Food"]
+const categories = ["Signature", "Classics", "Drinks", "Coffee", "Refreshers", "Food", "Desserts"]
 
 const getImageUrl = (imagePath: string): string => {
   if (!imagePath) {
@@ -117,10 +118,11 @@ export default function ProductsAdminPage() {
   const [newFormData, setNewFormData] = useState({
     name: "",
     description: "",
-    ingredeints: "",
+    ingredients: "",
     price: "",
     category: "",
     best_seller: false,
+    set: false,
   })
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -166,10 +168,11 @@ export default function ProductsAdminPage() {
       const formData = new FormData()
       formData.append("name", newFormData.name)
       formData.append("description", newFormData.description)
-      formData.append("ingredients", newFormData.ingredeints)
+      formData.append("ingredients", newFormData.ingredients)
       formData.append("price", newFormData.price)
       formData.append("category", newFormData.category)
       formData.append("best_seller", newFormData.best_seller ? "1" : "0")
+      formData.append("set", newFormData.set ? "1" : "0")
 
       if (selectedImage) {
         formData.append("image", selectedImage)
@@ -213,10 +216,11 @@ export default function ProductsAdminPage() {
     setNewFormData({
       name: "",
       description: "",
-      ingredeints: "",
+      ingredients: "",
       price: "",
       category: "",
       best_seller: false,
+      set: false,
     })
     setSelectedImage(null)
     setImagePreview(null)
@@ -279,19 +283,6 @@ export default function ProductsAdminPage() {
   useEffect(() => {
     fetchProducts()
   }, [])
-
-  // Filtered products based on search and category
-  const filteredProducts = useMemo(() => {
-    return products.filter((item) => {
-      const matchesSearch =
-        item.name.toLowerCase().includes((globalFilter || "").toLowerCase())
-
-      const matchesCategory =
-        selectedCategory === "all" || item.category === selectedCategory
-
-      return matchesSearch && matchesCategory
-    })
-  }, [products, globalFilter, selectedCategory])
 
   // Table columns
   const columns: ColumnDef<Product>[] = [
@@ -396,6 +387,8 @@ export default function ProductsAdminPage() {
         >
           Category <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
+
+
       ),
       cell: ({ row }) => (
         <Badge variant="outline" className="text-xs hidden sm:inline-flex">
@@ -455,7 +448,7 @@ export default function ProductsAdminPage() {
                 </Button>
               </DialogTrigger>
 
-              <DialogContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-6">
+              <DialogContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader className="bg-[#162A3A] text-white p-4 sm:p-6 -m-4 sm:-m-6 mb-4 rounded-t-lg">
                   <DialogTitle className="text-xl sm:text-2xl font-bold">Product Details</DialogTitle>
                 </DialogHeader>
@@ -491,6 +484,14 @@ export default function ProductsAdminPage() {
                         <h2 className="text-xl sm:text-2xl font-semibold text-white leading-tight">
                           {selectedProduct.name}
                         </h2>
+                      </div>
+
+                      <div className="flex justify-end items-end m-5">
+                        {Boolean(selectedProduct.set) && (
+                          <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                            Set
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -610,11 +611,8 @@ export default function ProductsAdminPage() {
   ]
 
   const table = useReactTable({
-    data: filteredProducts,
-    columns: columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    data: products,
+    columns,
     state: {
       columnFilters,
       globalFilter,
@@ -623,6 +621,10 @@ export default function ProductsAdminPage() {
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
     onRowSelectionChange: setRowSelection,
+
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   })
 
   // Calculate pagination
@@ -636,7 +638,7 @@ export default function ProductsAdminPage() {
   // Reset to page 1 when items per page changes or filter changes
   useEffect(() => {
     setCurrentPage(1)
-  }, [itemsPerPage, globalFilter])
+  }, [itemsPerPage, globalFilter, selectedCategory])
 
   const handleItemsPerPageChange = (value: string) => {
     setItemsPerPage(value === "all" ? -1 : parseInt(value))
@@ -704,8 +706,9 @@ export default function ProductsAdminPage() {
                 <CardHeader className="p-3 bg-[#162A3A] text-white rounded-t-lg">
                   <div className="flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row gap-3 items-center sm:items-center justify-between">
-                      {/* Search Bar */}
                       <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+
+                        {/* Search Bar */}
                         <div className="relative flex-1 max-w-sm">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-950" />
                           <Input
@@ -715,25 +718,32 @@ export default function ProductsAdminPage() {
                             className="pl-9 pr-3 py-2 w-full bg-blue-100 border-blue-950 text-gray-950 placeholder:text-gray-950 focus:bg-blue-50 focus:border-blue-500 transition-all duration-200"
                           />
                         </div>
-                      </div>
 
-                      {/* Category Filter */}
-                      <div className="flex items-center gap-3 w-full sm:w-auto">
-                        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                          <SelectTrigger className="w-[180px] bg-blue-100 border-blue-950 text-gray-950">
-                            <SelectValue placeholder="Filter category" />
-                          </SelectTrigger>
+                        {/* Category Filter */}
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                          <Select
+                            value={selectedCategory}
+                            onValueChange={(value) => {
+                              setSelectedCategory(value)
 
-                          <SelectContent>
-                            <SelectItem value="all">All Categories</SelectItem>
+                              table.getColumn("category")?.setFilterValue(value)
+                            }}
+                          >
+                            <SelectTrigger className="w-[180px] bg-blue-100 border-blue-950 text-gray-950">
+                              <SelectValue placeholder="Filter category" />
+                            </SelectTrigger>
 
-                            {categories.map((category) => (
-                              <SelectItem key={category} value={category}>
-                                {category}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                            <SelectContent>
+                              <SelectItem value="all">All Categories</SelectItem>
+
+                              {categories.map((category) => (
+                                <SelectItem key={category} value={category}>
+                                  {category}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
 
                       {/* Add Product Button */}
@@ -780,10 +790,26 @@ export default function ProductsAdminPage() {
                                   name="description"
                                   value={newFormData.description}
                                   onChange={handleNewFormChange}
-                                  required
                                   rows={3}
                                   disabled={isCreating}
                                   placeholder="Describe the dish, ingredients, and preparation..."
+                                  className="mt-1 resize-none border-blue-950 focus:border-blue-700 focus:ring-blue-800"
+                                />
+                              </div>
+
+                              <div>
+                                <Label htmlFor="ingredients" className="text-gray-700 font-bold text-md">
+                                  Ingredients
+                                  <span className="text-gray-400">(use | separator)</span>
+                                </Label>
+                                <Textarea
+                                  id="ingredients"
+                                  name="ingredients"
+                                  value={newFormData.ingredients}
+                                  onChange={handleNewFormChange}
+                                  rows={3}
+                                  disabled={isCreating}
+                                  placeholder="Enter ingredients (use | separator)"
                                   className="mt-1 resize-none border-blue-950 focus:border-blue-700 focus:ring-blue-800"
                                 />
                               </div>
@@ -827,22 +853,42 @@ export default function ProductsAdminPage() {
                                 </div>
                               </div>
 
-                              <div className="flex items-center justify-between rounded-lg border border-blue-950 p-4 bg-white/40">
-                                <div className="space-y-1">
-                                  <Label className="text-gray-700 font-bold text-md">Bestseller</Label>
-                                  <p className="text-sm text-gray-600">Mark this product as a bestseller item.</p>
+                              <div className="flex gap-3">
+                                <div className="flex items-center justify-between rounded-lg border border-blue-950 p-4 bg-white/40">
+                                  <div className="space-y-1">
+                                    <Label className="text-gray-700 font-bold text-md">Best Seller</Label>
+                                    <p className="text-sm text-gray-600">Mark this product as a Best Seller Item</p>
+                                  </div>
+
+                                  <Switch
+                                    checked={newFormData.best_seller}
+                                    onCheckedChange={(checked) =>
+                                      setNewFormData((prev) => ({
+                                        ...prev,
+                                        best_seller: checked,
+                                      }))
+                                    }
+                                    disabled={isCreating}
+                                  />
                                 </div>
 
-                                <Switch
-                                  checked={newFormData.best_seller}
-                                  onCheckedChange={(checked) =>
-                                    setNewFormData((prev) => ({
-                                      ...prev,
-                                      best_seller: checked,
-                                    }))
-                                  }
-                                  disabled={isCreating}
-                                />
+                                <div className="flex items-center justify-between rounded-lg border border-blue-950 p-4 bg-white/40">
+                                  <div className="space-y-1">
+                                    <Label className="text-gray-700 font-bold text-md">Set</Label>
+                                    <p className="text-sm text-gray-600">Mark this product as a Set Item</p>
+                                  </div>
+
+                                  <Switch
+                                    checked={newFormData.set}
+                                    onCheckedChange={(checked) =>
+                                      setNewFormData((prev) => ({
+                                        ...prev,
+                                        set: checked,
+                                      }))
+                                    }
+                                    disabled={isCreating}
+                                  />
+                                </div>
                               </div>
 
                               <div>
