@@ -94,6 +94,15 @@ async function sendAdminNotification(reservationData: any) {
                   <span class="info-value">₱${reservationData.reservation_fee || "0"}</span>
                 </div>
                 <div class="info-row">
+                  <span class="info-label">Service Charge (10%):</span>
+                  <span class="info-value">₱${Number(reservationData.service_charge).toFixed(2)}</span>
+                </div>
+
+                <div class="info-row">
+                  <span class="info-label">Total Bill:</span>
+                  <span class="info-value">₱${Number(reservationData.total_bill).toFixed(2)}</span>
+                </div>
+                <div class="info-row">
                   <span class="info-label">Payment Method:</span>
                   <span class="info-value">${reservationData.payment_method || "Not provided"}</span>
                 </div>
@@ -201,6 +210,15 @@ async function sendCustomerConfirmation(reservationData: any) {
                 <div class="info-row">
                   <span class="info-label">Reservation Fee:</span>
                   <span class="info-value">₦${reservationData.reservation_fee || "0"}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Service Charge (10%):</span>
+                  <span class="info-value">₱${Number(reservationData.service_charge).toFixed(2)}</span>
+                </div>
+
+                <div class="info-row">
+                  <span class="info-label">Total Bill:</span>
+                  <span class="info-value">₱${Number(reservationData.total_bill).toFixed(2)}</span>
                 </div>
                 <div class="info-row">
                   <span class="info-label">Payment Method:</span>
