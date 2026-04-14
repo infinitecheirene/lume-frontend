@@ -6,13 +6,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ChevronLeft, ChevronRight, Plus, Loader2, MoreHorizontal, CircleX } from "lucide-react"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import Image from "next/image"
 import { Playfair_Display } from "next/font/google"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/hooks/use-toast"
 
@@ -21,7 +20,6 @@ const playfair = Playfair_Display({
   weight: ["400", "600", "700"],
 })
 
-// ─── Operating Hours ───────────────────────────────────────────────────
 function getDayHours(dayOfWeek: number): { opening: number, closing: number, isClosed: boolean } {
   // dayOfWeek: 0=Sun, 1=Mon, ..., 6=Sat
   switch (dayOfWeek) {
@@ -56,8 +54,8 @@ interface Reservation {
   reservation_status: "pending" | "confirmed" | "cancelled" | "completed" | "noshow"
   created_at: string
   reservation_fee_paid?: number
-  dining_preference: "Main Dining" | "Private Tatami Room" | "Chef's Counter" | "Window Seat" | "Celebration Area" | "Family Seating" | "Group Dining"
-  occasion?: "Casual Dinner" | "Birthday" | "Business Meeting" | "Anniversary" | "Private Event" | "Other"
+  dining_preference: string
+  occasion?: string
   reservation_fee?: number
   payment_status?: "pending" | "paid" | "failed"
   payment_method?: string
@@ -173,6 +171,9 @@ function isSameMonth(dateStr: string, currentDate: Date) {
 
 function getReservationColor(reservation: Reservation) {
   if (reservation.is_walkin) return "bg-blue-100 text-blue-800 hover:bg-blue-200"
+  if (reservation.reservation_status === "confirmed") return "bg-green-100 text-green-800 hover:bg-green-200"
+  if (reservation.reservation_status === "pending") return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+  if (reservation.reservation_status === "cancelled") return "bg-red-100 text-red-800 hover:bg-red-200"
   return "bg-green-100 text-green-800 hover:bg-green-200"
 }
 
@@ -726,14 +727,14 @@ export default function ReservationsAdmin() {
                   {/* Time rows */}
                   {Array.from({ length: MAX_HOUR - MIN_HOUR + 1 }, (_, i) => MIN_HOUR + i).map((hour) => (
                     <div key={hour} className="grid grid-cols-8 gap-1 border-t border-gray-200">
-                      <div className="p-2 text-right font-semibold text-xs text-gray-600 border-r border-gray-200">
+                      <div className="flex items-center justify-center p-2 text-center font-semibold text-sm text-gray-600 border-r border-gray-200">
                         {formatHour(hour)}
                       </div>
                       {getWeekDates(currentDate).map((date, dayIndex) => {
                         const dayHours = getDayHours(date.getDay())
                         if (dayHours.isClosed) {
                           return (
-                            <div key={dayIndex} className="min-h-[60px] p-1 border-r border-gray-200 bg-gray-100 flex items-center justify-center">
+                            <div key={dayIndex} className="border-r border-gray-200 bg-gray-100 flex items-center justify-center">
                               <span className="text-xs text-gray-500">Closed</span>
                             </div>
                           )
@@ -755,9 +756,13 @@ export default function ReservationsAdmin() {
                                       onClick={() => { setViewingReservation(reservation); setOpenView(true) }}
                                     >
                                       <div className="font-semibold truncate">{reservation.name}</div>
-                                      <div className="text-xs">{reservation.guests} guests</div>
                                     </div>
                                   ))}
+                                  {slotReservations.length > 1 && (
+                                    <div className="text-xs text-gray-500">
+                                      +{slotReservations.length - 2} more
+                                    </div>
+                                  )}
                                 </div>
                               )
                             })}
@@ -780,7 +785,8 @@ export default function ReservationsAdmin() {
                           <div className="flex flex-wrap items-center gap-2">
 
                             {/* Status badge */}
-                            <span className={`px-3 py-1 rounded-lg text-sm font-semibold ${viewingReservation.reservation_status === "confirmed"
+                            <span className={`px-3 py-1 rounded-lg text-sm font-semibold 
+                              ${viewingReservation.reservation_status === "confirmed"
                               ? "bg-green-100 text-green-800"
                               : viewingReservation.reservation_status === "pending"
                                 ? "bg-yellow-100 text-yellow-800"
@@ -1106,14 +1112,14 @@ export default function ReservationsAdmin() {
                   </DialogHeader>
                   <div className="space-y-5 pt-4">
                     <div>
-                      <p className="text-lg font-semibold text-gray-900">Guest: 
+                      <p className="text-lg font-semibold text-gray-900">Guest:
                         <span className="text-gray-700 underline"> {statusDialogReservation?.name || "-"}</span>
                       </p>
                     </div>
                     <div>
                       <span className="text-lg font-semibold text-gray-900">Update Status</span>
                       <Select value={statusUpdate} onValueChange={(value: Reservation["reservation_status"]) => setStatusUpdate(value)}>
-                        <SelectTrigger className="bg-gray-100 border-gray-600 text-gray-800"><SelectValue placeholder="Select Status" /></SelectTrigger>
+                        <SelectTrigger className="bg-gray-100 border-gray-600 text-gray-800"><SelectValue placeholder={statusDialogReservation?.reservation_status || "Select Status" } /></SelectTrigger>
                         <SelectContent className="bg-gray-100 text-gray-800">
                           <SelectItem value="confirmed">Confirmed</SelectItem>
                           <SelectItem value="cancelled">Cancelled</SelectItem>
@@ -1456,9 +1462,12 @@ export default function ReservationsAdmin() {
                                       <div className="space-y-1 flex-1 overflow-hidden">
                                         {dayReservations.slice(0, 2).map((reservation) => (
                                           <div key={reservation.id} className="text-xs truncate">
-                                            <span className={`px-1 py-0.5 rounded ${getReservationColor(reservation)}`}>
+                                            <button
+                                              className={`px-1 py-0.5 rounded ${getReservationColor(reservation)}`}
+                                              onClick={() => { setViewingReservation(reservation); setOpenView(true) }}
+                                            >
                                               {reservation.time.substring(0, 5)} • {reservation.name}
-                                            </span>
+                                            </button>
                                           </div>
                                         ))}
 
