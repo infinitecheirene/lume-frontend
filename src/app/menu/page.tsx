@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
 import { toast } from "@/hooks/use-toast"
@@ -25,13 +26,15 @@ interface Product {
   price: number
   image?: string | null
   best_seller?: boolean
+  set?: boolean
 }
 
 export default function MenuPage() {
+  const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [activeMainCategory, setActiveMainCategory] =
-    useState<"Signature" | "Classic" | "Drinks" | "Coffee" | "Refreshers" | "Food">("Signature")
+    useState<"Signature" | "Classics" | "Drinks" | "Coffee" | "Refreshers" | "Food" | "Drinks">("Signature")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
@@ -39,11 +42,12 @@ export default function MenuPage() {
 
   const mainCategoryMap = {
     Signature: ["Signature"],
-    Classic: ["Classic"],
+    Classics: ["Classics"],
     Drinks: ["Drinks"],
     Coffee: ["Coffee"],
     Refreshers: ["Refreshers"],
     Food: ["Food"],
+    Desserts: ["Desserts"],
   }
 
   const fetchProducts = async () => {
@@ -97,6 +101,19 @@ export default function MenuPage() {
   }, {} as Record<string, Product[]>)
 
   const handleAddToCart = (item: Product) => {
+    const isLoggedIn = false
+
+    if (!isLoggedIn) {
+      toast({
+        variant: "destructive",
+        title: "Login required",
+        description: "You need to log in before adding items to your cart.",
+      })
+
+      router.push("/login")
+      return
+    }
+
     addItem(item)
 
     toast({
@@ -236,6 +253,12 @@ export default function MenuPage() {
                                 Best Seller
                               </span>
                             )}
+
+                            {Boolean(item.set) && (
+                              <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                                Set
+                              </span>
+                            )}
                           </div>
 
                           <p className="text-sm text-white/60 mt-2 line-clamp-2">
@@ -265,15 +288,21 @@ export default function MenuPage() {
 
                     {/* INGREDIENTS */}
                     <div className="px-5 pb-5 pt-3 border-t border-white/10">
-                      <div className="flex flex-wrap gap-2">
-                        {item.ingredients.split("|").slice(0, 5).map((ing, i) => (
-                          <span
-                            key={i}
-                            className="text-[11px] px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/60"
-                          >
-                            {ing.trim()}
-                          </span>
-                        ))}
+                      <div className="flex gap-2">
+                        {item.ingredients && (
+                          <div className="px-5 py-3">
+                            <div className="flex flex-wrap gap-2">
+                              {item.ingredients.split("|").map((ing, i) => (
+                                <span
+                                  key={i}
+                                  className="text-[11px] px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/60"
+                                >
+                                  {ing.trim()}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -351,16 +380,17 @@ export default function MenuPage() {
                 <p className="text-xs uppercase tracking-widest text-white/40 mb-2">
                   Ingredients
                 </p>
-
-                <div className="flex flex-wrap gap-2">
-                  {selectedProduct?.ingredients.split("|").map((ing, i) => (
-                    <span
-                      key={i}
-                      className="text-xs px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/70"
-                    >
-                      {ing.trim()}
-                    </span>
-                  ))}
+                <div className="px-5 py-3">
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProduct?.ingredients?.split("|").map((ing, i) => (
+                      <span
+                        key={i}
+                        className="text-[11px] px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/60"
+                      >
+                        {ing.trim()}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -384,19 +414,18 @@ export default function MenuPage() {
 
       <style>
         {`
-          
-@keyframes twinkle {
-  0%, 100% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 0.9;
-  }
-}
+          @keyframes twinkle {
+            0%, 100% {
+              opacity: 0.3;
+            }
+            50% {
+              opacity: 0.9;
+            }
+          }
 
-.animate-twinkle {
-  animation: twinkle ease-in-out infinite;
-}
+          .animate-twinkle {
+            animation: twinkle ease-in-out infinite;
+          }
         `}
       </style>
     </section>
