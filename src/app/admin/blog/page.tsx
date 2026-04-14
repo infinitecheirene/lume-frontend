@@ -4,14 +4,14 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
-import { Trash2, Edit2, Plus, X, Search, Underline, Loader2 } from "lucide-react"
+import { Trash2, Edit2, Plus, Search, Underline, Loader2 } from "lucide-react"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,8 +22,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Label } from "@/components/ui/label"
 import { Playfair_Display } from "next/font/google"
+import { Switch } from "@/components/ui/switch"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -36,7 +36,10 @@ interface BlogPost {
   excerpt: string
   content: string
   author: string
-  image_url?: string
+  image?: string
+  video_url?: string
+  thumbnail?: string
+  draft: boolean
   created_at: string
 }
 
@@ -48,22 +51,23 @@ export default function BlogPostsAdmin() {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [search, setSearch] = useState("")
+  const [draftFilter, setDraftFilter] = useState<"all" | "draft" | "published">("all")
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [activeTab, setActiveTab] = useState<"media" | "image">("media")
+  const [viewPost, setViewPost] = useState<BlogPost | null>(null)
+  const [viewOpen, setViewOpen] = useState(false)
+  const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [uploadingVideo, setUploadingVideo] = useState(false)
 
   const [isDesktop, setIsDesktop] = useState(false)
+
   useEffect(() => {
-    const checkDesktop = () => {
-      setIsDesktop(window.innerWidth < 1024) // lg breakpoint
-    }
+    const checkDesktop = () => setIsDesktop(window.innerWidth < 1024)
     checkDesktop()
     window.addEventListener("resize", checkDesktop)
     return () => window.removeEventListener("resize", checkDesktop)
   }, [])
-
-  const filteredPosts = posts.filter(
-    (a) => a.title.toLowerCase().includes(search.toLowerCase()) || a.content.toLowerCase().includes(search.toLowerCase()),
-  )
 
   const [formData, setFormData] = useState({
     title: "",
@@ -71,6 +75,11 @@ export default function BlogPostsAdmin() {
     content: "",
     author: "",
     image: null as File | null,
+    imageUrl: "",
+    thumbnail: null as File | null,
+    thumbnailUrl: "",
+    videoUrl: "",
+    draft: false,
   })
 
   useEffect(() => {
@@ -93,31 +102,133 @@ export default function BlogPostsAdmin() {
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  // VIDEO CHUNK UPLOAD
+  async function uploadVideoChunked(file: File): Promise<string> {
+    const uploadId = crypto.randomUUID()
+    const chunkSize = 5 * 1024 * 1024
+    const totalChunks = Math.ceil(file.size / chunkSize)
+
+    setUploadingVideo(true)
 
     try {
+      for (let i = 0; i < totalChunks; i++) {
+        const start = i * chunkSize
+        const end = Math.min(file.size, start + chunkSize)
+        const chunk = file.slice(start, end)
+
+        const form = new FormData()
+        form.append("upload_id", uploadId)
+        form.append("chunk_index", String(i))
+        form.append("total_chunks", String(totalChunks))
+        form.append("file", chunk)
+
+        const res = await fetch("/api/blog-posts/video", {
+          method: "POST",
+          body: form,
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) {
+          throw new Error(data?.message || "Upload failed")
+        }
+
+        if (data.completed) {
+          return data.video_url
+        }
+      }
+
+      throw new Error("Upload incomplete")
+    } finally {
+      setUploadingVideo(false)
+    }
+  }
+
+  // SUBMIT BLOG POST
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editingId && (!videoFile || !formData.thumbnail) && !formData.image) {
+      toast({
+        title: "Missing Media",
+        description: "Please upload a video with thumbnail or an image before saving.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      let videoUrl = ""
+
       const form = new FormData()
-      Object.entries(formData).forEach(([k, v]) => v && form.append(k, v))
+
+      form.append("title", formData.title)
+      form.append("excerpt", formData.excerpt)
+      form.append("content", formData.content)
+      form.append("author", formData.author)
+
+      form.append("draft", formData.draft ? "1" : "0")
+
+      // IMAGE
+      if (formData.image instanceof File) {
+        form.append("image", formData.image)
+      }
+
+      // THUMBNAIL
+      if (formData.thumbnail instanceof File) {
+        form.append("thumbnail", formData.thumbnail)
+      }
+
+      if (videoFile) {
+        videoUrl = await uploadVideoChunked(videoFile)
+      }
+
+      if (videoFile && !videoUrl) {
+        throw new Error("Video upload failed, no URL returned")
+      }
+
+      if (videoUrl) {
+        form.append("video_url", videoUrl)
+      }
 
       const url = editingId ? `/api/blog-posts/${editingId}` : "/api/blog-posts"
+
       const method = editingId ? "PUT" : "POST"
 
-      await fetch(url, { method, body: form })
+      const res = await fetch(url, { method, body: form })
+
+      const data = await res.json().catch(() => null)
+
+      if (!res.ok) {
+        throw new Error(data?.message || "Failed to save post")
+      }
 
       toast({
         title: "Success",
         description: editingId ? "Post updated" : "Post created",
       })
 
-      setFormData({ title: "", excerpt: "", content: "", author: "", image: null })
+      setFormData({
+        title: "",
+        excerpt: "",
+        content: "",
+        author: "",
+        image: null as File | null,
+        imageUrl: "",
+        thumbnail: null as File | null,
+        thumbnailUrl: "",
+        videoUrl: "",
+        draft: false,
+      })
+
+      setVideoFile(null)
       setEditingId(null)
       setIsDialogOpen(false)
+
       fetchPosts()
-    } catch {
+    } catch (err: any) {
       toast({
         title: "Error",
-        description: "Failed to save blog post",
+        description: err.message || "Failed to save blog post",
         variant: "destructive",
       })
     }
@@ -130,9 +241,15 @@ export default function BlogPostsAdmin() {
       content: post.content,
       author: post.author,
       image: null,
+      thumbnail: null,
+      draft: post.draft,
+      imageUrl: post.image || "",
+      thumbnailUrl: post.thumbnail || "",
+      videoUrl: post.video_url || "",
     })
     setEditingId(post.id)
     setIsDialogOpen(true)
+    setActiveTab(post.video_url ? "media" : "image")
   }
 
   async function handleDelete() {
@@ -145,22 +262,32 @@ export default function BlogPostsAdmin() {
     setDeleteId(null)
   }
 
+  const filteredPosts = posts.filter((post) => {
+    const matchesSearch = post.title.toLowerCase().includes(search.toLowerCase()) || post.content.toLowerCase().includes(search.toLowerCase())
+
+    const matchesDraft = draftFilter === "all" ? true : draftFilter === "draft" ? (post as any).draft === 1 : (post as any).draft === 0
+
+    return matchesSearch && matchesDraft
+  })
+
   const getImageUrl = (imagePath?: string): string => {
-    if (!imagePath) {
-      return "/placeholder.jpg"
-    }
+    if (!imagePath) return "/placeholder.jpg"
+    if (imagePath.startsWith("http")) return imagePath
 
-    // Absolute URL already
-    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-      return imagePath
-    }
+    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+    const clean = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath
 
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+    return `${base}/${clean}`
+  }
 
-    // Remove leading slash to avoid double slash
-    const normalizedPath = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath
+  const getVideoUrl = (videoPath?: string): string => {
+    if (!videoPath) return "/placeholder.jpg"
+    if (videoPath.startsWith("http")) return videoPath
 
-    return `${API_BASE_URL}/${normalizedPath}`
+    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+    const clean = videoPath.startsWith("/") ? videoPath.slice(1) : videoPath
+
+    return `${base}/${clean}`
   }
 
   if (loading) {
@@ -202,207 +329,457 @@ export default function BlogPostsAdmin() {
     <SidebarProvider defaultOpen={!isDesktop}>
       <div className="flex min-h-screen w-full bg-amber-50">
         <AppSidebar />
+
         <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
+          {/* TOP BAR */}
           {isDesktop && (
             <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-[#162A3A] px-4 shadow-sm">
               <SidebarTrigger className="-ml-1" />
-              <Image src="/logo.jpg" alt="Lumè Bean and Bar Logo" width={40} height={40} className="object-contain rounded-full" />
+
+              <Image src="/logo.jpg" alt="Lumè Bean and Bar Logo" width={40} height={40} className="rounded-full object-contain" />
+
               <h1 className={`${playfair.className} text-lg font-semibold text-white`}>Lumè Bean and Bar</h1>
             </div>
           )}
 
-          <main className="p-4 md:p-6">
-            <div className="space-y-6 min-h-[300px]">
-              {/* Header */}
-              <div className="flex flex-col md:flex-row justify-between gap-4">
-                <div>
-                  <h1 className="text-3xl text-black font-bold">Blog Management</h1>
-                  <p className="text-gray-600">Manage restaurant&apos;s kitchen blog posts</p>
+          <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6">
+            <div className="max-w-full space-y-6">
+              {/* HEADER */}
+              <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+                {/* TITLE */}
+                <div className="space-y-1">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Blog Post Management</h1>
+                  <p className="text-sm sm:text-base text-gray-600">Manage your restaurant&apos;s blog posts.</p>
                 </div>
 
-                <div className="flex gap-4 items-center">
-                  {/* Add New Blog Post */}
-                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                {/* RIGHT CONTROLS */}
+                <div className="flex flex-col gap-4 w-full md:w-auto md:items-end">
+                  {/* SEARCH */}
+                  <div className="relative w-full md:w-80">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-yellow-600" />
+                    <Input
+                      placeholder="Search posts..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="pl-9 border-yellow-200 text-black focus:border-yellow-500 focus:ring-yellow-400 bg-white w-full"
+                    />
+                  </div>
+
+                  {/* FILTERS */}
+                  <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                    <Button
+                      size="sm"
+                      className={
+                        draftFilter === "all"
+                          ? "bg-yellow-600 hover:bg-yellow-500 text-white"
+                          : "border border-yellow-300 text-yellow-700 hover:bg-yellow-500 hover:text-yellow-700"
+                      }
+                      variant={draftFilter === "all" ? "default" : "outline"}
+                      onClick={() => setDraftFilter("all")}
+                    >
+                      All
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      className={
+                        draftFilter === "draft"
+                          ? "bg-yellow-600 hover:bg-yellow-500 text-white"
+                          : "border border-yellow-300 text-yellow-700 hover:bg-yellow-500 hover:text-yellow-700"
+                      }
+                      variant={draftFilter === "draft" ? "default" : "outline"}
+                      onClick={() => setDraftFilter("draft")}
+                    >
+                      Draft
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      className={
+                        draftFilter === "published"
+                          ? "bg-yellow-600 hover:bg-yellow-500 text-white"
+                          : "border border-yellow-300 text-yellow-700 hover:bg-yellow-500 hover:text-yellow-700"
+                      }
+                      variant={draftFilter === "published" ? "default" : "outline"}
+                      onClick={() => setDraftFilter("published")}
+                    >
+                      Published
+                    </Button>
+                  </div>
+
+                  {/* CREATE BUTTON */}
+                  <Dialog
+                    open={isDialogOpen}
+                    onOpenChange={(open) => {
+                      setIsDialogOpen(open)
+
+                      if (!open) {
+                        setActiveTab("media")
+                      }
+                    }}
+                  >
                     <DialogTrigger asChild>
                       <Button
+                        className="gap-2 bg-yellow-600 hover:bg-yellow-500"
                         onClick={() => {
                           setEditingId(null)
+                          setVideoFile(null)
                           setFormData({
                             title: "",
                             excerpt: "",
                             content: "",
                             author: "",
-                            image: null,
+                            image: null as File | null,
+                            imageUrl: "",
+                            thumbnail: null as File | null,
+                            thumbnailUrl: "",
+                            videoUrl: "",
+                            draft: false,
                           })
                         }}
                       >
-                        <Plus className="w-4 h-4 mr-2" />
-                        New Post
+                        <Plus size={16} /> New Post
                       </Button>
                     </DialogTrigger>
-
-                    <DialogContent className="text-black">
-                      <DialogHeader>
-                        <DialogTitle>{editingId ? "Edit Post" : "Create Post"}</DialogTitle>
+                    <DialogContent className="bg-white text-black w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl p-4 sm:p-6">
+                      <DialogHeader className="space-y-1">
+                        <DialogTitle className="text-black text-lg sm:text-xl font-semibold">{editingId ? "Edit" : "Create"} Post</DialogTitle>
                       </DialogHeader>
-                      <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="title">Title</Label>
-                          <Input
-                            id="title"
-                            placeholder="Enter title"
-                            value={formData.title}
-                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                            required
-                          />
+
+                      <form className="space-y-4 text-black" onSubmit={handleSubmit}>
+                        {/* TITLE */}
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium">Title</label>
+                          <Input id="title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="author">Author</Label>
+                        {/* AUTHOR */}
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium">Author</label>
                           <Input
                             id="author"
-                            placeholder="Enter author"
                             value={formData.author}
                             onChange={(e) => setFormData({ ...formData, author: e.target.value })}
                             required
                           />
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="excerpt">Excerpt</Label>
+                        {/* EXCERPT */}
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium">Excerpt</label>
                           <Textarea
                             id="excerpt"
-                            placeholder="Enter excerpt"
                             value={formData.excerpt}
                             onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                            rows={3}
-                            required
+                            className="min-h-[80px]"
                           />
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="content">Content</Label>
+                        {/* CONTENT */}
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium">Content</label>
                           <Textarea
                             id="content"
-                            placeholder="Enter content"
+                            className="min-h-[140px] sm:min-h-[180px]"
                             value={formData.content}
                             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                            rows={6}
-                            required
                           />
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="image">Upload Image</Label>
-                          <Input
-                            id="image"
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] || null })}
-                          />
-                        </div>
-                      </form>
-                      <DialogFooter>
-                        <Button type="button" onClick={handleSubmit}>
-                          {editingId ? "Update Post" : "Create Post"}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                        {/* TABS */}
+                        <div className="space-y-3">
+                          {/* TAB BUTTONS */}
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant={activeTab === "media" ? "default" : "outline"}
+                              className={
+                                activeTab === "media"
+                                  ? "bg-yellow-600 hover:bg-yellow-500 text-white w-full sm:w-auto"
+                                  : "border-yellow-300 text-yellow-700 hover:bg-yellow-50 hover:text-yellow-700 w-full sm:w-auto"
+                              }
+                              onClick={() => {
+                                setActiveTab("media")
 
-                  {/* Search Bar */}
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-full">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-yellow-800" />
-                      <Input
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search blog post..."
-                        className="pl-9 bg-gray-100 text-black"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Posts List */}
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-                {filteredPosts.length === 0 ? (
-                  <Card className="col-span-full">
-                    <CardContent className="text-center py-12">
-                      <Underline className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600">No blog posts found</p>
-                      <p className="text-sm text-gray-500 mt-1">Create your first blog post to get started</p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  filteredPosts.map((post) => (
-                    <Card key={post.id} className="overflow-hidden p-0 flex flex-col h-[360px]">
-                      <Image
-                        src={getImageUrl(post.image_url) || "/placeholder.png"}
-                        alt={post.title}
-                        width={400}
-                        height={200}
-                        className="w-full h-48 object-cover flex-shrink-0"
-                      />
-
-                      <CardContent className="p-4 flex flex-col gap-3 flex-1">
-                        <div className="flex justify-between items-start gap-2">
-                          <div className="min-w-0">
-                            <h3 className="text-lg font-bold truncate">{post.title}</h3>
-                            <p className="text-sm text-gray-500">Author: {post.author}</p>
-                          </div>
-
-                          <div className="flex gap-2 flex-shrink-0">
-                            <Button size="sm" variant="outline" onClick={() => handleEdit(post)}>
-                              <Edit2 className="w-4 h-4" />
+                                if (!editingId) {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    image: null,
+                                  }))
+                                }
+                              }}
+                              disabled={editingId && formData.imageUrl ? true : false}
+                            >
+                              Video
                             </Button>
 
                             <Button
+                              type="button"
                               size="sm"
-                              variant="destructive"
+                              variant={activeTab === "image" ? "default" : "outline"}
+                              className={
+                                activeTab === "image"
+                                  ? "bg-yellow-600 hover:bg-yellow-500 text-white w-full sm:w-auto"
+                                  : "border-yellow-300 text-yellow-700 hover:bg-yellow-50 hover:text-yellow-700 w-full sm:w-auto"
+                              }
                               onClick={() => {
-                                setDeleteId(post.id)
-                                setDeleteOpen(true)
+                                setActiveTab("image")
+                                if (!editingId) {
+                                  setVideoFile(null)
+                                  setFormData((prev) => ({ ...prev, thumbnail: null }))
+                                }
                               }}
+                              disabled={editingId && formData.videoUrl ? true : false}
                             >
-                              <Trash2 className="w-4 h-4" />
+                              Image
                             </Button>
                           </div>
+
+                          {/* TAB 1: VIDEO + THUMB */}
+                          {activeTab === "media" && (
+                            <div className="space-y-4">
+                              {editingId && formData.videoUrl && (
+                                <div className="relative w-full rounded-md overflow-hidden border border-blue-200">
+                                  <video
+                                    controls
+                                    className="w-full rounded-lg max-h-[250px] sm:max-h-[320px]"
+                                    poster={formData.thumbnailUrl ? getImageUrl(formData.thumbnailUrl) : "/video-placeholder.jpg"}
+                                  >
+                                    <source src={getVideoUrl(formData.videoUrl)} type="video/mp4" />
+                                    Your browser does not support the video tag.
+                                  </video>
+                                </div>
+                              )}
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                  <label className="text-sm font-medium">Upload Video</label>
+                                  <Input type="file" accept="video/*" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} />
+                                </div>
+
+                                <div className="space-y-1">
+                                  <label className="text-sm font-medium">Upload Thumbnail</label>
+                                  <Input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) =>
+                                      setFormData({
+                                        ...formData,
+                                        thumbnail: e.target.files?.[0] || null,
+                                      })
+                                    }
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* TAB 2: IMAGE */}
+                          {activeTab === "image" && (
+                            <div className="space-y-3">
+                              {editingId && formData.imageUrl && (
+                                <div className="overflow-hidden rounded-md border border-blue-100">
+                                  <Image
+                                    src={getImageUrl(formData.imageUrl || (formData as any).imageUrl)}
+                                    alt={formData.title}
+                                    width={400}
+                                    height={200}
+                                    className="w-full h-48 sm:h-56 object-cover hover:scale-105 transition-transform"
+                                  />
+                                </div>
+                              )}
+
+                              <div className="space-y-1">
+                                <label className="text-sm font-medium">Upload Image</label>
+                                <Input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) =>
+                                    setFormData({
+                                      ...formData,
+                                      image: e.target.files?.[0] || null,
+                                    })
+                                  }
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
 
-                        <p className="text-md text-gray-700 line-clamp-2">{post.excerpt}</p>
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
+                        {/* DRAFT */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-2">
+                          <label className="text-sm font-medium">Save as Draft</label>
+                          <Switch id="draft" checked={formData.draft} onCheckedChange={(checked) => setFormData({ ...formData, draft: checked })} />
+                        </div>
+
+                        {/* FOOTER */}
+                        <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-end">
+                          <Button type="submit" disabled={uploadingVideo} className="w-full sm:w-auto">
+                            {uploadingVideo ? "Uploading video..." : "Save"}
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
-            </div>
 
-            {/* delete dialog */}
-            <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-              <AlertDialogContent className="text-black">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete this post?</AlertDialogTitle>
-                  <AlertDialogDescription>This action cannot be undone. This will permanently delete the post.</AlertDialogDescription>
-                </AlertDialogHeader>
-
-                <AlertDialogFooter>
-                  <AlertDialogCancel
+              {/* POSTS */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredPosts.map((post) => (
+                  <Card
+                    key={post.id}
                     onClick={() => {
-                      setDeleteId(null)
-                      setDeleteOpen(false)
+                      setViewPost(post)
+                      setViewOpen(true)
                     }}
+                    className="bg-white border border-blue-100 shadow-sm hover:shadow-md hover:border-yellow-400 transition-all cursor-pointer"
                   >
-                    Cancel
-                  </AlertDialogCancel>
+                    <CardContent className="p-5 space-y-3 text-gray-900">
+                      {/* IMAGE */}
+                      {(post.image || (post as any).thumbnail) && (
+                        <div className="overflow-hidden rounded-md border border-blue-100">
+                          <Image
+                            src={getImageUrl(post.image || (post as any).thumbnail)}
+                            alt={post.title}
+                            width={400}
+                            height={200}
+                            className="w-full h-48 object-cover hover:scale-105 transition-transform"
+                          />
+                        </div>
+                      )}
 
-                  <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={handleDelete}>
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                      {/* TITLE + BADGES */}
+                      <div className="space-y-1">
+                        <h3 className="text-lg font-semibold text-blue-900">{post.title}</h3>
+
+                        <div className="flex flex-wrap gap-2 items-center text-xs">
+                          <span
+                            className={`px-2 py-1 rounded-full font-medium ${
+                              (post as any).draft === 1
+                                ? "bg-yellow-100 text-yellow-800 border border-yellow-300"
+                                : "bg-blue-100 text-blue-800 border border-blue-300"
+                            }`}
+                          >
+                            {(post as any).draft === 1 ? "Draft" : "Published"}
+                          </span>
+
+                          {(post as any).video_url && (
+                            <span className="px-2 py-1 rounded-full bg-yellow-200 text-yellow-900 border border-yellow-400">Video attached</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* EXCERPT */}
+                      <p className="text-sm text-gray-600 line-clamp-2">{post.excerpt}</p>
+
+                      {/* ACTIONS */}
+                      <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+                        <Button size="sm" variant="ghost" className=" hover:text-white text-yellow-500" onClick={() => handleEdit(post)}>
+                          <Edit2 size={16} />
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          className="bg-red-500 hover:bg-red-400 text-white"
+                          onClick={() => {
+                            setDeleteId(post.id)
+                            setDeleteOpen(true)
+                          }}
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+                <DialogContent className="bg-white text-gray-900 border border-blue-200 max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle className="text-blue-900 text-xl">{viewPost?.title}</DialogTitle>
+                  </DialogHeader>
+
+                  {viewPost && (
+                    <div className="space-y-4">
+                      {viewPost.video_url ? (
+                        <div className="space-y-2">
+                          <p className="text-sm text-blue-700 font-medium">Video Preview</p>
+
+                          <div className="relative w-full rounded-md overflow-hidden border border-blue-200">
+                            <video
+                              controls
+                              className="w-full rounded-lg"
+                              poster={viewPost.thumbnail ? getImageUrl(viewPost.thumbnail) : "/video-placeholder.jpg"}
+                            >
+                              <source src={getVideoUrl(viewPost.video_url)} type="video/mp4" />
+                              Your browser does not support the video tag.
+                            </video>
+                          </div>
+                        </div>
+                      ) : viewPost.image ? (
+                        <>
+                          <p className="text-sm text-blue-700 font-medium">Image Preview</p>
+                          <Image
+                            src={getImageUrl(viewPost.image)}
+                            alt={viewPost.title}
+                            width={800}
+                            height={400}
+                            className="w-full h-60 object-cover rounded-md border border-blue-200"
+                          />
+                        </>
+                      ) : (
+                        <div className="w-full h-60 flex flex-col items-center justify-center rounded-md border border-dashed border-blue-300 bg-blue-50">
+                          <div className="text-center space-y-1">
+                            <p className="text-blue-700 font-medium">No media available</p>
+                            <p className="text-xs text-gray-500">This post doesn&apos;t have a video or image yet.</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* BADGES */}
+                      <div className="flex gap-2 text-xs">
+                        <span
+                          className={`px-2 py-1 rounded-full border ${
+                            viewPost.draft === 1 ? "bg-yellow-100 text-yellow-800 border-yellow-300" : "bg-blue-100 text-blue-800 border-blue-300"
+                          }`}
+                        >
+                          {viewPost.draft === 1 ? "Draft" : "Published"}
+                        </span>
+
+                        {viewPost.video_url && (
+                          <span className="bg-yellow-200 text-yellow-900 px-2 py-1 rounded-full border border-yellow-400">Video Attached</span>
+                        )}
+                      </div>
+
+                      <p className="text-gray-600">{viewPost.excerpt}</p>
+                      <p className="text-gray-600">{viewPost.author}</p>
+
+                      <div className="text-sm text-gray-700 whitespace-pre-wrap">{viewPost.content}</div>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
+
+              {/* DELETE */}
+              <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                <AlertDialogContent className="bg-white text-black">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete post?</AlertDialogTitle>
+                    <AlertDialogDescription>Are you sure you want to delete this announcement? This action cannot be undone.</AlertDialogDescription>
+                  </AlertDialogHeader>
+
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} className="bg-red-700 hover:bg-red-500">
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </main>
         </div>
       </div>
