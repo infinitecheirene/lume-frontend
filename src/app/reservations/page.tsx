@@ -1,7 +1,21 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { ChevronRight, Users, Calendar, Clock, Mail, Phone, User, MessageSquare, AlertCircle, Upload, Check, Copy, X } from "lucide-react"
+import {
+  ChevronRight,
+  Users,
+  Clock,
+  Mail,
+  Calendar as CalendarIcon,
+  Phone,
+  User,
+  MessageSquare,
+  AlertCircle,
+  Upload,
+  Check,
+  Copy,
+  X,
+} from "lucide-react"
 import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
 import { useToast } from "@/hooks/use-toast"
@@ -10,6 +24,10 @@ import LumeLoaderMinimal from "@/components/oppa-loader"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { Label } from "@/components/ui/label"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { format } from "date-fns"
+import { Badge } from "@/components/ui/badge"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -199,6 +217,11 @@ export default function ReservationsPage() {
   const [copiedGcash, setCopiedGcash] = useState(false)
   const [copiedBank, setCopiedBank] = useState(false)
   const [receiptFile, setReceiptFile] = useState<string | null>(null)
+  const [date, setDate] = useState<Date | undefined>()
+  const [time, setTime] = useState<string | null>(null)
+
+  const [bookedMap, setBookedMap] = useState<Record<string, string[]>>({})
+  const [loadingSlots, setLoadingSlots] = useState(false)
 
   const { toast } = useToast()
 
@@ -268,6 +291,98 @@ export default function ReservationsPage() {
     })
   }, [formData.occasion, formData.guests, formData.dining_preference, selectedPackage])
 
+  const fetchBookedSlots = async () => {
+    try {
+      const res = await fetch("/api/reservations/booked-slots")
+      const data = await res.json()
+
+      if (!data.success) {
+        setBookedMap({})
+        return
+      }
+
+      const map: Record<string, string[]> = {}
+
+      data.booked_slots.forEach((b: any) => {
+        if (!b.date || !b.start) return
+
+        const cleanDate = b.date.split("T")[0]
+
+        if (!map[cleanDate]) {
+          map[cleanDate] = []
+        }
+
+        map[cleanDate].push(b.start)
+      })
+
+      setBookedMap(map)
+    } catch (err) {
+      console.error("Failed to fetch booked slots:", err)
+      setBookedMap({})
+    }
+  }
+
+  const handleSelectTime = (slot: string) => {
+    setTime(slot)
+
+    const formattedDate = date?.toISOString().split("T")[0]
+
+    setFormData((prev: any) => ({
+      ...prev,
+      date: formattedDate,
+      time: slot,
+    }))
+  }
+
+  useEffect(() => {
+    if (!date) return
+
+    const formatted = date.toISOString().split("T")[0]
+
+    fetchBookedSlots()
+
+    // reset selected time when changing date
+    setTime(null)
+  }, [date])
+
+  const currentDateKey = date?.toISOString().split("T")[0]
+
+  const bookedSlotsForDate = currentDateKey ? bookedMap[currentDateKey] || [] : []
+
+  const isBooked = (slot: string) => bookedSlotsForDate.includes(slot)
+
+  const isDateBlocked = (d: Date) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const check = new Date(d)
+    check.setHours(0, 0, 0, 0)
+
+    const key = check.toISOString().split("T")[0]
+
+    const totalSlots = generateSlots().length
+    const bookedCount = bookedMap[key]?.length || 0
+
+    return check < today || bookedCount >= totalSlots
+  }
+
+  const generateSlots = () => {
+    const slots: string[] = []
+
+    const start = 10 * 60
+    const end = 23 * 60 + 30
+    const interval = 30
+
+    for (let t = start; t <= end; t += interval) {
+      const h = Math.floor(t / 60)
+      const m = t % 60
+
+      slots.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`)
+    }
+
+    return slots
+  }
+
   useEffect(() => {
     const fetchPaymentMethods = async () => {
       try {
@@ -287,6 +402,7 @@ export default function ReservationsPage() {
     }
 
     fetchPaymentMethods()
+    fetchBookedSlots()
   }, [])
 
   useEffect(() => {
@@ -816,40 +932,47 @@ export default function ReservationsPage() {
                   </div>
 
                   <div className="space-y-6">
-                    {/* Date */}
-                    <div>
-                      <label className="block text-sm font-semibold text-white mb-3">Date *</label>
-                      <div className="relative">
-                        <Calendar className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c] pointer-events-none" />
-                        <input
-                          type="date"
-                          name="date"
-                          value={formData.date}
-                          onChange={handleChange}
-                          min={getMinDate()}
-                          required
-                          className="w-full pl-12 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white"
-                        />
-                      </div>
-                    </div>
+                    <label className="block text-sm font-semibold text-white mb-3">Date *</label>
 
-                    {/* Time */}
-                    <div>
-                      <label className="block text-sm font-semibold text-white mb-3">Time *</label>
-                      <div className="relative">
-                        <Clock className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c] pointer-events-none" />
-                        <input
-                          type="time"
-                          name="time"
-                          value={formData.time}
-                          onChange={handleChange}
-                          min={getMinTime(formData.date)}
-                          required
-                          className="w-full pl-12 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white"
-                        />
-                      </div>
-                    </div>
+                    {/* DATE PICKER */}
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button className="w-full justify-start border border-white/20 bg-white/10 text-white backdrop-blur-xl hover:bg-white/20 transition-all duration-200 px-4 py-3">
+                          {date ? format(date, "yyyy-MM-dd") : "Select date"}
+                        </Button>
+                      </PopoverTrigger>
 
+                      <PopoverContent className="p-0">
+                        <Calendar mode="single" selected={date} onSelect={setDate} disabled={isDateBlocked} />
+                      </PopoverContent>
+                    </Popover>
+                    {/* TIME SLOTS */}
+                    <label className="block text-sm font-semibold text-white mb-3">Time *</label>
+
+                    {date && (
+                      <div className="grid grid-cols-4 gap-3 mt-4">
+                        {generateSlots().map((slot) => {
+                          const disabled = isBooked(slot)
+                          const selected = time === slot
+
+                          return (
+                            <Button
+                              key={slot}
+                              disabled={isBooked(slot)}
+                              onClick={() => handleSelectTime(slot)}
+                              className={`border border-white/20 backdrop-blur-xl transition-all duration-200 px-4 py-2
+                              ${selected ? "bg-[#d4a24c] text-black hover:bg-[#c7953f]" : "bg-white/10 text-white hover:bg-white/20"}
+                              ${disabled ? "opacity-40 cursor-not-allowed pointer-events-none" : ""}
+                            `}
+                            >
+                              {slot}
+
+                              {disabled && <span className="ml-2 text-xs text-red-400">Booked</span>}
+                            </Button>
+                          )
+                        })}
+                      </div>
+                    )}
                     <div className="grid grid-cols-2 gap-4">
                       {/* Guests */}
                       <div>
@@ -1013,7 +1136,7 @@ export default function ReservationsPage() {
                   <div>
                     <label className="block text-sm font-semibold text-white mb-3">Occasion Type *</label>
                     <div className="relative">
-                      <Calendar className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c] pointer-events-none" />
+                      <CalendarIcon className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c] pointer-events-none" />
                       <select
                         name="occasion"
                         value={formData.occasion}
