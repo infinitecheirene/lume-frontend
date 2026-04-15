@@ -325,7 +325,14 @@ export default function ReservationsPage() {
   const handleSelectTime = (slot: string) => {
     setTime(slot)
 
-    const formattedDate = date?.toISOString().split("T")[0]
+    if (!date) return
+
+    // SAFE LOCAL DATE (NO UTC SHIFT)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const day = String(date.getDate()).padStart(2, "0")
+
+    const formattedDate = `${year}-${month}-${day}`
 
     setFormData((prev: any) => ({
       ...prev,
@@ -333,7 +340,7 @@ export default function ReservationsPage() {
       time: slot,
     }))
   }
-
+  
   useEffect(() => {
     if (!date) return
 
@@ -704,6 +711,35 @@ export default function ReservationsPage() {
     })
   }
 
+  const handleDateSelect = (d: Date | undefined) => {
+    if (!d) return
+
+    console.log("date on onselect", d)
+
+    setDate(d)
+
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, "0")
+    const day = String(d.getDate()).padStart(2, "0")
+
+    const formatted = `${year}-${month}-${day}`
+
+    console.log("formatted", formatted)
+
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        date: formatted,
+        time: "",
+      }
+
+      console.log("date that is set formdata", updated.date)
+      console.log("date on formdata", formData.date)
+
+      return updated
+    })
+  }
+
   const formatSlot = (time: string) => {
     const [hourStr, minute] = time.split(":")
     let hour = parseInt(hourStr, 10)
@@ -955,7 +991,7 @@ export default function ReservationsPage() {
                       </PopoverTrigger>
 
                       <PopoverContent className="p-0">
-                        <Calendar mode="single" selected={date} onSelect={setDate} disabled={isDateBlocked} />
+                        <Calendar mode="single" selected={date} onSelect={handleDateSelect} disabled={isDateBlocked} />
                       </PopoverContent>
                     </Popover>
                     {/* TIME SLOTS */}
