@@ -26,7 +26,7 @@ export default function TestimonialsSection() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTestimonial, setActiveTestimonial] = useState(0)
+  const [activeTestimonial, setActiveTestimonial] = useState<number>(0)
   const [submittingTestimonial, setSubmittingTestimonial] = useState(false)
   const { toast } = useToast()
   const [testimonialForm, setTestimonialForm] = useState({
@@ -57,15 +57,23 @@ export default function TestimonialsSection() {
     fetchTestimonials()
   }, [])
 
+  const current = testimonials[activeTestimonial]
+
   useEffect(() => {
-    if (!testimonials.length) return
+    if (activeTestimonial >= testimonials.length) {
+      setActiveTestimonial(0)
+    }
+  }, [activeTestimonial, testimonials.length])
+
+  useEffect(() => {
+    if (testimonials.length <= 1) return
 
     const interval = setInterval(() => {
-      setActiveTestimonial((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1))
+      setActiveTestimonial((prev) => (prev + 1 >= testimonials.length ? 0 : prev + 1))
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [testimonials])
+  }, [testimonials.length])
 
   const handleTestimonialChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -119,6 +127,20 @@ export default function TestimonialsSection() {
     } finally {
       setSubmittingTestimonial(false)
     }
+  }
+
+  const next = () => {
+    setActiveTestimonial((prev) => {
+      if (testimonials.length === 0) return 0
+      return prev + 1 >= testimonials.length ? 0 : prev + 1
+    })
+  }
+
+  const prev = () => {
+    setActiveTestimonial((prev) => {
+      if (testimonials.length === 0) return 0
+      return prev - 1 < 0 ? testimonials.length - 1 : prev - 1
+    })
   }
 
   return (
@@ -314,60 +336,52 @@ export default function TestimonialsSection() {
               {!loading && testimonials.length > 0 && (
                 <div className="w-full max-w-2xl mx-auto space-y-6">
                   <Card className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_0_60px_rgba(212,162,76,0.08)]">
-                    {/* glow */}
-                    <div className="absolute inset-0 pointer-events-none">
-                      <div className="absolute -top-24 -left-24 w-72 h-72 bg-[#d4a24c]/10 blur-3xl rounded-full" />
-                      <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-[#d4a24c]/10 blur-3xl rounded-full" />
-                    </div>
-
                     <CardContent className="relative z-10 p-6 md:p-10 flex flex-col gap-6">
-                      {/* STARS */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-5 h-5 ${i < testimonials[activeTestimonial].rating ? "fill-[#d4a24c] text-[#d4a24c]" : "text-white/20"}`}
-                            />
-                          ))}
-                        </div>
+                      {current && (
+                        <>
+                          {/* STARS */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex gap-1">
+                              {[...Array(5)].map((_, i) => (
+                                <Star key={i} className={`w-5 h-5 ${i < current.rating ? "fill-[#d4a24c] text-[#d4a24c]" : "text-white/20"}`} />
+                              ))}
+                            </div>
 
-                        <span className="text-xs text-white/50 tracking-widest uppercase">Verified Guest</span>
-                      </div>
+                            <span className="text-xs text-white/50 tracking-widest uppercase">Verified Guest</span>
+                          </div>
 
-                      {/* MESSAGE */}
-                      <p className="text-white/85 text-lg md:text-xl leading-relaxed font-light italic">
-                        &quot;{testimonials[activeTestimonial].message}&quot;
-                      </p>
+                          {/* MESSAGE */}
+                          <p className="text-white/85 mx-10 text-lg md:text-xl leading-relaxed font-light italic">&quot;{current.message}&quot;</p>
 
-                      {/* AUTHOR */}
-                      <div className="flex items-center justify-between border-t border-white/10 pt-5">
-                        <div>
-                          <h3 className="font-semibold text-white text-lg">{testimonials[activeTestimonial].client_name}</h3>
-                        </div>
+                          {/* AUTHOR */}
+                          <div className="flex items-center justify-between border-t border-white/10 pt-5">
+                            <div>
+                              <h3 className="font-semibold text-white text-lg">{current.client_name}</h3>
+                            </div>
 
-                        <div className="text-sm text-white/50">
-                          {activeTestimonial + 1} / {testimonials.length}
-                        </div>
-                      </div>
+                            <div className="text-sm text-white/50">
+                              {activeTestimonial + 1} / {testimonials.length}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      {/* NAV BUTTONS */}
+                      <button
+                        type="button"
+                        onClick={prev}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:bg-white/10 hover:text-white transition"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={next}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:bg-white/10 hover:text-white transition"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
                     </CardContent>
-
-                    {/* NAV BUTTONS */}
-                    <button
-                      type="button"
-                      onClick={() => setActiveTestimonial((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1))}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:bg-white/10 hover:text-white transition"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setActiveTestimonial((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1))}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:bg-white/10 hover:text-white transition"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
                   </Card>
 
                   {/* DOTS */}
