@@ -1,18 +1,15 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { ChevronRight, Users, Calendar, Clock, Mail, Phone, User, MessageSquare, AlertCircle } from "lucide-react"
+import { ChevronRight, Users, Calendar, Clock, Mail, Phone, User, MessageSquare, AlertCircle, Upload, Check, Copy, X } from "lucide-react"
 import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
 import { useToast } from "@/hooks/use-toast"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import LumeLoaderMinimal from "@/components/oppa-loader"
+import { Button } from "@/components/ui/button"
+import Image from "next/image"
+import { Label } from "@/components/ui/label"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -36,11 +33,7 @@ export const PACKAGES: Package[] = [
     name: "Skyline Social",
     price: 5500,
     description: "A stylish open-style loft perfect for barkada nights.",
-    details: [
-      "Open-style loft setup",
-      "Best for barkada (4–10 pax)",
-      "Great for casual events",
-    ],
+    details: ["Open-style loft setup", "Best for barkada (4–10 pax)", "Great for casual events"],
   },
   {
     id: "amber",
@@ -48,11 +41,7 @@ export const PACKAGES: Package[] = [
     name: "Golden Hour",
     price: 4000,
     description: "Warm-toned private room for intimate gatherings.",
-    details: [
-      "Cozy and aesthetic ambiance",
-      "Ideal for small groups (2–6 pax)",
-      "Private setup",
-    ],
+    details: ["Cozy and aesthetic ambiance", "Ideal for small groups (2–6 pax)", "Private setup"],
   },
   {
     id: "aurora",
@@ -60,11 +49,7 @@ export const PACKAGES: Package[] = [
     name: "Neon Nights",
     price: 8500,
     description: "Vibrant lounge with dynamic lighting.",
-    details: [
-      "Color-shifting lights",
-      "Party-ready atmosphere",
-      "Great for big groups",
-    ],
+    details: ["Color-shifting lights", "Party-ready atmosphere", "Great for big groups"],
     badge: "Most Picked",
   },
   {
@@ -73,11 +58,7 @@ export const PACKAGES: Package[] = [
     name: "Midnight Luxe",
     price: 6500,
     description: "Speakeasy-style premium private room.",
-    details: [
-      "Luxury interior",
-      "Speakeasy vibe",
-      "Ideal for premium events",
-    ],
+    details: ["Luxury interior", "Speakeasy vibe", "Ideal for premium events"],
   },
 ]
 
@@ -164,12 +145,7 @@ const getMinTime = (date: string) => {
   return undefined
 }
 
-const calculateReservationFee = (
-  occasionType: string,
-  guests: number,
-  diningPreference: string,
-  packagePrice?: number
-): number => {
+const calculateReservationFee = (occasionType: string, guests: number, diningPreference: string, packagePrice?: number): number => {
   // If user selected a package → use package price as base
   if (packagePrice && packagePrice > 0) {
     return packagePrice
@@ -193,7 +169,9 @@ const calculateTotalBill = (reservationFee: number) => {
 }
 
 const generateReservationNumber = () => {
-  const random = Math.floor(Math.random() * 1000).toString().padStart(3, "0")
+  const random = Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, "0")
   return `RES-${Date.now()}-${random}`
 }
 
@@ -216,6 +194,11 @@ export default function ReservationsPage() {
   const [emailError, setEmailError] = useState("")
   const [phoneError, setPhoneError] = useState("")
   const [dailyBookingsCount, setDailyBookingsCount] = useState(0)
+  const [paymentMethods, setPaymentMethods] = useState<any[]>([])
+  const [loadingPayments, setLoadingPayments] = useState(true)
+  const [copiedGcash, setCopiedGcash] = useState(false)
+  const [copiedBank, setCopiedBank] = useState(false)
+  const [receiptFile, setReceiptFile] = useState<string | null>(null)
 
   const { toast } = useToast()
 
@@ -228,7 +211,9 @@ export default function ReservationsPage() {
 
     if (!userData || !token) {
       setIsAuthenticated(false)
-      const t = setTimeout(() => { window.location.href = "/login?redirect=/reservations" }, 100)
+      const t = setTimeout(() => {
+        window.location.href = "/login?redirect=/reservations"
+      }, 100)
       return () => clearTimeout(t)
     }
 
@@ -244,7 +229,9 @@ export default function ReservationsPage() {
       setIsAuthenticated(true)
     } catch {
       setIsAuthenticated(false)
-      const t = setTimeout(() => { window.location.href = "/login?redirect=/reservations" }, 100)
+      const t = setTimeout(() => {
+        window.location.href = "/login?redirect=/reservations"
+      }, 100)
       return () => clearTimeout(t)
     }
   }, [])
@@ -271,11 +258,7 @@ export default function ReservationsPage() {
   useEffect(() => {
     if (selectedPackage) return
 
-    const fee = calculateReservationFee(
-      formData.occasion,
-      Number(formData.guests) || 1,
-      formData.dining_preference
-    )
+    const fee = calculateReservationFee(formData.occasion, Number(formData.guests) || 1, formData.dining_preference)
 
     setFormData((prev) => {
       if (prev.reservation_fee !== String(fee)) {
@@ -283,15 +266,33 @@ export default function ReservationsPage() {
       }
       return prev
     })
-  }, [
-    formData.occasion,
-    formData.guests,
-    formData.dining_preference,
-    selectedPackage
-  ])
+  }, [formData.occasion, formData.guests, formData.dining_preference, selectedPackage])
 
   useEffect(() => {
-    return () => { if (receiptPreview) URL.revokeObjectURL(receiptPreview) }
+    const fetchPaymentMethods = async () => {
+      try {
+        setLoadingPayments(true)
+
+        const res = await fetch("/api/payment-methods?is_enabled=1")
+        const json = await res.json()
+
+        if (!json.success) throw new Error(json.message)
+
+        setPaymentMethods(json.data || [])
+      } catch (err) {
+        console.error("Failed to fetch payment methods:", err)
+      } finally {
+        setLoadingPayments(false)
+      }
+    }
+
+    fetchPaymentMethods()
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (receiptPreview) URL.revokeObjectURL(receiptPreview)
+    }
   }, [receiptPreview])
 
   const stars = useMemo(
@@ -305,44 +306,47 @@ export default function ReservationsPage() {
         delay: Math.random() * 5,
         opacity: Math.random() * 0.4 + 0.3,
       })),
-    []
+    [],
   )
 
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-      const { name, value } = e.target
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
 
-      if (name === "email") {
-        setFormData((prev) => ({ ...prev, email: value }))
-        setEmailError(isValidEmail(value) ? "" : "Please enter a valid email address")
+    if (name === "email") {
+      setFormData((prev) => ({ ...prev, email: value }))
+      setEmailError(isValidEmail(value) ? "" : "Please enter a valid email address")
+      return
+    }
+
+    if (name === "phone") {
+      const digits = value.replace(/\D/g, "")
+      if (digits.length > 11) {
+        setPhoneError("Phone number cannot exceed 11 digits")
         return
       }
-
-      if (name === "phone") {
-        const digits = value.replace(/\D/g, "")
-        if (digits.length > 11) { setPhoneError("Phone number cannot exceed 11 digits"); return }
-        if (!/^[0-9+()\- ]*$/.test(value)) { setPhoneError("Phone number can only contain digits, +, - or ()"); return }
-        setPhoneError("")
-        setFormData((prev) => ({ ...prev, phone: value }))
+      if (!/^[0-9+()\- ]*$/.test(value)) {
+        setPhoneError("Phone number can only contain digits, +, - or ()")
         return
       }
+      setPhoneError("")
+      setFormData((prev) => ({ ...prev, phone: value }))
+      return
+    }
 
-      if (name === "date") {
-        setFormData((prev) => {
-          const newData = { ...prev, date: value }
-          if (value === getMinDate() && prev.time) {
-            const selected = new Date(`${value}T${prev.time}`)
-            if (selected <= new Date()) newData.time = ""
-          }
-          return newData
-        })
-        return
-      }
+    if (name === "date") {
+      setFormData((prev) => {
+        const newData = { ...prev, date: value }
+        if (value === getMinDate() && prev.time) {
+          const selected = new Date(`${value}T${prev.time}`)
+          if (selected <= new Date()) newData.time = ""
+        }
+        return newData
+      })
+      return
+    }
 
-      setFormData((prev) => ({ ...prev, [name]: value }))
-    },
-    []
-  )
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }, [])
 
   const handleSelectPackage = useCallback((pkg: Package) => {
     setSelectedPackage(pkg)
@@ -373,19 +377,13 @@ export default function ReservationsPage() {
     setStep(2)
   }, [])
 
-
   const isStepValid = useCallback((): boolean => {
     switch (step) {
       case 1:
         return Boolean(formData.package)
 
       case 2:
-        return (
-          formData.date.trim() !== "" &&
-          formData.time.trim() !== "" &&
-          formData.guests.trim() !== "" &&
-          formData.dining_preference.trim() !== ""
-        )
+        return formData.date.trim() !== "" && formData.time.trim() !== "" && formData.guests.trim() !== "" && formData.dining_preference.trim() !== ""
 
       case 3: {
         const phoneDigits = formData.phone.replace(/\D/g, "")
@@ -408,8 +406,7 @@ export default function ReservationsPage() {
           !isNaN(Number(formData.reservation_fee)) &&
           Number(formData.reservation_fee) >= 0 &&
           Boolean(formData.payment_method) &&
-          Boolean(formData.payment_reference) &&
-          Boolean(formData.payment_receipt)
+          Boolean(formData.payment_reference)
         )
 
       default:
@@ -431,19 +428,28 @@ export default function ReservationsPage() {
 
     try {
       const token = localStorage.getItem("auth_token")
-      if (!token) { window.location.href = "/login?redirect=/reservations"; return }
+      if (!token) {
+        window.location.href = "/login?redirect=/reservations"
+        return
+      }
 
       const reservationNumber = generateReservationNumber()
       const payload = new FormData()
       payload.append("reservation_number", reservationNumber)
 
+      // append normal form fields (exclude payment_receipt)
       for (const key in formData) {
+        if (key === "payment_receipt") continue
+
         const value = formData[key as keyof FormData]
-        if (key === "payment_receipt" && value instanceof File) {
-          payload.append("payment_receipt", value)
-        } else if (value !== undefined) {
+        if (value !== undefined && value !== null) {
           payload.append(key, value.toString())
         }
+      }
+
+      // append file using receiptFile state
+      if (receiptFile) {
+        payload.append("payment_receipt", receiptFile)
       }
 
       const res = await fetch("/api/reservations", {
@@ -453,6 +459,7 @@ export default function ReservationsPage() {
       })
 
       let data: { data?: { reservation_number?: string }; message?: string; error?: string }
+
       try {
         data = await res.json()
       } catch {
@@ -480,12 +487,16 @@ export default function ReservationsPage() {
         setSelectedPackage(null)
         setIsCustom(false)
         setDailyBookingsCount(0)
+
         setFormData({
           ...DEFAULT_FORM,
           name: user?.name ?? "",
           email: user?.email ?? "",
           phone: user?.phone ?? "",
         })
+
+        setReceiptFile(null)
+
         window.location.href = "/reservation-history"
       }, 1500)
     } catch (err) {
@@ -505,26 +516,82 @@ export default function ReservationsPage() {
       return selectedPackage.price ?? 0
     }
 
-    return calculateReservationFee(
-      formData.occasion,
-      Number(formData.guests) || 1,
-      formData.dining_preference
-    )
-  }, [
-    selectedPackage,
-    formData.occasion,
-    formData.guests,
-    formData.dining_preference
-  ])
+    return calculateReservationFee(formData.occasion, Number(formData.guests) || 1, formData.dining_preference)
+  }, [selectedPackage, formData.occasion, formData.guests, formData.dining_preference])
 
   const reservationFeeNum = computedReservationFee
   const { serviceCharge, total } = calculateTotalBill(reservationFeeNum)
+
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const copyToClipboard = (text: string, type: "gcash" | "bank") => {
+    navigator.clipboard.writeText(text)
+    if (type === "gcash") {
+      setCopiedGcash(true)
+      setTimeout(() => setCopiedGcash(false), 2000)
+      toast({
+        title: "Copied!",
+        description: "GCash number copied to clipboard",
+      })
+    } else {
+      setCopiedBank(true)
+      setTimeout(() => setCopiedBank(false), 2000)
+      toast({
+        title: "Copied!",
+        description: "Bank account number copied to clipboard",
+      })
+    }
+  }
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // validate type
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file only.",
+        variant: "destructive",
+      })
+      e.target.value = ""
+      return
+    }
+
+    // validate size
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 2MB",
+        variant: "destructive",
+      })
+      e.target.value = ""
+      return
+    }
+
+    // store the actual file
+    setReceiptFile(file)
+
+    toast({
+      title: "Receipt uploaded",
+      description: "Your payment receipt has been attached",
+    })
+  }
+
+  const removeReceipt = () => {
+    setReceiptFile(null)
+    toast({
+      title: "Receipt removed",
+      description: "Payment receipt has been removed",
+    })
+  }
 
   if (loading) return <LumeLoaderMinimal />
 
   return (
     <div className="relative py-28 bg-[#0b1d26] min-h-screen overflow-hidden">
-
       {/* Background stars */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(212,162,76,0.08),transparent_40%)]" />
@@ -571,7 +638,6 @@ export default function ReservationsPage() {
       {/* Main content */}
       {isAuthenticated === true && (
         <div className="max-w-2xl mx-auto relative z-10">
-
           {/* Header */}
           <div className="flex flex-col items-center">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} className="text-center mb-6">
@@ -608,8 +674,9 @@ export default function ReservationsPage() {
                 {[1, 2, 3, 4, 5, 6].map((s) => (
                   <div
                     key={s}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${s <= step ? "bg-white text-[#0f4764] shadow-xl scale-110" : "bg-white/20 text-white/50"
-                      }`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${
+                      s <= step ? "bg-white text-[#0f4764] shadow-xl scale-110" : "bg-white/20 text-white/50"
+                    }`}
                   >
                     {s}
                   </div>
@@ -623,7 +690,7 @@ export default function ReservationsPage() {
                   <div key={label} className="text-xs text-white/70 font-medium" style={{ width: "50px" }}>
                     {label}
                   </div>
-                )
+                ),
               )}
             </div>
           </div>
@@ -632,7 +699,6 @@ export default function ReservationsPage() {
           <div className="mx-5 md:mx-auto bg-white/5 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden border border-white/10 animate-in fade-in zoom-in duration-500">
             <div className="bg-white h-1" />
             <div className="p-8 md:p-10">
-
               {/* Step 1: Package Selection */}
               {step === 1 && (
                 <div className="max-w-3xl mx-auto">
@@ -641,9 +707,7 @@ export default function ReservationsPage() {
                     <h2 className="text-4xl font-bold text-white mt-2">
                       Choose Your <span className="text-[#d4a24c] italic">Experience</span>
                     </h2>
-                    <p className="text-white/70 mt-3">
-                      Select a curated package or proceed with a custom reservation
-                    </p>
+                    <p className="text-white/70 mt-3">Select a curated package or proceed with a custom reservation</p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -652,8 +716,9 @@ export default function ReservationsPage() {
                       <div
                         key={pkg.id}
                         onClick={() => setPackageDialogPreview(pkg)}
-                        className={`relative cursor-pointer bg-white/5 border rounded-2xl p-6 transition-all hover:scale-[1.02] ${pkg.badge ? "border-[#d4a24c]" : "border-white/20 hover:border-[#d4a24c]/50"
-                          }`}
+                        className={`relative cursor-pointer bg-white/5 border rounded-2xl p-6 transition-all hover:scale-[1.02] ${
+                          pkg.badge ? "border-[#d4a24c]" : "border-white/20 hover:border-[#d4a24c]/50"
+                        }`}
                       >
                         {pkg.badge && (
                           <span className="absolute -top-3 right-3 text-[10px] tracking-wider uppercase bg-[#d4a24c] text-gray-700 px-2 py-1 rounded-full font-semibold">
@@ -673,9 +738,7 @@ export default function ReservationsPage() {
                       className="cursor-pointer bg-white/5 border border-white/20 hover:border-white/60 rounded-2xl p-6 transition-all hover:scale-[1.02]"
                     >
                       <h3 className="text-xl font-bold text-white mb-2">Custom Reservation</h3>
-                      <p className="text-white/70 text-sm mb-4">
-                        Full control over seating, time, and preferences
-                      </p>
+                      <p className="text-white/70 text-sm mb-4">Full control over seating, time, and preferences</p>
                       <p className="text-white/40 text-sm font-medium">Standard Rates Apply</p>
                     </div>
                   </div>
@@ -683,24 +746,21 @@ export default function ReservationsPage() {
                   {/* Package preview dialog */}
                   <Dialog
                     open={Boolean(packageDialogPreview)}
-                    onOpenChange={(open) => { if (!open) setPackageDialogPreview(null) }}
+                    onOpenChange={(open) => {
+                      if (!open) setPackageDialogPreview(null)
+                    }}
                   >
                     <DialogContent className="bg-[#162a3a] text-white border border-white/20">
                       {packageDialogPreview && (
                         <>
                           <DialogHeader>
-                            <DialogTitle className="text-lg md:text-xl font-bold">
-                              {packageDialogPreview.name}
-                            </DialogTitle>
-                            <DialogDescription className="text-gray-300">
-                              {packageDialogPreview.description}
-                            </DialogDescription>
+                            <DialogTitle className="text-lg md:text-xl font-bold">{packageDialogPreview.name}</DialogTitle>
+                            <DialogDescription className="text-gray-300">{packageDialogPreview.description}</DialogDescription>
                           </DialogHeader>
 
                           {packageDialogPreview.room && (
                             <p className="text-sm text-white/60 mb-2">
-                              Room:{" "}
-                              <span className="text-white/80 font-medium">{packageDialogPreview.room}</span>
+                              Room: <span className="text-white/80 font-medium">{packageDialogPreview.room}</span>
                             </p>
                           )}
 
@@ -714,9 +774,7 @@ export default function ReservationsPage() {
 
                           <div className="flex items-center justify-between mt-2 mb-4 bg-white/5 rounded-xl px-4 py-3 border border-white/10">
                             <span className="text-white/60 text-sm">Package Rate</span>
-                            <span className="text-[#d4a24c] font-bold text-lg">
-                              ₱{packageDialogPreview.price?.toLocaleString()}
-                            </span>
+                            <span className="text-[#d4a24c] font-bold text-lg">₱{packageDialogPreview.price?.toLocaleString()}</span>
                           </div>
 
                           <button
@@ -743,25 +801,15 @@ export default function ReservationsPage() {
                     <div className="mt-4">
                       {selectedPackage ? (
                         <div className="inline-flex items-center gap-2 bg-[#d4a24c]/10 border border-[#d4a24c]/30 px-3 py-1.5 rounded-full">
-                          <span className="text-[#d4a24c] text-xs font-semibold uppercase tracking-wide">
-                            {selectedPackage.name}
-                          </span>
+                          <span className="text-[#d4a24c] text-xs font-semibold uppercase tracking-wide">{selectedPackage.name}</span>
 
-                          {selectedPackage.room && (
-                            <span className="text-white/50 text-xs">
-                              · {selectedPackage.room}
-                            </span>
-                          )}
+                          {selectedPackage.room && <span className="text-white/50 text-xs">· {selectedPackage.room}</span>}
 
-                          <span className="text-white/50 text-xs">
-                            · ₱{selectedPackage.price?.toLocaleString()}
-                          </span>
+                          <span className="text-white/50 text-xs">· ₱{selectedPackage.price?.toLocaleString()}</span>
                         </div>
                       ) : isCustom ? (
                         <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 px-3 py-1.5 rounded-full">
-                          <span className="text-white/70 text-xs font-semibold uppercase tracking-wide">
-                            Custom Reservation
-                          </span>
+                          <span className="text-white/70 text-xs font-semibold uppercase tracking-wide">Custom Reservation</span>
                         </div>
                       ) : null}
                     </div>
@@ -814,7 +862,9 @@ export default function ReservationsPage() {
                             value={formData.guests}
                             min={1}
                             max={50}
-                            onChange={(e) => { if (/^\d*$/.test(e.target.value)) handleChange(e) }}
+                            onChange={(e) => {
+                              if (/^\d*$/.test(e.target.value)) handleChange(e)
+                            }}
                             placeholder="Guests"
                             required
                             className="w-full pl-12 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white placeholder-white/40"
@@ -826,9 +876,7 @@ export default function ReservationsPage() {
                       <div>
                         <label className="block text-sm font-semibold text-white mb-3">
                           Dining Preference *
-                          {selectedPackage?.room && (
-                            <span className="ml-2 text-[#d4a24c] text-xs font-normal">(locked to package)</span>
-                          )}
+                          {selectedPackage?.room && <span className="ml-2 text-[#d4a24c] text-xs font-normal">(locked to package)</span>}
                         </label>
                         <div className="relative">
                           <Users className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c] pointer-events-none" />
@@ -842,12 +890,16 @@ export default function ReservationsPage() {
                           >
                             <optgroup label="Standard Seating (Auto-Assigned)">
                               {Object.keys(SEATING_CONFIG.regular).map((opt) => (
-                                <option key={opt} value={opt} className="text-gray-900">{opt}</option>
+                                <option key={opt} value={opt} className="text-gray-900">
+                                  {opt}
+                                </option>
                               ))}
                             </optgroup>
                             <optgroup label="VIP Private Rooms">
                               {Object.keys(SEATING_CONFIG.vip).map((opt) => (
-                                <option key={opt} value={opt} className="text-gray-900 font-semibold">{opt}</option>
+                                <option key={opt} value={opt} className="text-gray-900 font-semibold">
+                                  {opt}
+                                </option>
                               ))}
                             </optgroup>
                           </select>
@@ -899,10 +951,9 @@ export default function ReservationsPage() {
                           }}
                           required
                           placeholder="your@email.com"
-                          className={`w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none transition-all text-lg text-white placeholder-white/40 bg-white/10 backdrop-blur-sm border ${emailError
-                            ? "border-red-400"
-                            : "border-white/20 focus:border-white focus:ring-2 focus:ring-white/30"
-                            }`}
+                          className={`w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none transition-all text-lg text-white placeholder-white/40 bg-white/10 backdrop-blur-sm border ${
+                            emailError ? "border-red-400" : "border-white/20 focus:border-white focus:ring-2 focus:ring-white/30"
+                          }`}
                         />
                       </div>
                       {user?.email && <p className="text-xs text-white/50 mt-1">Using your account email</p>}
@@ -925,17 +976,16 @@ export default function ReservationsPage() {
                           onChange={handleChange}
                           required
                           placeholder="09123456789"
-                          className={`w-full pl-12 pr-4 py-3 border rounded-xl bg-white/10 backdrop-blur-sm focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white placeholder-white/40 ${phoneError ? "border-red-400" : "border-white/20"
-                            }`}
+                          className={`w-full pl-12 pr-4 py-3 border rounded-xl bg-white/10 backdrop-blur-sm focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white placeholder-white/40 ${
+                            phoneError ? "border-red-400" : "border-white/20"
+                          }`}
                         />
                       </div>
                       {phoneError && <p className="mt-2 text-sm text-[#d4a24c]">{phoneError}</p>}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-white mb-3">
-                        Special Request (Accessibility, Dietary, Celebrations)
-                      </label>
+                      <label className="block text-sm font-semibold text-white mb-3">Special Request (Accessibility, Dietary, Celebrations)</label>
                       <div className="relative">
                         <MessageSquare className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c] pointer-events-none" />
                         <input
@@ -971,9 +1021,13 @@ export default function ReservationsPage() {
                         required
                         className="w-full pl-12 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg appearance-none text-white"
                       >
-                        <option value="" disabled>Select Occasion</option>
+                        <option value="" disabled>
+                          Select Occasion
+                        </option>
                         {Object.keys(OCCASION_FEES).map((opt) => (
-                          <option key={opt} value={opt} className="bg-[#0b1d26] text-white">{opt}</option>
+                          <option key={opt} value={opt} className="bg-[#0b1d26] text-white">
+                            {opt}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -981,10 +1035,7 @@ export default function ReservationsPage() {
                     {/* For custom: show how the occasion affects the fee */}
                     {isCustom && formData.occasion && (
                       <p className="mt-3 text-white/50 text-sm">
-                        Occasion fee:{" "}
-                        <span className="text-[#d4a24c] font-medium">
-                          ₱{(OCCASION_FEES[formData.occasion] ?? 0).toLocaleString()}
-                        </span>
+                        Occasion fee: <span className="text-[#d4a24c] font-medium">₱{(OCCASION_FEES[formData.occasion] ?? 0).toLocaleString()}</span>
                       </p>
                     )}
                   </div>
@@ -1007,17 +1058,13 @@ export default function ReservationsPage() {
                       {selectedPackage ? (
                         <div className="flex justify-between text-white/80">
                           <span>{selectedPackage.name} package</span>
-                          <span className="text-[#d4a24c] font-semibold">
-                            ₱{selectedPackage.price?.toLocaleString()}
-                          </span>
+                          <span className="text-[#d4a24c] font-semibold">₱{selectedPackage.price?.toLocaleString()}</span>
                         </div>
                       ) : isCustom ? (
                         <>
                           <div className="flex justify-between text-white/80">
                             <span>Custom Reservation</span>
-                            <span className="text-[#d4a24c] font-semibold">
-                              ₱{reservationFeeNum.toLocaleString()}
-                            </span>
+                            <span className="text-[#d4a24c] font-semibold">₱{reservationFeeNum.toLocaleString()}</span>
                           </div>
 
                           <div className="flex justify-between text-white/80">
@@ -1028,10 +1075,10 @@ export default function ReservationsPage() {
                           <div className="flex justify-between text-white/80">
                             <span>Seating ({formData.dining_preference})</span>
                             <span>
-                              ₱{(
-                                VIP_ROOMS.has(formData.dining_preference)
-                                  ? SEATING_CONFIG.vip[formData.dining_preference]
-                                  : SEATING_CONFIG.regular[formData.dining_preference] ?? 0
+                              ₱
+                              {(VIP_ROOMS.has(formData.dining_preference)
+                                ? SEATING_CONFIG.vip[formData.dining_preference]
+                                : (SEATING_CONFIG.regular[formData.dining_preference] ?? 0)
                               ).toLocaleString()}
                             </span>
                           </div>
@@ -1052,9 +1099,7 @@ export default function ReservationsPage() {
 
                           <div className="flex justify-between text-white/80">
                             <span>Seating ({formData.dining_preference || "—"})</span>
-                            <span className="text-[#d4a24c] font-semibold">
-                              ₱{getSeatingFee(formData.dining_preference).toLocaleString()}
-                            </span>
+                            <span className="text-[#d4a24c] font-semibold">₱{getSeatingFee(formData.dining_preference).toLocaleString()}</span>
                           </div>
 
                           {Number(formData.guests) > 4 && (
@@ -1075,18 +1120,124 @@ export default function ReservationsPage() {
                     {/* Payment method */}
                     <div>
                       <label className="block text-sm font-semibold text-white mb-3">Payment Method *</label>
-                      <select
-                        name="payment_method"
-                        value={formData.payment_method}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg appearance-none text-white"
-                      >
-                        <option value="" disabled>Select Payment Method</option>
-                        {["GCash", "BPI", "Security Bank", "Other"].map((opt) => (
-                          <option key={opt} value={opt} className="text-gray-900">{opt}</option>
-                        ))}
-                      </select>
+                      <div className="space-y-3">
+                        {loadingPayments ? (
+                          <p className="text-white/60 text-sm">Loading payment methods...</p>
+                        ) : paymentMethods.length === 0 ? (
+                          <p className="text-white/60 text-sm">No payment methods available</p>
+                        ) : (
+                          paymentMethods
+                            .filter((m) => m.is_enabled && m.key !== "cash")
+                            .map((method) => (
+                              <div
+                                key={method.id}
+                                className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                                  formData.payment_method === method.key
+                                    ? "bg-white/10 border-white"
+                                    : "bg-white/5 border-white/20 hover:border-white/40"
+                                }`}
+                                onClick={() => handleInputChange("payment_method", method.key as any)}
+                              >
+                                {/* HEADER ROW */}
+                                <div className="flex items-center gap-3">
+                                  <div
+                                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                      formData.payment_method === method.key ? "border-white" : "border-white/30"
+                                    }`}
+                                  >
+                                    {formData.payment_method === method.key && <div className="w-3 h-3 rounded-full bg-white" />}
+                                  </div>
+
+                                  <div className="flex-1">
+                                    <p className="font-medium text-white capitalize">{method.display_name}</p>
+                                    <p className="text-sm text-white/70 capitalize">{method.type}</p>
+                                  </div>
+                                  {formData.payment_method === method.key && <Check className="w-5 h-5 text-white" />}
+                                </div>
+
+                                {/* DETAILS (ONLY WHEN SELECTED) */}
+                                {formData.payment_method === method.key && method.type !== "cash" && (
+                                  <div className="mt-3 space-y-2 text-sm text-white/80">
+                                    {method.account_name ? (
+                                      <p>
+                                        <span className="text-white/60">Name:</span> {method.account_name}
+                                      </p>
+                                    ) : method.display_name ? (
+                                      <p>
+                                        <span className="text-white/60">Name:</span> {method.display_name}
+                                      </p>
+                                    ) : null}
+
+                                    {method.account_number && (
+                                      <p>
+                                        <span className="text-white/60">Account Number:</span> {method.account_number}
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() =>
+                                            copyToClipboard((formData.payment_method = method.account_number), (formData.payment_method = method.key))
+                                          }
+                                          className="ml-2 border-white/30 text-white hover:bg-white/10 bg-transparent"
+                                        >
+                                          {(formData.payment_method === "gcash" ? copiedGcash : copiedBank) ? (
+                                            <Check className="w-4 h-4 mr-2" />
+                                          ) : (
+                                            <Copy className="w-4 h-4 mr-2" />
+                                          )}
+                                          Copy
+                                        </Button>
+                                      </p>
+                                    )}
+
+                                    {method.qr_code && (
+                                      <div className="mt-2 w-full">
+                                        {method.qr_code && (
+                                          <div className="mt-2 w-full">
+                                            <Image
+                                              src={`${process.env.NEXT_PUBLIC_API_URL}/${method.qr_code}`}
+                                              alt="QR Code"
+                                              width={360}
+                                              height={360}
+                                              className="rounded border border-white/20 object-cover"
+                                            />
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+
+                                    <div className="mt-4">
+                                      <Label className="text-white">Upload Receipt *</Label>
+                                      <div className="mt-2">
+                                        {receiptFile ? (
+                                          <div className="flex items-center gap-2 p-3 bg-white/10 rounded-lg border border-white/30">
+                                            <Check className="w-4 h-4 text-[#ff6b6b]" />
+                                            <span className="text-white text-sm">Receipt uploaded</span>
+                                            <Button
+                                              type="button"
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={removeReceipt}
+                                              className="ml-auto text-[#ff6b6b] hover:bg-white/10"
+                                            >
+                                              <X className="w-4 h-4" />
+                                            </Button>
+                                          </div>
+                                        ) : (
+                                          <label className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-white/30 rounded-lg cursor-pointer hover:border-white/50 transition-colors">
+                                            <Upload className="w-5 h-5 text-white/70" />
+                                            <span className="text-white/70">Click to upload receipt</span>
+                                            <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                                          </label>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ))
+                        )}
+                      </div>
                     </div>
 
                     {/* Reference number */}
@@ -1101,29 +1252,6 @@ export default function ReservationsPage() {
                         placeholder="Enter payment reference number"
                         className="w-full px-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white placeholder-white/40"
                       />
-                    </div>
-
-                    {/* Receipt upload */}
-                    <div>
-                      <label className="block text-sm font-semibold text-white mb-3">Receipt Screenshot *</label>
-                      <input
-                        type="file"
-                        name="payment_receipt"
-                        accept="image/*"
-                        required
-                        onChange={(e) => {
-                          const file = e.target.files?.[0]
-                          if (file) {
-                            setFormData((prev) => ({ ...prev, payment_receipt: file }))
-                            if (receiptPreview) URL.revokeObjectURL(receiptPreview)
-                            setReceiptPreview(URL.createObjectURL(file))
-                          }
-                        }}
-                        className="w-full px-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl text-lg text-white"
-                      />
-                      {formData.payment_receipt && (
-                        <p className="mt-2 text-white/60 text-xs">Selected: {formData.payment_receipt.name}</p>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -1142,9 +1270,15 @@ export default function ReservationsPage() {
                     <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-2">
                       <h3 className="text-lg font-semibold text-white mb-2">Guest Information</h3>
                       <div className="flex flex-col gap-3 text-white/80">
-                        <span><span className="font-semibold">Name:</span> {formData.name}</span>
-                        <span><span className="font-semibold">Email:</span> {formData.email}</span>
-                        <span><span className="font-semibold">Phone:</span> {formData.phone}</span>
+                        <span>
+                          <span className="font-semibold">Name:</span> {formData.name}
+                        </span>
+                        <span>
+                          <span className="font-semibold">Email:</span> {formData.email}
+                        </span>
+                        <span>
+                          <span className="font-semibold">Phone:</span> {formData.phone}
+                        </span>
                       </div>
                     </div>
 
@@ -1152,16 +1286,27 @@ export default function ReservationsPage() {
                     <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-2">
                       <h3 className="text-lg font-semibold text-white mb-2">Reservation Details</h3>
                       <div className="grid grid-cols-2 gap-4 text-white/80">
-                        <span><span className="font-semibold">Date:</span> {formData.date}</span>
-                        <span><span className="font-semibold">Time:</span> {formData.time}</span>
-                        <span><span className="font-semibold">Guests:</span> {formData.guests}</span>
-                        <span><span className="font-semibold">Dining:</span> {formData.dining_preference}</span>
-                        <span><span className="font-semibold">VIP Room:</span> {isVIP ? "Yes" : "No"}</span>
                         <span>
-                          <span className="font-semibold">Package:</span>{" "}
-                          {selectedPackage ? selectedPackage.name : "Custom Reservation"}
+                          <span className="font-semibold">Date:</span> {formData.date}
                         </span>
-                        <span><span className="font-semibold">Occasion:</span> {formData.occasion || "—"}</span>
+                        <span>
+                          <span className="font-semibold">Time:</span> {formData.time}
+                        </span>
+                        <span>
+                          <span className="font-semibold">Guests:</span> {formData.guests}
+                        </span>
+                        <span>
+                          <span className="font-semibold">Dining:</span> {formData.dining_preference}
+                        </span>
+                        <span>
+                          <span className="font-semibold">VIP Room:</span> {isVIP ? "Yes" : "No"}
+                        </span>
+                        <span>
+                          <span className="font-semibold">Package:</span> {selectedPackage ? selectedPackage.name : "Custom Reservation"}
+                        </span>
+                        <span>
+                          <span className="font-semibold">Occasion:</span> {formData.occasion || "—"}
+                        </span>
                       </div>
                     </div>
 
@@ -1247,7 +1392,6 @@ export default function ReservationsPage() {
                   </button>
                 )}
               </div>
-
             </div>
           </div>
         </div>
@@ -1255,10 +1399,7 @@ export default function ReservationsPage() {
 
       {/* Receipt preview modal */}
       {openReceipt && receiptPreview && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
-          onClick={() => setOpenReceipt(false)}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={() => setOpenReceipt(false)}>
           <div
             className="relative w-full max-w-3xl bg-[#0b1d26] border border-white/20 rounded-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
@@ -1275,7 +1416,6 @@ export default function ReservationsPage() {
           </div>
         </div>
       )}
-
     </div>
   )
 }
