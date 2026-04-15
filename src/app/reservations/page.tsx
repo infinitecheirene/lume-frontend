@@ -260,25 +260,6 @@ export default function ReservationsPage() {
   }, [])
 
   useEffect(() => {
-    if (!formData.date || !user) return
-    const check = async () => {
-      try {
-        const token = localStorage.getItem("auth_token")
-        const res = await fetch(`/api/reservations/check-daily?date=${formData.date}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setDailyBookingsCount(data.count ?? 0)
-        }
-      } catch (err) {
-        console.error("Error checking daily bookings:", err)
-      }
-    }
-    check()
-  }, [formData.date, user])
-
-  useEffect(() => {
     if (selectedPackage) return
 
     const fee = calculateReservationFee(formData.occasion, Number(formData.guests) || 1, formData.dining_preference)
@@ -340,7 +321,7 @@ export default function ReservationsPage() {
       time: slot,
     }))
   }
-  
+
   useEffect(() => {
     if (!date) return
 
