@@ -131,6 +131,22 @@ const ReservationsHistory = () => {
     return reservations.filter((res) => res.status === status).length
   }
 
+  const getReceiptUrl = (path: string) => {
+    if (!path) return ""
+
+    // already full URL
+    if (path.startsWith("http")) return path
+
+    // already starts with storage or uploads
+    if (path.startsWith("storage") || path.startsWith("uploads")) {
+      return `${process.env.NEXT_PUBLIC_API_URL}/${path}`
+    }
+
+    // fallback
+    return `${process.env.NEXT_PUBLIC_API_URL}/storage/${path}`
+  }
+
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0b1d26] text-white">
@@ -170,12 +186,12 @@ const ReservationsHistory = () => {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-[#d4a24c]/20 rounded-full blur-3xl animate-pulse delay-500"></div>
         </div>
 
-        <Card className="max-w-md w-full bg-[#0c222b] backdrop-blur-sm border-white/30 shadow-2xl relative z-10">
+        <Card className="flex items-center justify-center max-w-xl mx-5 md:mx-auto bg-[#0c222b] backdrop-blur-sm border-white/30 shadow-2xl relative z-10">
           <CardContent className="p-10 text-center">
             <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
               <User className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-3xl font-black text-white mb-3">Welcome Back!</h1>
+            <h1 className="text-3xl font-black text-white mb-3">Welcome!</h1>
             <p className="text-white/70 mb-8">Please log in to view your reservations history.</p>
             <div className="flex flex-col gap-3">
               <Link href="/login" className="w-full">
@@ -220,8 +236,10 @@ const ReservationsHistory = () => {
             </div>
           </div>
         </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
           <div className="space-y-2">
+
             {/* Filters */}
             <div className="mx-auto md:mx-10 lg:mx-auto backdrop-blur-sm h-fit lg:top-6 bg-[#0c222b] rounded-2xl p-8 border border-[#a47015]/60 text-center hover:border-[#d4a24c]/40 transition shadow-[0_0_20px_rgba(212,162,76,0.35)]">
               <div className="flex items-center gap-2 mb-2">
@@ -312,173 +330,160 @@ const ReservationsHistory = () => {
               {filteredReservations.map((reservation) => (
                 <Card
                   key={reservation.id}
-                  className="mx-5 group bg-[#162A3A]/40 backdrop-blur-xl border border-white/20 hover:border-[#d4a24c]/40 transition-all duration-500 hover:shadow-[0_0_30px_rgba(212,162,76,0.3)] rounded-2xl overflow-hidden"
+                  className="mx-5 group bg-[#0f1f2b]/60 backdrop-blur-2xl border border-white/10 hover:border-[#d4a24c]/40 transition-all duration-500 hover:shadow-[0_0_40px_rgba(212,162,76,0.25)] rounded-2xl overflow-hidden"
                 >
-
                   {/* HEADER */}
-                  <div className="px-6 py-4 border-b border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="px-6 py-5 border-b border-white/10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-white font-black text-xl sm:text-2xl">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <h2 className="text-white font-bold text-xl md:text-2xl tracking-tight">
                           {reservation.occasion}
                         </h2>
-                        <span className="text-white/60 text-sm">
+
+                        <span className="text-white/40 text-sm font-mono">
                           #{reservation.reservation_number}
                         </span>
                       </div>
 
-                      <p className="text-white/60 text-xs sm:text-sm mt-1">
+                      <p className="text-white/40 text-xs">
                         Created{" "}
                         {new Date(reservation.created_at).toLocaleDateString("en-US", {
                           month: "short",
-                          day: "numeric",
+                          day: "2-digit",
                           year: "numeric",
                         })}
                       </p>
                     </div>
 
-                    <Badge
-                      className={`${getStatusColor(reservation.status)} px-3 py-1 border self-start sm:self-auto`}
-                    >
-                      {getStatusIcon(reservation.status)}
-                      <span className="ml-1 capitalize font-semibold">
-                        {reservation.status}
-                      </span>
-                    </Badge>
+                    <div className="flex items-center gap-3">
+                      <Badge
+                        className={`${getStatusColor(
+                          reservation.status
+                        )} px-3 py-1 rounded-full border text-xs font-semibold`}
+                      >
+                        {getStatusIcon(reservation.status)}
+                        <span className="ml-1 capitalize">{reservation.status}</span>
+                      </Badge>
+                    </div>
                   </div>
-
 
                   <CardContent className="p-6 space-y-6">
 
-                    {/* DATE + TIME */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Calendar className="w-4 h-4 text-[#d4a24c]" />
-                          <span className="text-xs text-white/60 font-semibold">Date</span>
+                    {/* TOP SUMMARY STRIP */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {[
+                        {
+                          label: "Date",
+                          value: new Date(reservation.date).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "2-digit",
+                          }),
+                          icon: Calendar,
+                        },
+                        {
+                          label: "Time",
+                          value: reservation.time,
+                          icon: Clock,
+                        },
+                        {
+                          label: "Guests",
+                          value: `${reservation.guests}`,
+                          icon: Users,
+                        },
+                        {
+                          label: "Dining",
+                          value: reservation.dining_preference || "-",
+                          icon: ChefHat,
+                        },
+                      ].map((item, i) => (
+                        <div
+                          key={i}
+                          className="bg-white/5 border border-white/10 rounded-xl p-3"
+                        >
+                          <div className="flex items-center gap-2 text-white/50 text-xs mb-1">
+                            <item.icon className="w-3.5 h-3.5 text-[#d4a24c]" />
+                            {item.label}
+                          </div>
+                          <p className="text-white font-semibold text-sm truncate">
+                            {item.value}
+                          </p>
                         </div>
-                        <p className="font-semibold text-white">
-                          {new Date(reservation.date).toLocaleDateString("en-US", {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </p>
-                      </div>
-
-                      <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Clock className="w-4 h-4 text-[#d4a24c]" />
-                          <span className="text-xs text-white/60 font-semibold">Time</span>
-                        </div>
-                        <p className="font-semibold text-white">{reservation.time}</p>
-                      </div>
+                      ))}
                     </div>
 
-                    {/* DETAILS */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* INFO GRID */}
+                    <div className="grid md:grid-cols-2 gap-6">
 
                       {/* LEFT */}
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4 text-white/60" />
-                          <span className="text-white/60 text-sm">Guests:</span>
-                          <span className="font-semibold text-white">
-                            {reservation.guests} people
-                          </span>
-                        </div>
+                      <div className="space-y-4 bg-white/5 border border-white/10 rounded-xl p-5">
+                        <h3 className="text-white/60 text-xs uppercase tracking-widest font-semibold">
+                          Guest Info
+                        </h3>
 
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-white/60" />
-                          <span className="text-white/60 text-sm">Name:</span>
-                          <span className="font-semibold text-white">
-                            {reservation.name}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-white/60" />
-                          <span className="text-white/60 text-sm">Email:</span>
-                          <span className="text-white text-sm truncate">
-                            {reservation.email}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Phone className="w-4 h-4 text-white/60" />
-                          <span className="text-white/60 text-sm">Phone:</span>
-                          <span className="text-white text-sm">
-                            {reservation.phone}
-                          </span>
+                        <div className="space-y-3 text-sm">
+                          <InfoRow icon={User} label="Name" value={reservation.name} />
+                          <InfoRow icon={Mail} label="Email" value={reservation.email} />
+                          <InfoRow icon={Phone} label="Phone" value={reservation.phone} />
                         </div>
                       </div>
 
                       {/* RIGHT */}
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <ChefHat className="w-4 h-4 text-white/60" />
-                          <span className="text-white/60 text-sm">Dining:</span>
-                          <span className="text-white text-sm">
-                            {reservation.dining_preference || "-"}
-                          </span>
-                        </div>
+                      <div className="space-y-4 bg-white/5 border border-white/10 rounded-xl p-5">
+                        <h3 className="text-white/60 text-xs uppercase tracking-widest font-semibold">
+                          Occasion & Notes
+                        </h3>
 
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-white/60" />
-                          <span className="text-white/60 text-sm">Occasion:</span>
-                          <span className="text-white text-sm">
-                            {reservation.occasion || "-"}
-                          </span>
+                        <div className="space-y-3 text-sm">
+                          <InfoRow
+                            icon={Calendar}
+                            label="Occasion"
+                            value={reservation.occasion || "-"}
+                          />
+
+                          {reservation.special_requests && (
+                            <div className="pt-2">
+                              <p className="text-white/40 text-xs mb-1">Special Requests</p>
+                              <p className="text-white text-sm leading-relaxed">
+                                {reservation.special_requests}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
 
-                    {/* PAYMENT */}
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      <Badge className="bg-white/10 text-white border-white/20">
-                        ₱{reservation.reservation_fee || "0.00"}
-                      </Badge>
+                    {/* PAYMENT BAR */}
+                    <div className="bg-gradient-to-r from-white/5 to-white/0 border border-white/10 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
 
-                      <Badge className="bg-white/10 text-white border-white/20">
-                        {reservation.payment_method || "No Method"}
-                      </Badge>
-
-                      {reservation.payment_reference && (
-                        <Badge className="bg-white/10 text-white border-white/20">
-                          Ref: {reservation.payment_reference}
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <Badge className="bg-white/10 text-white border-white/10">
+                          ₱{reservation.reservation_fee || "0.00"}
                         </Badge>
-                      )}
+
+                        <Badge className="bg-white/10 text-white border-white/10">
+                          {reservation.payment_method || "No Method"}
+                        </Badge>
+
+                        {reservation.payment_reference && (
+                          <Badge className="bg-white/10 text-white border-white/10">
+                            Ref: {reservation.payment_reference}
+                          </Badge>
+                        )}
+                      </div>
 
                       {reservation.payment_receipt && (
                         <button
                           onClick={() => setSelectedReceipt(reservation.payment_receipt)}
-                          className="text-xs text-[#d4a24c] underline ml-1"
+                          className="text-sm text-[#d4a24c] hover:text-white transition underline"
                         >
                           View Receipt
                         </button>
                       )}
                     </div>
-
-                    {/* SPECIAL REQUEST */}
-                    {reservation.special_requests && (
-                      <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                        <div className="flex items-start gap-2">
-                          <MessageSquare className="w-4 h-4 text-[#d4a24c] mt-1" />
-                          <div>
-                            <p className="text-xs text-white/60 font-semibold mb-1">
-                              Special Requests
-                            </p>
-                            <p className="text-white text-sm">
-                              {reservation.special_requests}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
                   </CardContent>
                 </Card>
+
               ))}
             </div>
           )}
@@ -505,7 +510,7 @@ const ReservationsHistory = () => {
               {/* CONTENT */}
               <div className="w-full max-h-[80vh] overflow-auto rounded-xl border border-white/10 bg-black">
                 <img
-                  src={`/${selectedReceipt}`}
+                  src={getReceiptUrl(selectedReceipt)}
                   alt="Receipt"
                   className="w-full h-auto object-contain"
                 />
@@ -520,3 +525,23 @@ const ReservationsHistory = () => {
 }
 
 export default ReservationsHistory
+
+const InfoRow = ({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: any
+  label: string
+  value: string
+}) => (
+  <div className="flex items-center justify-between gap-3">
+    <div className="flex items-center gap-2 text-white/50">
+      <Icon className="w-4 h-4 text-[#d4a24c]" />
+      <span>{label}</span>
+    </div>
+    <span className="text-white font-medium truncate max-w-[60%]">
+      {value}
+    </span>
+  </div>
+)

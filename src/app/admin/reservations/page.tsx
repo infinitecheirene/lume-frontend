@@ -56,6 +56,7 @@ interface Reservation {
   reservation_fee_paid?: number
   dining_preference: string
   occasion?: string
+  package?: string
   reservation_fee?: number
   payment_status?: "pending" | "paid" | "failed"
   payment_method?: string
@@ -208,6 +209,7 @@ export default function ReservationsAdmin() {
     date: "",
     time: "",
     guests: 1,
+    package: "",
     dining_preference: "",
     occasion: "",
     reservation_fee: 0,
@@ -865,12 +867,13 @@ export default function ReservationsAdmin() {
                             </div>
                           </section>
 
-                          {(viewingReservation.dining_preference || viewingReservation.occasion) && (
+                          {(viewingReservation.dining_preference || viewingReservation.occasion || viewingReservation.package) && (
                             <section className="bg-gray-50 rounded-xl p-5 space-y-4">
                               <h3 className="text-lg font-bold text-gray-900">Preferences</h3>
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 {viewingReservation.dining_preference && <div><p className="text-sm text-gray-500">Dining Preference</p><p className="text-base font-medium text-gray-800">{viewingReservation.dining_preference}</p></div>}
                                 {viewingReservation.occasion && <div><p className="text-sm text-gray-500">Occasion</p><p className="text-base font-medium text-gray-800">{viewingReservation.occasion}</p></div>}
+                                {viewingReservation.package && <div><p className="text-sm text-gray-500">Package</p><p className="text-base font-medium text-gray-800">{viewingReservation.package}</p></div>}
                               </div>
                             </section>
                           )}
@@ -984,13 +987,16 @@ export default function ReservationsAdmin() {
                           <Select value={formData.dining_preference} onValueChange={(value: DiningPreference) => setFormData({ ...formData, dining_preference: value })}>
                             <SelectTrigger className="bg-gray-100 border-gray-600 text-gray-800"><SelectValue placeholder="Dining Preference" /></SelectTrigger>
                             <SelectContent className="bg-gray-100 text-gray-800">
+                              <SelectItem value="Regular" disabled>--Regular--</SelectItem>
                               <SelectItem value="Main Dining">Main Dining</SelectItem>
-                              <SelectItem value="Private Tatami Room">Private Tatami Room</SelectItem>
-                              <SelectItem value="Chef's Counter">Chef&apos;s Counter</SelectItem>
-                              <SelectItem value="Window Seat">Window Seat</SelectItem>
-                              <SelectItem value="Celebration Area">Celebration Area</SelectItem>
-                              <SelectItem value="Family Seating">Family Seating</SelectItem>
-                              <SelectItem value="Group Dining">Group Dining</SelectItem>
+                              <SelectItem value="Lounge Seating">Lounge Seating</SelectItem>
+                              <SelectItem value="High Table">High Table</SelectItem>
+                              <SelectItem value="Bar Counter">Bar Counter</SelectItem>
+                              <SelectItem value="Regular" disabled>--VIP--</SelectItem>
+                              <SelectItem value="The Loft">The Loft</SelectItem>
+                              <SelectItem value="Amber Room">Amber Room</SelectItem>
+                              <SelectItem value="Aurora Lounge">Aurora Lounge</SelectItem>
+                              <SelectItem value="Velvet Room">Velvet Room</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -999,11 +1005,11 @@ export default function ReservationsAdmin() {
                           <Select value={formData.occasion} onValueChange={(value: OccasionType) => setFormData({ ...formData, occasion: value })}>
                             <SelectTrigger className="bg-gray-100 border-gray-600 text-gray-800"><SelectValue placeholder="Occasion Type" /></SelectTrigger>
                             <SelectContent className="bg-gray-100 text-gray-800">
-                              <SelectItem value="Casual Dinner">Casual Dinner</SelectItem>
-                              <SelectItem value="Birthday">Birthday</SelectItem>
-                              <SelectItem value="Business Meeting">Business Meeting</SelectItem>
-                              <SelectItem value="Anniversary">Anniversary</SelectItem>
-                              <SelectItem value="Private Event">Private Event</SelectItem>
+                              <SelectItem value="Celebration">Celebration</SelectItem>
+                              <SelectItem value="Romantic">Romantic</SelectItem>
+                              <SelectItem value="Night Life">Night Life</SelectItem>
+                              <SelectItem value="Professional">Professional</SelectItem>
+                              <SelectItem value="Casual">Casual</SelectItem>
                               <SelectItem value="Other">Other</SelectItem>
                             </SelectContent>
                           </Select>

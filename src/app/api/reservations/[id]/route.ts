@@ -1,18 +1,24 @@
 import { type NextRequest, NextResponse } from "next/server"
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
+if (!apiUrl) {
+  throw new Error("NEXT_PUBLIC_API_URL is not defined")
+}
+
 // GET single reservation by ID
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL
     const authHeader = request.headers.get("authorization")
 
-    console.log(`GET Reservation ID: ${params.id}`)
-
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
       Accept: "application/json",
     }
 
+    // optional auth (no longer required)
     if (authHeader) {
       headers["Authorization"] = authHeader
     }
@@ -22,68 +28,68 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       headers,
     })
 
-    console.log("Laravel Response Status:", response.status)
+    const data = await response.json().catch(() => null)
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      console.error("Laravel Error:", errorData)
-      throw new Error(`Failed to fetch reservation: ${response.status}`)
+      return NextResponse.json(
+        {
+          success: false,
+          error: data?.message || "Failed to fetch reservation",
+        },
+        { status: response.status }
+      )
     }
 
-    const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error("Reservation GET by ID API Error:", error)
-    return NextResponse.json({ error: "Failed to fetch reservation" }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to fetch reservation",
+      },
+      { status: 500 }
+    )
   }
 }
 
 // UPDATE reservation by ID
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const { id } = await params
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL
-    if (!apiUrl) throw new Error("NEXT_PUBLIC_API_URL is not defined")
-
     const authHeader = request.headers.get("authorization")
 
-    if (!authHeader) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Authentication required",
-          message: "No authorization token provided",
-        },
-        { status: 401 },
-      )
-    }
-
     const formData = await request.formData()
-
     formData.append("_method", "PUT")
 
-    const response = await fetch(`${apiUrl}/api/reservations/${id}`, {
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+    }
+
+    // optional auth (no longer required)
+    if (authHeader) {
+      headers["Authorization"] = authHeader
+    }
+
+    const response = await fetch(`${apiUrl}/api/reservations/${params.id}`, {
       method: "POST",
-      headers: {
-        Authorization: authHeader,
-        Accept: "application/json",
-      },
+      headers,
       body: formData,
     })
 
-    const responseText = await response.text()
+    const text = await response.text()
 
     let data: any
     try {
-      data = JSON.parse(responseText)
+      data = JSON.parse(text)
     } catch {
       return NextResponse.json(
         {
           success: false,
-          error: "Invalid response from server",
-          message: responseText,
+          error: "Invalid server response",
         },
-        { status: 502 },
+        { status: 502 }
       )
     }
 
@@ -91,10 +97,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json(
         {
           success: false,
-          error: data.error || "Failed to update reservation",
-          message: data.message || "Unknown error",
+          error: data?.message || "Failed to update reservation",
         },
-        { status: response.status },
+        { status: response.status }
       )
     }
 
@@ -103,45 +108,31 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       data,
     })
   } catch (error) {
-    console.error("Reservation PUT API Error:", error)
-
     return NextResponse.json(
       {
         success: false,
         error: "Failed to update reservation",
-        message: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     )
   }
 }
 
 // DELETE reservation by ID
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL
     const authHeader = request.headers.get("authorization")
 
-    console.log("=== DELETE Reservation from Laravel ===")
-    console.log("Reservation ID:", params.id)
-    console.log("Auth Header:", authHeader ? "Present" : "Missing")
-
-    if (!authHeader) {
-      console.error("⚠️ No authorization header provided!")
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Authentication required",
-          message: "No authorization token provided",
-        },
-        { status: 401 },
-      )
+    const headers: Record<string, string> = {
+      Accept: "application/json",
     }
 
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      Authorization: authHeader,
+    // optional auth (no longer required)
+    if (authHeader) {
+      headers["Authorization"] = authHeader
     }
 
     const response = await fetch(`${apiUrl}/api/reservations/${params.id}`, {
@@ -149,39 +140,28 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       headers,
     })
 
-    console.log("Laravel Response Status:", response.status)
+    const data = await response.json().catch(() => null)
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      console.error("Laravel Error Response:", errorData)
-
       return NextResponse.json(
         {
           success: false,
-          error: errorData.error || "Failed to delete reservation",
-          message: errorData.message || "Unknown error",
+          error: data?.message || "Failed to delete reservation",
         },
-        { status: response.status },
+        { status: response.status }
       )
     }
 
-    const data = await response.json().catch(() => ({
-      success: true,
-      message: "Reservation deleted successfully",
-    }))
-
-    console.log("✅ Delete Success:", data)
-
-    return NextResponse.json(data)
+    return NextResponse.json(
+      data || { success: true, message: "Reservation deleted successfully" }
+    )
   } catch (error) {
-    console.error("❌ Reservation DELETE API Error:", error)
     return NextResponse.json(
       {
         success: false,
         error: "Failed to delete reservation",
-        message: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     )
   }
 }

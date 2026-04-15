@@ -24,121 +24,86 @@ async function sendAdminNotification(reservationData: any) {
         <html>
         <head>
           <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #162a3a; color: #e5a834; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-            .header h1 { margin: 0; font-size: 28px; }
-            .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
-            .info-box { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #162a3a; }
-            .info-row { display: flex; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
-            .info-row:last-child { border-bottom: none; }
-            .info-label { font-weight: bold; color: #6b7280; min-width: 150px; }
-            .info-value { color: #111827; }
-            .special-requests { background: #f0fdf4; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #10b981; }
-            .footer { text-align: center; color: #6b7280; font-size: 14px; margin-top: 20px; }
-            .status-badge { display: inline-block; padding: 6px 12px; background: #dbeafe; color: #1e40af; border-radius: 20px; font-size: 14px; font-weight: bold; }
+            body { font-family: Arial, sans-serif; background:#0b1d26; margin:0; padding:0; }
+            .container { max-width:600px; margin:auto; padding:20px; }
+            .card { background:#162a3a; border-radius:16px; overflow:hidden; color:white; }
+            .header { padding:25px; background:linear-gradient(135deg,#d4a24c,#b8862b); color:#111; text-align:center; }
+            .header h1 { margin:0; font-size:22px; }
+            .content { padding:20px; background:#0f2230; }
+
+            .section { background:#132b3a; margin-bottom:15px; padding:15px; border-radius:12px; border:1px solid rgba(255,255,255,0.08); }
+            .title { font-size:12px; text-transform:uppercase; letter-spacing:2px; color:#d4a24c; margin-bottom:10px; }
+
+            .row { display:flex; justify-content:space-between; padding:6px 0; font-size:14px; }
+            .label { color:#9ca3af; }
+            .value { color:#fff; font-weight:500; }
+
+            .highlight { color:#d4a24c; font-weight:bold; }
+
+            .footer { text-align:center; font-size:12px; color:#9ca3af; padding:15px; }
           </style>
         </head>
+
         <body>
-          <div class="container">
+        <div class="container">
+          <div class="card">
+
             <div class="header">
-              <h1>🎉 Reservation Alert!</h1>
-              <p style="margin: 10px 0 0 0; font-size: 16px;">You have a Reservation!</p>
+              <h1>New Reservation Received</h1>
+              <p style="margin:5px 0 0;">A customer has booked a table</p>
             </div>
-            
+
             <div class="content">
-              <div class="info-box">
-                <h2 style="margin-top: 0; color: #162a3a;">Customer Details</h2>
-                <div class="info-row">
-                  <span class="info-label">Name:</span>
-                  <span class="info-value">${reservationData.name}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Email:</span>
-                  <span class="info-value">${reservationData.email}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Phone:</span>
-                  <span class="info-value">${reservationData.phone}</span>
-                </div>
+
+              <div class="section">
+                <div class="title">Customer Details</div>
+                <div class="row"><span class="label">Name</span><span class="value">${reservationData.name}</span></div>
+                <div class="row"><span class="label">Email</span><span class="value">${reservationData.email}</span></div>
+                <div class="row"><span class="label">Phone</span><span class="value">${reservationData.phone}</span></div>
               </div>
 
-              <div class="info-box">
-                <h2 style="margin-top: 0; color: #162a3a;"> Reservation Details</h2>
-                <div class="info-row">
-                  <span class="info-label">Date:</span>
-                  <span class="info-value">${new Date(reservationData.date).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Time:</span>
-                  <span class="info-value">${reservationData.time}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Number of Guests:</span>
-                  <span class="info-value">${reservationData.guests} ${reservationData.guests === "1" ? "Guest" : "Guests"}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Dining Preference:</span>
-                  <span class="info-value">${reservationData.dining_preference || "Main Dining"}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Occasion:</span>
-                  <span class="info-value">${reservationData.occasion || "Casual Dinner"}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Package:</span>
-                  <span class="info-value">${reservationData.package || "Custom"}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Reservation Fee:</span>
-                  <span class="info-value">₱${reservationData.reservation_fee || "0"}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Service Charge (10%):</span>
-                  <span class="info-value">₱${Number(reservationData.service_charge).toFixed(2)}</span>
-                </div>
+              <div class="section">
+                <div class="title">Reservation Details</div>
+                <div class="row"><span class="label">Date</span><span class="value">${new Date(reservationData.date).toDateString()}</span></div>
+                <div class="row"><span class="label">Time</span><span class="value">${reservationData.time}</span></div>
+                <div class="row"><span class="label">Guests</span><span class="value">${reservationData.guests}</span></div>
+                <div class="row"><span class="label">Dining</span><span class="value">${reservationData.dining_preference}</span></div>
+                <div class="row"><span class="label">Occasion</span><span class="value">${reservationData.occasion || "N/A"}</span></div>
+                <div class="row"><span class="label">Package</span><span class="value">${reservationData.package || "Custom"}</span></div>
+              </div>
 
-                <div class="info-row">
-                  <span class="info-label">Total Bill:</span>
-                  <span class="info-value">₱${Number(reservationData.total_bill).toFixed(2)}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Payment Method:</span>
-                  <span class="info-value">${reservationData.payment_method || "Not provided"}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Reference:</span>
-                  <span class="info-value">${reservationData.payment_reference || "N/A"}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Receipt:</span>
-                  <span class="info-value">${reservationData.payment_receipt || "N/A"}</span>
-                </div>
+              <div class="section">
+                <div class="title">Payment</div>
+                <div class="row"><span class="label">Fee</span><span class="value">₱${reservationData.reservation_fee}</span></div>
+                <div class="row"><span class="label">Service Charge</span><span class="value">₱${Number(reservationData.service_charge).toFixed(2)}</span></div>
+                <div class="row"><span class="label highlight">Total</span><span class="value highlight">₱${Number(reservationData.total_bill).toFixed(2)}</span></div>
+                <div class="row"><span class="label">Method</span><span class="value">${reservationData.payment_method || "N/A"}</span></div>
+                <div class="row"><span class="label">Reference</span><span class="value">${reservationData.payment_reference || "N/A"}</span></div>
               </div>
 
               ${reservationData.special_requests ? `
-              <div class="special-requests">
-                <h3 style="margin-top: 0; color: #059669;">💬 Special Requests</h3>
-                <p style="margin: 0;">${reservationData.special_requests}</p>
-              </div>
-              ` : ''}
+              <div class="section">
+                <div class="title">Special Requests</div>
+                <div class="value">${reservationData.special_requests}</div>
+              </div>` : ""}
 
-              <div class="footer">
-                <p>This is an automated notification from Lumè Bean and Bar Reservation System</p>
-                <p style="margin: 5px 0;">Questions? Reply to this email or contact your support team</p>
-              </div>
             </div>
+
+            <div class="footer">
+              Lumè Bean & Bar • Reservation System
+            </div>
+
           </div>
+        </div>
         </body>
         </html>
       `,
     }
 
     const info = await transporter.sendMail(mailOptions)
-    console.log("✅ Admin notification email sent:", info.messageId)
     return true
   } catch (error) {
-    console.error("❌ Error sending admin notification email:", error)
+    console.error(error)
     return false
   }
 }
@@ -149,185 +114,178 @@ async function sendCustomerConfirmation(reservationData: any) {
     const mailOptions = {
       from: process.env.SMTP_FROM,
       to: reservationData.email,
-      subject: `Reservation Confirmation - ${reservationData.name}`,
+      subject: `Reservation Confirmed - Lumè Bean & Bar`,
       html: `
         <!DOCTYPE html>
         <html>
         <head>
           <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #162a3a; color: #e5a834; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-            .header h1 { margin: 0; font-size: 28px; }
-            .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
-            .info-box { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #162a3a; }
-            .info-row { display: flex; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
-            .info-row:last-child { border-bottom: none; }
-            .info-label { font-weight: bold; color: #6b7280; min-width: 120px; }
-            .info-value { color: #111827; }
-            .alert-box { background: #dbeafe; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #3b82f6; }
-            .footer { text-align: center; color: #6b7280; font-size: 14px; margin-top: 20px; }
+            body { font-family: Arial; background:#0b1d26; margin:0; padding:0; }
+            .container { max-width:600px; margin:auto; padding:20px; }
+
+            .card { background:#162a3a; border-radius:16px; overflow:hidden; color:white; }
+
+            .header {
+              background:linear-gradient(135deg,#d4a24c,#b8862b);
+              padding:30px;
+              text-align:center;
+              color:#111;
+            }
+
+            .header h1 { margin:0; font-size:22px; }
+
+            .content { padding:20px; background:#0f2230; }
+
+            .box {
+              background:#132b3a;
+              padding:15px;
+              border-radius:12px;
+              margin-bottom:15px;
+              border:1px solid rgba(255,255,255,0.08);
+            }
+
+            .row { display:flex; justify-content:space-between; padding:6px 0; font-size:14px; }
+            .label { color:#9ca3af; }
+            .value { color:#fff; }
+
+            .cta {
+              background:#d4a24c;
+              color:#111;
+              text-align:center;
+              padding:12px;
+              border-radius:12px;
+              font-weight:bold;
+              margin-top:10px;
+            }
+
+            .note {
+              background: rgba(255,255,255,0.06);
+              border: 1px solid rgba(255,255,255,0.1);
+              padding: 12px;
+              border-radius: 12px;
+              font-size: 13px;
+              color: #d1d5db;
+              margin-top: 15px;
+              line-height: 1.4;
+            }
+
+            .footer {
+              text-align:center;
+              color:#9ca3af;
+              font-size:12px;
+              margin-top:20px;
+            }
           </style>
         </head>
+
         <body>
-          <div class="container">
+        <div class="container">
+          <div class="card">
+
             <div class="header">
-              <h1>✨ Thank You for Your Reservation!</h1>
-              <p style="margin: 10px 0 0 0; font-size: 16px;">We've received your booking request</p>
+              <h1>Your Reservation is Confirmed ✨</h1>
+              <p style="margin:5px 0 0;">We can't wait to welcome you</p>
             </div>
-            
+
             <div class="content">
-              <p style="font-size: 16px;">Dear <strong>${reservationData.name}</strong>,</p>
-              
-              <p>Thank you for choosing Lumè Bean and Bar! We're excited to host you and your guests.</p>
 
-              <div class="info-box">
-                <h2 style="margin-top: 0; color: #162a3a;">📋 Your Reservation Details</h2>
-                <div class="info-row">
-                  <span class="info-label">Reservation #:</span>
-                  <span class="info-value">${reservationData.reservation_number || "N/A"}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Date:</span>
-                  <span class="info-value">${new Date(reservationData.date).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Time:</span>
-                  <span class="info-value">${reservationData.time}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Guests:</span>
-                  <span class="info-value">${reservationData.guests} ${reservationData.guests === "1" ? "Guest" : "Guests"}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Dining Preference:</span>
-                  <span class="info-value">${reservationData.dining_preference || "Main Dining"}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Occasion:</span>
-                  <span class="info-value">${reservationData.occasion || "Casual Dinner"}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Reservation Fee:</span>
-                  <span class="info-value">₦${reservationData.reservation_fee || "0"}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Service Charge (10%):</span>
-                  <span class="info-value">₱${Number(reservationData.service_charge).toFixed(2)}</span>
-                </div>
+              <p style="color:#fff;">Hi <b>${reservationData.name}</b>,</p>
+              <p style="color:#9ca3af;">
+                Thank you for choosing Lumè Bean & Bar. Your reservation has been received successfully.
+              </p>
 
-                <div class="info-row">
-                  <span class="info-label">Total Bill:</span>
-                  <span class="info-value">₱${Number(reservationData.total_bill).toFixed(2)}</span>
+              <div class="box">
+                <div class="row">
+                  <span class="label">Reservation #</span>
+                  <span class="value">${reservationData.reservation_number}</span>
                 </div>
-                <div class="info-row">
-                  <span class="info-label">Payment Method:</span>
-                  <span class="info-value">${reservationData.payment_method || "Not provided"}</span>
+                <div class="row">
+                  <span class="label">Date</span>
+                  <span class="value">${new Date(reservationData.date).toDateString()}</span>
                 </div>
-                <div class="info-row">
-                  <span class="info-label">Reference:</span>
-                  <span class="info-value">${reservationData.payment_reference || "N/A"}</span>
+                <div class="row">
+                  <span class="label">Time</span>
+                  <span class="value">${reservationData.time}</span>
+                </div>
+                <div class="row">
+                  <span class="label">Guests</span>
+                  <span class="value">${reservationData.guests}</span>
                 </div>
               </div>
 
-              <div class="alert-box">
-                <h3 style="margin-top: 0; color: #162a3a;">✅ Reservation Confirmed</h3>
-                <p style="margin: 0;">Your reservation has been successfully submitted! Our team will review it and send you a confirmation shortly.</p>
+              <div class="box">
+                <div class="row">
+                  <span class="label">Total Bill</span>
+                  <span class="value">₱${Number(reservationData.total_bill).toFixed(2)}</span>
+                </div>
+                <div class="row">
+                  <span class="label">Payment Method</span>
+                  <span class="value">${reservationData.payment_method || "N/A"}</span>
+                </div>
               </div>
 
-              ${reservationData.special_requests ? `
-              <div class="info-box" style="border-left-color: #3b82f6;">
-                <h3 style="margin-top: 0; color: #2563eb;">💬 Your Special Requests</h3>
-                <p style="margin: 0;">${reservationData.special_requests}</p>
-              </div>
-              ` : ''}
-
-              <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="margin-top: 0; color: #059669;">What's Next?</h3>
-                <ul style="margin: 10px 0; padding-left: 20px;">
-                  <li>You'll receive a confirmation email from our team shortly</li>
-                  <li>We recommend arriving 10-15 minutes before your reservation time</li>
-                  <li>If you need to make changes, please contact us as soon as possible</li>
-                </ul>
+              <!-- ✅ NEW LOGIN NOTE -->
+              <div class="note">
+                <strong style="color:#fff;">Check your reservation status</strong><br/>
+                Please log in to your account to track your reservation updates.  
+                If you don’t have an account yet, please sign up to access your booking history.
               </div>
 
-              <div style="text-align: center; margin-top: 30px;">
-                <p style="color: #6b7280;">Need to make changes or have questions?</p>
-                <h4 style="margin: 5px 0;">Contact us:</h4>
-                <p style="margin: 5px 0;">+234 810 123 4567</p>
-                <p style="margin: 5px 0;"><a href="mailto:info@lumèbeanandbar.com">info@lumèbeanandbar.com</a></p>
+              <div class="cta">
+                Please arrive 10–15 minutes before your reservation time
               </div>
 
-              <div class="footer">
-                <p>We look forward to serving you!</p>
-                <p style="margin: 5px 0;"><strong>Lumè Bean and Bar</strong></p>
-                <p style="margin: 5px 0; font-size: 12px;">This is an automated confirmation email</p>
-              </div>
+              <p style="margin-top:15px; color:#9ca3af; font-size:13px;">
+                If you need to modify your booking, please contact us as soon as possible.
+              </p>
+
             </div>
+
+            <div class="footer">
+              Lumè Bean & Bar • We look forward to serving you
+            </div>
+
           </div>
+        </div>
         </body>
         </html>
       `,
     }
 
     const info = await transporter.sendMail(mailOptions)
-    console.log("✅ Customer confirmation email sent:", info.messageId)
     return true
   } catch (error) {
-    console.error("❌ Error sending customer confirmation email:", error)
+    console.error(error)
     return false
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL
-    if (!apiUrl) {
-      throw new Error("NEXT_PUBLIC_API_URL is not configured")
-    }
+    if (!apiUrl) throw new Error("NEXT_PUBLIC_API_URL is not configured")
 
-    const authHeader = request.headers.get("authorization")
-    console.log("GET Reservations - Auth Header:", authHeader ? "Present" : "Missing")
-
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    }
-
-    if (authHeader) {
-      headers["Authorization"] = authHeader
-    }
-
-    const url = `${apiUrl}/api/reservations`
-    console.log("Fetching from:", url)
-
-    const response = await fetch(url, {
+    const response = await fetch(`${apiUrl}/api/reservations`, {
       method: "GET",
-      headers,
+      headers: {
+        Accept: "application/json",
+      },
     })
 
-    console.log("Laravel Response Status:", response.status)
-
-    const responseText = await response.text()
-    let data
-    try {
-      data = JSON.parse(responseText)
-    } catch (e) {
-      console.error("Failed to parse response:", responseText)
-      throw new Error("Invalid JSON response from server")
-    }
+    const data = await response.json()
 
     if (!response.ok) {
-      console.error("Laravel Error:", data)
       return NextResponse.json(
-        { error: data.message || "Failed to fetch reservations", data: data },
+        {
+          error: data.message || "Failed to fetch reservations",
+          data,
+        },
         { status: response.status }
       )
     }
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error("Reservations GET API Error:", error)
     return NextResponse.json(
       {
         error: "Failed to fetch reservations",
@@ -341,10 +299,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL
-    const authHeader = request.headers.get("authorization")
+    if (!apiUrl) throw new Error("NEXT_PUBLIC_API_URL is not configured")
 
-    console.log("=== POST Reservation to Laravel ===")
-    console.log("Auth Header:", authHeader ? "Present" : "Missing")
+    console.log("=== POST Reservation (No Auth Mode) ===")
 
     const contentType = request.headers.get("content-type") || ""
 
@@ -352,8 +309,8 @@ export async function POST(request: NextRequest) {
     let jsonBody: any = null
     let reservationData: any = {}
 
+    // Handle FormData (file upload)
     if (contentType.includes("multipart/form-data")) {
-      console.log("Processing as FormData (with file upload)")
       formData = await request.formData()
 
       for (const [key, value] of formData.entries()) {
@@ -361,80 +318,32 @@ export async function POST(request: NextRequest) {
           reservationData[key] = value
         }
       }
-
-      const logData: any = {}
-      for (const [key, value] of formData.entries()) {
-        if (value instanceof File) {
-          logData[key] = `File: ${value.name} (${value.size} bytes)`
-        } else {
-          logData[key] = value
-        }
-      }
-      console.log("FormData contents:", logData)
-    } else {
-      console.log("Processing as JSON")
+    }
+    // Handle JSON
+    else {
       jsonBody = await request.json()
       reservationData = jsonBody
-      console.log("Reservation Data:", jsonBody)
     }
-
-    // Log date information for debugging
-    console.log("📅 Date Information:")
-    console.log("  - Raw date value:", reservationData.date)
-    console.log("  - Parsed date:", new Date(reservationData.date))
-    console.log("  - Formatted date:", new Date(reservationData.date).toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric"
-    }))
-
-    const headers: Record<string, string> = {
-      Accept: "application/json",
-    }
-
-    if (authHeader) {
-      headers["Authorization"] = authHeader
-      console.log("Authorization header forwarded to Laravel")
-    } else {
-      console.warn("⚠️ No authorization header - reservation will be created as guest")
-    }
-
-    if (!formData) {
-      headers["Content-Type"] = "application/json"
-    }
-
-    console.log("Sending to:", `${apiUrl}/api/reservations`)
 
     const response = await fetch(`${apiUrl}/api/reservations`, {
       method: "POST",
-      headers,
+      headers: {
+        Accept: "application/json",
+        ...(formData ? {} : { "Content-Type": "application/json" }),
+      },
       body: formData || JSON.stringify(jsonBody),
     })
 
-    console.log("Laravel Response Status:", response.status)
-
-    const responseText = await response.text()
-    console.log("Laravel Response Text:", responseText)
-
-    let data
-    try {
-      data = JSON.parse(responseText)
-    } catch (e) {
-      console.error("Failed to parse response as JSON:", responseText)
-      throw new Error("Invalid response from server")
-    }
+    const data = await response.json()
 
     if (!response.ok) {
-      console.error("Laravel Error Response:", data)
+      console.error("Laravel Error:", data)
       throw new Error(data.message || "Failed to create reservation")
     }
 
-    console.log("✅ Success Response:", data)
+    console.log("✅ Reservation created successfully")
 
-    console.log("📧 Sending email notifications...")
-
-    // Attach reservation number from Laravel response
+    // Attach reservation number for emails
     const reservationNumber = data?.data?.reservation_number || "N/A"
 
     const enrichedData = {
@@ -442,31 +351,25 @@ export async function POST(request: NextRequest) {
       reservation_number: reservationNumber,
     }
 
+    console.log("📧 Sending emails...")
+
     const [adminEmailSent, customerEmailSent] = await Promise.all([
       sendAdminNotification(enrichedData),
       sendCustomerConfirmation(enrichedData),
     ])
 
-    console.log("Email notification results:", {
-      adminEmail: adminEmailSent ? "✅ Sent" : "❌ Failed",
-      customerEmail: customerEmailSent ? "✅ Sent" : "❌ Failed",
-    })
-
-    const responseBody = {
-      ...data,
-      emailStatus: {
-        admin: adminEmailSent,
-        customer: customerEmailSent,
+    return NextResponse.json(
+      {
+        ...data,
+        emailStatus: {
+          admin: adminEmailSent,
+          customer: customerEmailSent,
+        },
       },
-    }
-
-    return NextResponse.json(responseBody, { status: 201 })
+      { status: 201 }
+    )
   } catch (error) {
-    console.error("❌ Reservation POST API Error:", error)
-
-    if (error instanceof SyntaxError) {
-      console.error("JSON Parse Error - likely invalid request body format")
-    }
+    console.error("❌ POST Reservation Error:", error)
 
     return NextResponse.json(
       {
@@ -478,3 +381,4 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
