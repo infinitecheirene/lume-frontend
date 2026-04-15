@@ -102,9 +102,9 @@ export default function MenuPage() {
   )
 
   const handleAddToCart = (item: Product) => {
-    const isLoggedIn = false
+    const userData = localStorage.getItem("user_data")
 
-    if (!isLoggedIn) {
+    if (!userData) {
       toast({
         variant: "destructive",
         title: "Login required",
