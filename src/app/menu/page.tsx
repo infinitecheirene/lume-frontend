@@ -33,8 +33,9 @@ export default function MenuPage() {
   const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeMainCategory, setActiveMainCategory] =
-    useState<"Signature" | "Classics" | "Drinks" | "Coffee" | "Refreshers" | "Food" | "Drinks">("Signature")
+  const [activeMainCategory, setActiveMainCategory] = useState<"Signature" | "Classics" | "Drinks" | "Coffee" | "Refreshers" | "Food" | "Drinks">(
+    "Signature",
+  )
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
@@ -82,23 +83,23 @@ export default function MenuPage() {
 
     if (imagePath.startsWith("http")) return imagePath
 
-    const base =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
     return `${base}/images/products/${imagePath}`
   }
 
   const filteredProducts = products.filter((item) =>
-    mainCategoryMap[activeMainCategory]
-      .map((c) => c.toLowerCase())
-      .includes(item.category.toLowerCase())
+    mainCategoryMap[activeMainCategory].map((c) => c.toLowerCase()).includes(item.category.toLowerCase()),
   )
 
-  const groupedProducts = filteredProducts.reduce((acc, item) => {
-    if (!acc[item.category]) acc[item.category] = []
-    acc[item.category].push(item)
-    return acc
-  }, {} as Record<string, Product[]>)
+  const groupedProducts = filteredProducts.reduce(
+    (acc, item) => {
+      if (!acc[item.category]) acc[item.category] = []
+      acc[item.category].push(item)
+      return acc
+    },
+    {} as Record<string, Product[]>,
+  )
 
   const handleAddToCart = (item: Product) => {
     const isLoggedIn = false
@@ -139,12 +140,10 @@ export default function MenuPage() {
     }))
   }, [])
 
-
   if (loading) return <LumeLoaderMinimal />
 
   return (
     <section className="relative py-28 bg-[#0b1d26] min-h-screen overflow-hidden">
-
       {/* Background decoration */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
         {/* Glow layer */}
@@ -170,7 +169,6 @@ export default function MenuPage() {
       </div>
 
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
-
         {/* Heading */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8 md:mb-16">
           <p className="tracking-[0.2em] md:tracking-[0.3em] uppercase text-xs md:text-sm mb-2 md:mb-3 text-[#d4a24c]">Our Offerings</p>
@@ -180,20 +178,21 @@ export default function MenuPage() {
         </motion.div>
 
         {/* Tabs */}
-        <div className="flex justify-center gap-4 mb-20">
-          {Object.keys(mainCategoryMap).map((cat) => (
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4 mb-10 md:mb-14 lg:mb-20 px-2">
+          {Object.keys(mainCategoryMap).map((cat, index) => (
             <motion.button
               key={cat}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: Object.keys(mainCategoryMap).indexOf(cat) * 0.1 }}
-              onClick={() =>
-                setActiveMainCategory(cat as keyof typeof mainCategoryMap)
-              }
-              className={`px-8 py-3 rounded-full text-sm font-medium transition-all duration-300 shadow-lg ${activeMainCategory === cat
-                ? "bg-gradient-to-r from-[#d4a24c] to-[#b8943a] text-black font-semibold shadow-[#d4a24c]/30"
-                : "bg-[#132e3b]/80 backdrop-blur-sm text-white/70 hover:bg-[#193847] hover:text-white border border-white/10 hover:border-[#d4a24c]/30"
-                }`}
+              transition={{ delay: index * 0.08 }}
+              onClick={() => setActiveMainCategory(cat as keyof typeof mainCategoryMap)}
+              className={`px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3  rounded-full text-xs sm:text-sm font-medium transition-all duration-300 shadow-lg whitespace-nowrap
+                ${
+                  activeMainCategory === cat
+                    ? "bg-gradient-to-r from-[#d4a24c] to-[#b8943a] text-black font-semibold shadow-[#d4a24c]/30"
+                    : "bg-[#132e3b]/80 backdrop-blur-sm text-white/70 hover:bg-[#193847] hover:text-white border border-white/10 hover:border-[#d4a24c]/30"
+                }
+                `}
             >
               {cat}
             </motion.button>
@@ -202,12 +201,7 @@ export default function MenuPage() {
 
         {/* CONTENT */}
         {Object.entries(groupedProducts).map(([category, items]) => (
-          <motion.div
-            key={category}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-12"
-          >
+          <motion.div key={category} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
             <div className="grid md:grid-cols-2 gap-x-16 gap-y-8">
               {items.map((item, index) => (
                 <motion.div
@@ -223,10 +217,7 @@ export default function MenuPage() {
                             hover:border-[#d4a24c]/30 hover:bg-white/10 transition-all duration-300
                               hover:shadow-lg hover:shadow-[#d4a24c]/10 overflow-hidden"
                   >
-                    <div
-                      className="p-5 flex gap-5"
-                      onClick={() => handleProductClick(item)}
-                    >
+                    <div className="p-5 flex gap-5" onClick={() => handleProductClick(item)}>
                       {/* IMAGE */}
                       <div className="relative w-28 h-28 md:w-32 md:h-32 flex-shrink-0 rounded-xl overflow-hidden">
                         <Image
@@ -239,7 +230,6 @@ export default function MenuPage() {
 
                       {/* CONTENT */}
                       <div className="flex-1 flex flex-col justify-between">
-
                         {/* TITLE + BADGE */}
                         <div>
                           <div className="flex items-start justify-between gap-3">
@@ -255,22 +245,16 @@ export default function MenuPage() {
                             )}
 
                             {Boolean(item.set) && (
-                              <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
-                                Set
-                              </span>
+                              <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">Set</span>
                             )}
                           </div>
 
-                          <p className="text-sm text-white/60 mt-2 line-clamp-2">
-                            {item.description}
-                          </p>
+                          <p className="text-sm text-white/60 mt-2 line-clamp-2">{item.description}</p>
                         </div>
 
                         {/* PRICE + BUTTON */}
                         <div className="flex items-center justify-between mt-4">
-                          <span className="text-[#d4a24c] font-bold text-lg">
-                            ₱{item.price}
-                          </span>
+                          <span className="text-[#d4a24c] font-bold text-lg">₱{item.price}</span>
 
                           <button
                             onClick={(e) => {
@@ -293,10 +277,7 @@ export default function MenuPage() {
                           <div className="px-5 py-3">
                             <div className="flex flex-wrap gap-2">
                               {item.ingredients.split("|").map((ing, i) => (
-                                <span
-                                  key={i}
-                                  className="text-[11px] px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/60"
-                                >
+                                <span key={i} className="text-[11px] px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/60">
                                   {ing.trim()}
                                 </span>
                               ))}
@@ -306,10 +287,8 @@ export default function MenuPage() {
                       </div>
                     </div>
                   </div>
-
                 </motion.div>
               ))}
-
             </div>
           </motion.div>
         ))}
@@ -321,14 +300,9 @@ export default function MenuPage() {
               <span className="text-3xl">🍽️</span>
             </div>
 
-            <h3 className={`${playfair.className} text-2xl font-semibold mb-2`}>
-              No Dishes Available
-            </h3>
+            <h3 className={`${playfair.className} text-2xl font-semibold mb-2`}>No Dishes Available</h3>
 
-            <p className="text-white/60 max-w-md">
-              This category is currently being curated by our chefs.
-              Please check back soon for new offerings.
-            </p>
+            <p className="text-white/60 max-w-md">This category is currently being curated by our chefs. Please check back soon for new offerings.</p>
 
             <div className="mt-6 h-[1px] w-24 bg-[#d4a24c]/30" />
           </div>
@@ -337,56 +311,36 @@ export default function MenuPage() {
         {/* Product Detail Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="max-w-3xl bg-[#0b1d26] border border-white/10 text-white rounded-2xl overflow-hidden p-0">
-
             {/* IMAGE HEADER */}
             <div className="relative w-full h-72">
-              <Image
-                src={getImageUrl(selectedProduct?.image)}
-                alt={selectedProduct?.name || ""}
-                fill
-                className="object-contain"
-              />
+              <Image src={getImageUrl(selectedProduct?.image)} alt={selectedProduct?.name || ""} fill className="object-contain" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0b1d26] via-black/40 to-transparent" />
 
               {/* BADGE */}
               {selectedProduct?.best_seller && (
-                <div className="absolute top-4 left-4 bg-[#d4a24c] text-black px-3 py-1 rounded-full text-xs font-semibold">
-                  ⭐ Best Seller
-                </div>
+                <div className="absolute top-4 left-4 bg-[#d4a24c] text-black px-3 py-1 rounded-full text-xs font-semibold">⭐ Best Seller</div>
               )}
             </div>
 
             {/* CONTENT */}
             <div className="p-6 space-y-5">
-
               {/* TITLE + PRICE */}
               <div className="flex items-start justify-between gap-4">
-                <DialogTitle className={`${playfair.className} text-2xl md:text-3xl font-bold text-[#d4a24c]`}>
-                  {selectedProduct?.name}
-                </DialogTitle>
+                <DialogTitle className={`${playfair.className} text-2xl md:text-3xl font-bold text-[#d4a24c]`}>{selectedProduct?.name}</DialogTitle>
 
-                <div className="text-xl font-bold text-white">
-                  ₱{selectedProduct?.price}
-                </div>
+                <div className="text-xl font-bold text-white">₱{selectedProduct?.price}</div>
               </div>
 
               {/* DESCRIPTION */}
-              <div className="text-white/70 text-sm leading-relaxed">
-                {selectedProduct?.description}
-              </div>
+              <div className="text-white/70 text-sm leading-relaxed">{selectedProduct?.description}</div>
 
               {/* INGREDIENTS */}
               <div>
-                <p className="text-xs uppercase tracking-widest text-white/40 mb-2">
-                  Ingredients
-                </p>
+                <p className="text-xs uppercase tracking-widest text-white/40 mb-2">Ingredients</p>
                 <div className="px-5 py-3">
                   <div className="flex flex-wrap gap-2">
                     {selectedProduct?.ingredients?.split("|").map((ing, i) => (
-                      <span
-                        key={i}
-                        className="text-[11px] px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/60"
-                      >
+                      <span key={i} className="text-[11px] px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/60">
                         {ing.trim()}
                       </span>
                     ))}
@@ -408,7 +362,6 @@ export default function MenuPage() {
               </div>
             </div>
           </DialogContent>
-
         </Dialog>
       </div>
 
