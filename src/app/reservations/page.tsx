@@ -1358,7 +1358,7 @@ export default function ReservationsPage() {
               {step > 1 && step < 6 && (
                 <button
                   onClick={() => setStep((s) => s + 1)}
-                  title={!isStepValid() ? "Please complete required fields" : ""}
+                  disabled={!isStepValid()}
                   className="flex-1 px-6 py-3 bg-white hover:bg-white/90 disabled:bg-white/20 text-[#0b1d26] disabled:text-white/50 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg disabled:shadow-none hover:scale-105 disabled:hover:scale-100"
                 >
                   Continue

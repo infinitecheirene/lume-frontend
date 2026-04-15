@@ -626,76 +626,116 @@ export default function BlogPostsAdmin() {
               </div>
 
               {/* POSTS */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredPosts.map((post) => (
-                  <Card
-                    key={post.id}
+              {filteredPosts.length === 0 ? (
+                <div className="w-full flex flex-col items-center justify-center py-20 px-4 rounded-xl border border-dashed border-yellow-300 bg-white text-center">
+                  <div className="w-14 h-14 flex items-center justify-center rounded-full bg-yellow-100 border border-yellow-200">
+                    <Search className="w-6 h-6 text-yellow-600" />
+                  </div>
+
+                  <h2 className="mt-4 text-lg font-semibold text-gray-900">No blog posts found</h2>
+                  <p className="mt-1 text-sm text-gray-600 max-w-md">
+                    {search
+                      ? `No results match "${search}". Try adjusting your search or filters.`
+                      : draftFilter !== "all"
+                        ? `No ${draftFilter} posts available yet.`
+                        : "You haven't created any blog posts yet. Start by creating your first post."}
+                  </p>
+
+                  <Button
+                    className="mt-5 bg-yellow-600 hover:bg-yellow-500 gap-2"
                     onClick={() => {
-                      setViewPost(post)
-                      setViewOpen(true)
+                      setIsDialogOpen(true)
+                      setEditingId(null)
+                      setVideoFile(null)
+                      setFormData({
+                        title: "",
+                        excerpt: "",
+                        content: "",
+                        author: "",
+                        image: null,
+                        imageUrl: "",
+                        thumbnail: null,
+                        thumbnailUrl: "",
+                        videoUrl: "",
+                        draft: false,
+                      })
                     }}
-                    className="bg-white border border-blue-100 shadow-sm hover:shadow-md hover:border-yellow-400 transition-all cursor-pointer"
                   >
-                    <CardContent className="p-5 space-y-3 text-gray-900">
-                      {/* IMAGE */}
-                      {(post.image || (post as any).thumbnail) && (
-                        <div className="overflow-hidden rounded-md border border-blue-100">
-                          <Image
-                            src={getImageUrl(post.image || (post as any).thumbnail)}
-                            alt={post.title}
-                            width={400}
-                            height={200}
-                            className="w-full h-48 object-cover hover:scale-105 transition-transform"
-                          />
+                    <Plus size={16} />
+                    Create New Post
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {filteredPosts.map((post) => (
+                    <Card
+                      key={post.id}
+                      onClick={() => {
+                        setViewPost(post)
+                        setViewOpen(true)
+                      }}
+                      className="bg-white border border-blue-100 shadow-sm hover:shadow-md hover:border-yellow-400 transition-all cursor-pointer"
+                    >
+                      <CardContent className="p-5 space-y-3 text-gray-900">
+                        {/* IMAGE */}
+                        {(post.image || (post as any).thumbnail) && (
+                          <div className="overflow-hidden rounded-md border border-blue-100">
+                            <Image
+                              src={getImageUrl(post.image || (post as any).thumbnail)}
+                              alt={post.title}
+                              width={400}
+                              height={200}
+                              className="w-full h-48 object-cover hover:scale-105 transition-transform"
+                            />
+                          </div>
+                        )}
+
+                        {/* TITLE + BADGES */}
+                        <div className="space-y-1">
+                          <h3 className="text-lg font-semibold text-blue-900">{post.title}</h3>
+
+                          <div className="flex flex-wrap gap-2 items-center text-xs">
+                            <span
+                              className={`px-2 py-1 rounded-full font-medium ${
+                                (post as any).draft === 1
+                                  ? "bg-yellow-100 text-yellow-800 border border-yellow-300"
+                                  : "bg-blue-100 text-blue-800 border border-blue-300"
+                              }`}
+                            >
+                              {(post as any).draft === 1 ? "Draft" : "Published"}
+                            </span>
+
+                            {(post as any).video_url && (
+                              <span className="px-2 py-1 rounded-full bg-yellow-200 text-yellow-900 border border-yellow-400">Video attached</span>
+                            )}
+                          </div>
                         </div>
-                      )}
 
-                      {/* TITLE + BADGES */}
-                      <div className="space-y-1">
-                        <h3 className="text-lg font-semibold text-blue-900">{post.title}</h3>
+                        {/* EXCERPT */}
+                        <p className="text-sm text-gray-600 line-clamp-2">{post.excerpt}</p>
 
-                        <div className="flex flex-wrap gap-2 items-center text-xs">
-                          <span
-                            className={`px-2 py-1 rounded-full font-medium ${
-                              (post as any).draft === 1
-                                ? "bg-yellow-100 text-yellow-800 border border-yellow-300"
-                                : "bg-blue-100 text-blue-800 border border-blue-300"
-                            }`}
+                        {/* ACTIONS */}
+                        <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+                          <Button size="sm" variant="ghost" className=" hover:text-white text-yellow-500" onClick={() => handleEdit(post)}>
+                            <Edit2 size={16} />
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            className="bg-red-500 hover:bg-red-400 text-white"
+                            onClick={() => {
+                              setDeleteId(post.id)
+                              setDeleteOpen(true)
+                            }}
                           >
-                            {(post as any).draft === 1 ? "Draft" : "Published"}
-                          </span>
-
-                          {(post as any).video_url && (
-                            <span className="px-2 py-1 rounded-full bg-yellow-200 text-yellow-900 border border-yellow-400">Video attached</span>
-                          )}
+                            <Trash2 size={16} />
+                          </Button>
                         </div>
-                      </div>
-
-                      {/* EXCERPT */}
-                      <p className="text-sm text-gray-600 line-clamp-2">{post.excerpt}</p>
-
-                      {/* ACTIONS */}
-                      <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
-                        <Button size="sm" variant="ghost" className=" hover:text-white text-yellow-500" onClick={() => handleEdit(post)}>
-                          <Edit2 size={16} />
-                        </Button>
-
-                        <Button
-                          size="sm"
-                          className="bg-red-500 hover:bg-red-400 text-white"
-                          onClick={() => {
-                            setDeleteId(post.id)
-                            setDeleteOpen(true)
-                          }}
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
               <Dialog open={viewOpen} onOpenChange={setViewOpen}>
                 <DialogContent className="bg-white text-gray-900 border border-blue-200 max-w-2xl">
                   <DialogHeader>

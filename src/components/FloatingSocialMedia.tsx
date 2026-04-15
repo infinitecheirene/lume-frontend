@@ -18,7 +18,7 @@ export default function FloatingSocialMedia() {
     {
       name: "Facebook",
       icon: Facebook,
-      href: "https://www.facebook.com/ipponyarijapresto",
+      href: "https://www.facebook.com/share/1TafrtmDWJ/",
       bgColor: "bg-[#1877F2]",
       hoverColor: "hover:bg-[#0d5dcc]",
     },

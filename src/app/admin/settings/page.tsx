@@ -24,6 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
+import { Playfair_Display } from "next/font/google"
 
 type SettingsType = {
   restaurantName: string
@@ -45,6 +46,11 @@ type PaymentMethod = {
   is_enabled: boolean
 }
 
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
+
 export default function SettingsPage() {
   const { toast } = useToast()
   const [isMobile, setIsMobile] = useState(false)
@@ -55,6 +61,7 @@ export default function SettingsPage() {
   const [editPaymentId, setEditPaymentId] = useState<number | null>(null)
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
+
   useEffect(() => {
     const checkDesktop = () => {
       setIsDesktop(window.innerWidth < 1024) // lg breakpoint
@@ -390,9 +397,12 @@ export default function SettingsPage() {
 
         <div className={`flex-1 min-w-0 ${isMobile ? "ml-0" : "ml-72"}`}>
           {isMobile && (
-            <div className="sticky top-0 z-50 flex h-12 items-center gap-2 border-b bg-white/90 backdrop-blur-sm px-4 md:hidden shadow-sm">
+            <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-[#162A3A] px-4 shadow-sm">
               <SidebarTrigger className="-ml-1" />
-              <span className="text-sm font-semibold bg-gradient-to-r from-yellow-600 to-yellow-600 bg-clip-text text-transparent">Settings</span>
+
+              <Image src="/logo.jpg" alt="Lumè Bean and Bar Logo" width={40} height={40} className="rounded-full object-contain" />
+
+              <h1 className={`${playfair.className} text-lg font-semibold text-white`}>Lumè Bean and Bar</h1>
             </div>
           )}
 
@@ -450,7 +460,7 @@ export default function SettingsPage() {
 
               {/* Pricing Settings */}
               <Card className="gap-0 p-0 bg-white/70 backdrop-blur-sm shadow-lg border-yellow-100">
-                        <CardHeader className="p-4 bg-[#162A3A] text-white rounded-t-lg">
+                <CardHeader className="p-4 bg-[#162A3A] text-white rounded-t-lg">
                   <CardTitle className="flex items-center gap-2">
                     <DollarSign className="w-5 h-5" />
                     Pricing Settings
@@ -480,7 +490,7 @@ export default function SettingsPage() {
 
               {/* System Settings */}
               <Card className="gap-0 p-0 bg-white/70 backdrop-blur-sm shadow-lg border-yellow-100">
-                     <CardHeader className="p-4 bg-[#162A3A] text-white rounded-t-lg">
+                <CardHeader className="p-4 bg-[#162A3A] text-white rounded-t-lg">
                   <CardTitle className="flex items-center gap-2">
                     <Shield className="w-5 h-5" />
                     System Settings
