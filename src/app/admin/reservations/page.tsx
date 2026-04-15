@@ -212,7 +212,7 @@ interface Reservation {
 
 type ReservationStatus = Reservation["reservation_status"]
 type DiningPreference = Reservation["dining_preference"]
-type OccasionType = Reservation["occasion"]
+type OccasionType = string | undefined
 
 function getStatusStyle(status: string) {
   switch (status) {
@@ -289,20 +289,72 @@ export default function ReservationsAdmin() {
   const [viewMode, setViewMode] = useState<"list" | "week" | "month">("week")
   const { toast } = useToast()
 
-  const initialFormData = {
+  type ReservationFormData = {
+    name: string
+    email: string
+    phone: string
+    date: string
+    time: string
+    guests: number
+    package: string
+    dining_preference: string
+    occasion: string | undefined
+    reservation_fee: number
+    down_payment: number
+    service_charge: number
+    total_fee: number
+    remaining_balance: number
+    payment_method: string
+    payment_reference: string
+    payment_status: "pending" | "paid" | "failed"
+    payment_receipt: string | null
+    special_requests: string
+    is_walkin: boolean
+    reservation_status: ReservationStatus
+  }
+
+  const initialFormData: ReservationFormData = {
     name: "", email: "", phone: "",
     date: "", time: "",
     guests: 1,
     package: "", dining_preference: "", occasion: "",
     reservation_fee: 0, down_payment: 0, service_charge: 0, total_fee: 0, remaining_balance: 0,
     payment_method: "", payment_reference: "",
-    payment_status: "pending" as "pending" | "paid" | "failed",
-    payment_receipt: null as string | null,
+    payment_status: "pending",
+    payment_receipt: null,
     special_requests: "",
     is_walkin: false,
-    reservation_status: "pending" as ReservationStatus,
+    reservation_status: "pending",
   }
-  const [formData, setFormData] = useState(initialFormData)
+
+  function normalizeReservationToFormData(reservation: Reservation): ReservationFormData {
+    return {
+      ...initialFormData,
+      name: reservation.name ?? "",
+      email: reservation.email ?? "",
+      phone: reservation.phone ?? "",
+      date: reservation.date ?? "",
+      time: reservation.time ?? "",
+      guests: reservation.guests ?? 1,
+      package: reservation.package ?? "",
+      dining_preference: reservation.dining_preference ?? "",
+      occasion: reservation.occasion ?? "",
+      reservation_fee: Number(reservation.reservation_fee ?? 0),
+      down_payment: Number(reservation.down_payment ?? 0),
+      service_charge: Number(reservation.service_charge ?? 0),
+      total_fee: Number(reservation.total_fee ?? 0),
+      remaining_balance: Number(reservation.remaining_balance ?? 0),
+      payment_method: reservation.payment_method ?? "",
+      payment_reference: reservation.payment_reference ?? "",
+      payment_status: reservation.payment_status ?? "pending",
+      payment_receipt: reservation.payment_receipt ?? null,
+      special_requests: reservation.special_requests ?? "",
+      is_walkin: Boolean(reservation.is_walkin),
+      reservation_status: reservation.reservation_status,
+    }
+  }
+
+  const [formData, setFormData] = useState<ReservationFormData>(initialFormData)
 
   // Auto-calculate remaining balance for online reservations
   const calculatedRemaining =
@@ -992,7 +1044,7 @@ export default function ReservationsAdmin() {
                     <Button size="sm" className="bg-[#d4a24c] hover:bg-[#c49040] text-white border-0 h-8"
                       onClick={() => {
                         setEditingReservation(viewingReservation)
-                        setFormData({ ...initialFormData, ...viewingReservation })
+                        setFormData(normalizeReservationToFormData(viewingReservation))
                         setOpenView(false)
                         setOpenEdit(true)
                       }}>Edit</Button>
