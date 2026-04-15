@@ -11,6 +11,7 @@ import Image from "next/image"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Star, X, Coffee } from "lucide-react"
+import { useAuthStore } from "@/store/authStore"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -40,6 +41,7 @@ export default function MenuPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
   const { addItem } = useCartStore()
+  const { user } = useAuthStore()
 
   const mainCategoryMap = {
     Signature: ["Signature"],
@@ -102,13 +104,11 @@ export default function MenuPage() {
   )
 
   const handleAddToCart = (item: Product) => {
-    const userData = localStorage.getItem("user_data")
-
-    if (!userData) {
+    if (!user) {
       toast({
         variant: "destructive",
         title: "Login required",
-        description: "You need to log in before adding items to your cart.",
+        description: "Please log in to continue.",
       })
 
       router.push("/login")
