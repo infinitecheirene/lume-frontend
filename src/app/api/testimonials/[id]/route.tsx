@@ -7,7 +7,7 @@ function getAuthToken(request: NextRequest): string | null {
   return authHeader?.replace("Bearer ", "") || cookieToken || null
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     console.log("PUT request received for testimonial update")
     console.log("Raw params:", params)
@@ -61,9 +61,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
     const apiUrl = process.env.NEXT_PUBLIC_API_URL
     if (!apiUrl) throw new Error("NEXT_PUBLIC_API_URL is not defined")
 

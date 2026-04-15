@@ -3,15 +3,16 @@ import { type NextRequest, NextResponse } from "next/server"
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 // PUT - Update an announcement
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     if (!API_URL) {
       return NextResponse.json({ error: "API URL not configured" }, { status: 500 })
     }
 
+    const { id } = await params
     const body = await request.json()
 
-    const response = await fetch(`${API_URL}/api/announcements/${params.id}`, {
+    const response = await fetch(`${API_URL}/api/announcements/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -39,13 +40,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // DELETE - Delete an announcement
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     if (!API_URL) {
       return NextResponse.json({ error: "API URL not configured" }, { status: 500 })
     }
 
-    const response = await fetch(`${API_URL}/api/announcements/${params.id}`, {
+    const { id } = await params
+    const response = await fetch(`${API_URL}/api/announcements/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

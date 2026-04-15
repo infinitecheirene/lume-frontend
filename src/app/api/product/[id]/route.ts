@@ -9,7 +9,7 @@ function getAuthToken(request: NextRequest): string | null {
 }
 
 // GET - fetch a single product
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const resolvedParams = await params
     const { id } = resolvedParams
@@ -40,13 +40,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 // PUT
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    // Debug: log params
-    console.log("Received params:", params)
-    const resolvedParams = await params
-    const { id } = resolvedParams
-    console.log("Resolved product ID:", id)
+    const { id } = await params
 
     // Check auth token
     const token = getAuthToken(request)
@@ -128,10 +124,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // DELETE - delete product
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const resolvedParams = await params
-    const { id } = resolvedParams
+    const { id } = await params
     const token = getAuthToken(request)
 
     if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 })

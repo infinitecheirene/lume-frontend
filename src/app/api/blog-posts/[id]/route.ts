@@ -9,7 +9,7 @@ function getAuthToken(request: NextRequest): string | null {
   return authHeader?.replace("Bearer ", "") || cookieToken || null
 } 
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const resolvedParams = await params
     const { id } = resolvedParams
@@ -46,7 +46,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const resolvedParams = await params
     const { id } = resolvedParams

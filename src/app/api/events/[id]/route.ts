@@ -1,9 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-    const eventId = params.id
+    const eventId = id
 
     const token = request.headers.get("authorization")
     const headers: Record<string, string> = {
@@ -36,10 +37,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-    const eventId = params.id
+    const eventId = id
     const body = await request.json()
 
     const token = request.headers.get("authorization")
@@ -90,10 +92,11 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-    const eventId = params.id
+    const eventId = id
 
     const token = request.headers.get("authorization")
     const headers: Record<string, string> = {

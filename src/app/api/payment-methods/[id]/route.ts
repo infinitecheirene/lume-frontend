@@ -9,7 +9,7 @@ function getAuthToken(request: NextRequest): string | null {
 }
 
 /* ================= PUT (UPDATE PAYMENT METHOD) ================= */
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const authToken = getAuthToken(request)
 
@@ -70,7 +70,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 /* ================= DELETE PAYMENT METHOD ================= */
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const authToken = getAuthToken(request)
 

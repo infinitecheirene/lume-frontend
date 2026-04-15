@@ -7,7 +7,7 @@ function getAuthToken(request: NextRequest): string | null {
   return authHeader?.replace("Bearer ", "") || cookieToken || null
 }
 
-export async function PUT(request: NextRequest, {params}: { params: { id: string } }) {
+export async function PUT(request: NextRequest, {params}: { params: Promise<{ id: string }> }) {
   try {
     // Access params inside the function
     const resolvedParams = await params
@@ -47,8 +47,9 @@ export async function PUT(request: NextRequest, {params}: { params: { id: string
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const token = request.headers.get("Authorization")?.replace("Bearer ", "")
 
     if (!token) {
@@ -56,7 +57,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-    const url = `${baseUrl}/api/users/${params.id}`
+    const url = `${baseUrl}/api/users/${id}`
 
     const response = await fetch(url, {
       method: "DELETE",
