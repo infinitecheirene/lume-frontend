@@ -904,7 +904,7 @@ export default function ReservationsAdmin() {
                     <table className="w-full text-sm min-w-[960px]">
                       <thead>
                         <tr className="bg-gray-50 border-b border-gray-100">
-                          {["Res #", "Date", "Time", "Guest", "Pax", "Type", "Res Status", "Pay Status", "Actions"].map((h) => (
+                          {["Reservation #", "Date", "Time", "Guest", "Pax", "Type", "Res Status", "Pay Status", "Actions"].map((h) => (
                             <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
                           ))}
                         </tr>
