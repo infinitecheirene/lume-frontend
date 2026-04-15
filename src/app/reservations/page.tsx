@@ -704,6 +704,18 @@ export default function ReservationsPage() {
     })
   }
 
+  const formatSlot = (time: string) => {
+    const [hourStr, minute] = time.split(":")
+    let hour = parseInt(hourStr, 10)
+
+    const ampm = hour >= 12 ? "PM" : "AM"
+
+    hour = hour % 12
+    hour = hour ? hour : 12 // convert 0 → 12
+
+    return `${hour}:${minute} ${ampm}`
+  }
+
   if (loading) return <LumeLoaderMinimal />
 
   return (
@@ -965,9 +977,11 @@ export default function ReservationsPage() {
                               ${disabled ? "opacity-40 cursor-not-allowed pointer-events-none" : ""}
                             `}
                             >
-                              {slot}
+                              <div className="flex flex-col items-center leading-tight">
+                                <span className="whitespace-nowrap">{formatSlot(slot)}</span>
 
-                              {disabled && <span className="ml-2 text-xs text-red-400">Booked</span>}
+                                {disabled && <span className="text-[10px] sm:text-xs text-red-400">Booked</span>}
+                              </div>
                             </Button>
                           )
                         })}
@@ -1413,7 +1427,7 @@ export default function ReservationsPage() {
                           <span className="font-semibold">Date:</span> {formData.date}
                         </span>
                         <span>
-                          <span className="font-semibold">Time:</span> {formData.time}
+                          <span className="font-semibold">Time:</span> {formatSlot(formData.time)}
                         </span>
                         <span>
                           <span className="font-semibold">Guests:</span> {formData.guests}
