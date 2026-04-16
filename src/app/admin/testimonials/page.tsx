@@ -367,124 +367,150 @@ export default function TestimonialsAdmin() {
 
               {/* view modal */}
               <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-                <DialogContent className="text-black max-w-lg">
-                  <DialogHeader>
-                    <DialogTitle>Testimonial Details</DialogTitle>
-                    <DialogDescription>View testimonial information.</DialogDescription>
-                  </DialogHeader>
+                <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl border-0 shadow-2xl p-0 text-gray-950">
+                  <div className="sticky top-0 z-10 bg-[#162A3A] px-6 py-5 rounded-t-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-bold text-white">Testimonial Details</DialogTitle>
+                      <p className="text-white/50 text-sm mt-0.5">View testimonial information</p>
+                    </DialogHeader>
+                  </div>
+                  <div className="p-5 space-y-4 bg-[#f5f0e8]">
+                    {viewTestimonial && (
+                      <div className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                        <div className="px-5 py-3 bg-gradient-to-r from-[#162A3A] to-[#1e3a50] flex items-center gap-2">
+                          <span className="text-[#d4a24c] text-sm font-semibold uppercase tracking-wider">Testimonial Information</span>
+                        </div>
+                        <div className="p-5 bg-white space-y-3 text-sm">
+                          <div>
+                            <p className="font-semibold text-gray-900">Client Name</p>
+                            <p className="text-gray-700">{viewTestimonial.client_name}</p>
+                          </div>
 
-                  {viewTestimonial && (
-                    <div className="space-y-3 text-sm">
-                      <div>
-                        <p className="font-semibold">Client Name</p>
-                        <p className="text-gray-700">{viewTestimonial.client_name}</p>
-                      </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">Email</p>
+                            <p className="text-gray-700">{viewTestimonial.client_email}</p>
+                          </div>
 
-                      <div>
-                        <p className="font-semibold">Email</p>
-                        <p className="text-gray-700">{viewTestimonial.client_email}</p>
-                      </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">Rating</p>
+                            <p className="text-yellow-500">{"★".repeat(viewTestimonial.rating)}</p>
+                          </div>
 
-                      <div>
-                        <p className="font-semibold">Rating</p>
-                        <p className="text-yellow-500">{"★".repeat(viewTestimonial.rating)}</p>
-                      </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">Message</p>
+                            <p className="text-gray-700 whitespace-pre-wrap">{viewTestimonial.message}</p>
+                          </div>
 
-                      <div>
-                        <p className="font-semibold">Message</p>
-                        <p className="text-gray-700 whitespace-pre-wrap">{viewTestimonial.message}</p>
-                      </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">Status</p>
+                            <p className="capitalize text-gray-700">{viewTestimonial.status}</p>
+                          </div>
 
-                      <div>
-                        <p className="font-semibold">Status</p>
-                        <p className="capitalize text-gray-700">{viewTestimonial.status}</p>
+                          <div>
+                            <p className="font-semibold text-gray-900">Date</p>
+                            <p className="text-gray-700">{new Date(viewTestimonial.created_at).toLocaleString()}</p>
+                          </div>
+                        </div>
                       </div>
-
-                      <div>
-                        <p className="font-semibold">Date</p>
-                        <p className="text-gray-700">{new Date(viewTestimonial.created_at).toLocaleString()}</p>
-                      </div>
+                    )}
+                    <div className="flex gap-3 pb-2">
+                      <Button variant="outline" className="flex-1 h-10 text-gray-600 border-gray-300 bg-white" onClick={() => setViewOpen(false)}>Close</Button>
                     </div>
-                  )}
+                  </div>
                 </DialogContent>
               </Dialog>
 
               {/* add/edit modal */}
               <Dialog open={formOpen} onOpenChange={setFormOpen}>
-                <DialogContent className="text-black">
-                  <DialogHeader>
-                    <DialogTitle>{editingTestimonial ? "Update Testimonial" : "New Testimonial"}</DialogTitle>
-                    <DialogDescription>{editingTestimonial ? "Update testimonial details." : "Add a new testimonial."}</DialogDescription>
-                  </DialogHeader>
+                <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl border-0 shadow-2xl p-0 text-gray-950">
+                  <div className="sticky top-0 z-10 bg-[#162A3A] px-6 py-5 rounded-t-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-bold text-white">{editingTestimonial ? "Update Testimonial" : "New Testimonial"}</DialogTitle>
+                      <p className="text-white/50 text-sm mt-0.5">{editingTestimonial ? "Update testimonial details" : "Add a new testimonial"}</p>
+                    </DialogHeader>
+                  </div>
+                  <div className="p-5 space-y-4 bg-[#f5f0e8]">
+                    <div className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                      <div className="px-5 py-3 bg-gradient-to-r from-[#162A3A] to-[#1e3a50] flex items-center gap-2">
+                        <span className="text-[#d4a24c] text-sm font-semibold uppercase tracking-wider">Testimonial Details</span>
+                      </div>
+                      <div className="p-5 bg-white space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="client_name" className="text-gray-900 font-semibold">Client Name</Label>
+                          <Input
+                            id="client_name"
+                            value={formData.client_name}
+                            onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
+                            className="border-gray-300 focus:border-[#162A3A]"
+                          />
+                        </div>
 
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="client_name">Client Name</Label>
-                      <Input
-                        id="client_name"
-                        value={formData.client_name}
-                        onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
-                      />
-                    </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="client_email" className="text-gray-900 font-semibold">Client Email</Label>
+                          <Input
+                            id="client_email"
+                            type="email"
+                            value={formData.client_email}
+                            onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
+                            required
+                            className="border-gray-300 focus:border-[#162A3A]"
+                          />
+                        </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="client_email">Client Email</Label>
-                      <Input
-                        id="client_email"
-                        type="email"
-                        value={formData.client_email}
-                        onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
-                        required
-                      />
-                    </div>
+                        <div className="space-y-2">
+                          <Label className="text-gray-900 font-semibold">Rating</Label>
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Button
+                                key={star}
+                                type="button"
+                                size="sm"
+                                onClick={() => setFormData({ ...formData, rating: star })}
+                                className={formData.rating >= star ? "bg-yellow-400 hover:bg-amber-500" : "bg-gray-200 hover:bg-yellow-400"}
+                              >
+                                ★
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
 
-                    <div className="space-y-2">
-                      <Label>Rating</Label>
-                      <div className="flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Button
-                            key={star}
-                            type="button"
-                            size="sm"
-                            onClick={() => setFormData({ ...formData, rating: star })}
-                            className={formData.rating >= star ? "bg-yellow-400 hover:bg-amber-500" : "bg-gray-200 hover:bg-yellow-400"}
-                          >
-                            ★
-                          </Button>
-                        ))}
+                        <div className="space-y-2">
+                          <Label htmlFor="message" className="text-gray-900 font-semibold">Message</Label>
+                          <Textarea
+                            id="message"
+                            rows={4}
+                            value={formData.message}
+                            onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                            className="border-gray-300 focus:border-[#162A3A]"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="status" className="text-gray-900 font-semibold">Status</Label>
+                          <Select value={formData.status} onValueChange={(val: Testimonial["status"]) => setFormData({ ...formData, status: val })}>
+                            <SelectTrigger className="border-gray-300 focus:border-[#162A3A]">
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="approved">Approved</SelectItem>
+                              <SelectItem value="rejected">Rejected</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="message">Message</Label>
-                      <Textarea
-                        id="message"
-                        rows={4}
-                        value={formData.message}
-                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="status">Status</Label>
-                      <Select value={formData.status} onValueChange={(val: Testimonial["status"]) => setFormData({ ...formData, status: val })}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="approved">Approved</SelectItem>
-                          <SelectItem value="rejected">Rejected</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="flex gap-3 pb-2">
+                      <Button variant="outline" className="flex-1 h-10 text-gray-600 border-gray-300 bg-white" onClick={() => setFormOpen(false)}>Cancel</Button>
+                      <Button
+                        className="flex-1 h-10 bg-[#162A3A] hover:bg-[#1e3a50] text-white rounded-xl font-semibold shadow-md"
+                        onClick={handleSave}
+                        disabled={isSubmitting}
+                      >
+                        {editingTestimonial ? "Update" : "Create"}
+                      </Button>
                     </div>
                   </div>
-
-                  <DialogFooter>
-                    <Button onClick={handleSave} disabled={isSubmitting} className="bg-yellow-500 hover:bg-yellow-600">
-                      {editingTestimonial ? "Update" : "Create"}
-                    </Button>
-                  </DialogFooter>
                 </DialogContent>
               </Dialog>
 

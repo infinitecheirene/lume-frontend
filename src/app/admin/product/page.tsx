@@ -449,112 +449,117 @@ export default function ProductsAdminPage() {
                 </Button>
               </DialogTrigger>
 
-              <DialogContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader className="bg-[#162A3A] text-white p-4 sm:p-6 -m-4 sm:-m-6 mb-4 rounded-t-lg">
-                  <DialogTitle className="text-xl sm:text-2xl font-bold">Product Details</DialogTitle>
-                </DialogHeader>
+              <DialogContent className="lg:max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl shadow-lg border border-gray-200 p-0 bg-white">
+                <div className="sticky top-0 z-10 bg-[#162A3A] px-6 py-5 rounded-t-2xl">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-bold text-white">Product Details</DialogTitle>
+                    <p className="text-white/50 text-sm mt-0.5">{selectedProduct?.name}</p>
+                  </DialogHeader>
+                </div>
 
                 {selectedProduct && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 justify-between items-center gap-6 mt-3 min-h-[380px]">
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 justify-between items-center gap-6 mt-3 min-h-[380px]">
 
-                    {/* LEFT - IMAGE */}
-                    <div className="relative w-full aspect-square rounded-2xl overflow-hidden">
-                      <Image
-                        src={getImageUrl(selectedProduct.image)}
-                        alt={selectedProduct.name}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        priority
-                      />
+                      {/* LEFT - IMAGE */}
+                      <div className="relative w-full aspect-square rounded-2xl overflow-hidden">
+                        <Image
+                          src={getImageUrl(selectedProduct.image)}
+                          alt={selectedProduct.name}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          priority
+                        />
 
-                      {/* overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                        {/* overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
 
-                      {selectedProduct.best_seller && (
-                        <span className="inline-flex text-xs px-3 py-1 rounded-full border border-[#d4a24c]/40 text-[#d4a24c] bg-[#d4a24c]/10">
-                          ⭐ Best Seller
-                        </span>
-                      )}
-
-                      {/* title overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 p-5">
-                        <p className="text-[10px] uppercase tracking-[0.3em] text-white/60">
-                          Featured Item
-                        </p>
-                        <h2 className="text-xl sm:text-2xl font-semibold text-white leading-tight">
-                          {selectedProduct.name}
-                        </h2>
-                      </div>
-
-                      <div className="flex justify-end items-end m-5">
-                        {Boolean(selectedProduct.set) && (
-                          <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
-                            Set
+                        {selectedProduct.best_seller && (
+                          <span className="inline-flex text-xs px-3 py-1 rounded-full border border-[#d4a24c]/40 text-[#d4a24c] bg-[#d4a24c]/10">
+                            ⭐ Best Seller
                           </span>
                         )}
+
+                        {/* title overlay */}
+                        <div className="absolute bottom-0 left-0 right-0 p-5">
+                          <p className="text-[10px] uppercase tracking-[0.3em] text-white/60">
+                            Featured Item
+                          </p>
+                          <h2 className="text-xl sm:text-2xl font-semibold text-white leading-tight">
+                            {selectedProduct.name}
+                          </h2>
+                        </div>
+
+                        <div className="flex justify-end items-end m-5">
+                          {Boolean(selectedProduct.set) && (
+                            <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                              Set
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    {/* RIGHT - DETAILS */}
-                    <div className="flex flex-col justify-between">
+                      {/* RIGHT - DETAILS */}
+                      <div className="flex flex-col justify-between">
 
-                      <div className="space-y-5">
-                        {/* META */}
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="rounded-xl border bg-white p-3">
-                            <p className="text-[10px] uppercase tracking-wider text-gray-500">
-                              Category
-                            </p>
-                            <p className="mt-1 text-sm font-semibold text-gray-900 capitalize">
-                              {selectedProduct.category}
-                            </p>
-                          </div>
+                        <div className="space-y-5">
+                          {/* META */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="rounded-xl border bg-white p-3">
+                              <p className="text-[10px] uppercase tracking-wider text-gray-500">
+                                Category
+                              </p>
+                              <p className="mt-1 text-sm font-semibold text-gray-900 capitalize">
+                                {selectedProduct.category}
+                              </p>
+                            </div>
 
-                          <div className="rounded-xl border bg-white p-3">
-                            <p className="text-[10px] uppercase tracking-wider text-gray-500">
-                              Price
-                            </p>
-                            <p className="mt-1 text-lg font-bold text-[#d4a24c]">
-                              ₱{formatPrice(selectedProduct.price)}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* DESCRIPTION */}
-                        <div className="rounded-xl border bg-gray-50 p-4">
-                          <p className="text-[10px] uppercase tracking-wider text-gray-500">
-                            Description
-                          </p>
-                          <p className="mt-2 text-sm text-gray-700 leading-relaxed">
-                            {selectedProduct.description || "No description available."}
-                          </p>
-                        </div>
-
-                        {/* INGREDIENTS */}
-                        {selectedProduct.ingredients && (
-                          <div>
-                            <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-2">
-                              Ingredients
-                            </p>
-
-                            <div className="flex flex-wrap gap-2">
-                              {selectedProduct.ingredients
-                                .split("|")
-                                .slice(0, 6)
-                                .map((ing, i) => (
-                                  <span
-                                    key={i}
-                                    className="text-xs px-3 py-1 rounded-full bg-white border border-gray-200 text-gray-700"
-                                  >
-                                    {ing.trim()}
-                                  </span>
-                                ))}
+                            <div className="rounded-xl border bg-white p-3">
+                              <p className="text-[10px] uppercase tracking-wider text-gray-500">
+                                Price
+                              </p>
+                              <p className="mt-1 text-lg font-bold text-[#d4a24c]">
+                                ₱{formatPrice(selectedProduct.price)}
+                              </p>
                             </div>
                           </div>
-                        )}
-                      </div>
 
+                          {/* DESCRIPTION */}
+                          <div className="rounded-xl border bg-gray-50 p-4">
+                            <p className="text-[10px] uppercase tracking-wider text-gray-500">
+                              Description
+                            </p>
+                            <p className="mt-2 text-sm text-gray-700 leading-relaxed">
+                              {selectedProduct.description || "No description available."}
+                            </p>
+                          </div>
+
+                          {/* INGREDIENTS */}
+                          {selectedProduct.ingredients && (
+                            <div>
+                              <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-2">
+                                Ingredients
+                              </p>
+
+                              <div className="flex flex-wrap gap-2">
+                                {selectedProduct.ingredients
+                                  .split("|")
+                                  .slice(0, 6)
+                                  .map((ing, i) => (
+                                    <span
+                                      key={i}
+                                      className="text-xs px-3 py-1 rounded-full bg-white border border-gray-200 text-gray-700"
+                                    >
+                                      {ing.trim()}
+                                    </span>
+                                  ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                      </div>
                     </div>
                   </div>
                 )}
@@ -759,198 +764,209 @@ export default function ProductsAdminPage() {
                             <span className="sm:hidden">Add</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto mx-4 bg-amber-50 text-black">
-                          <DialogHeader className="bg-[#162A3A] text-white p-6 -m-6 mb-4 rounded-t-lg">
-                            <DialogTitle className="text-2xl font-bold">Add New Product</DialogTitle>
-                            <DialogDescription className="text-amber-50">Fill in the details for your new menu item.</DialogDescription>
-                          </DialogHeader>
-                          <form onSubmit={handleCreateSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 gap-4">
-                              <div>
-                                <Label htmlFor="name" className="text-gray-700 font-bold text-md">
-                                  Product Name
-                                </Label>
-                                <Input
-                                  id="name"
-                                  name="name"
-                                  value={newFormData.name}
-                                  onChange={handleNewFormChange}
-                                  required
-                                  disabled={isCreating}
-                                  placeholder="e.g., Kimchi Fried Rice"
-                                  className="mt-1 border-blue-950 focus:border-blue-700 focus:ring-blue-800"
-                                />
-                              </div>
-
-                              <div>
-                                <Label htmlFor="description" className="text-gray-700 font-bold text-md">
-                                  Description
-                                </Label>
-                                <Textarea
-                                  id="description"
-                                  name="description"
-                                  value={newFormData.description}
-                                  onChange={handleNewFormChange}
-                                  rows={3}
-                                  disabled={isCreating}
-                                  placeholder="Describe the dish, ingredients, and preparation..."
-                                  className="mt-1 resize-none border-blue-950 focus:border-blue-700 focus:ring-blue-800"
-                                />
-                              </div>
-
-                              <div>
-                                <Label htmlFor="ingredients" className="text-gray-700 font-bold text-md">
-                                  Ingredients
-                                  <span className="text-gray-400">(use | separator)</span>
-                                </Label>
-                                <Textarea
-                                  id="ingredients"
-                                  name="ingredients"
-                                  value={newFormData.ingredients}
-                                  onChange={handleNewFormChange}
-                                  rows={3}
-                                  disabled={isCreating}
-                                  placeholder="Enter ingredients (use | separator)"
-                                  className="mt-1 resize-none border-blue-950 focus:border-blue-700 focus:ring-blue-800"
-                                />
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <Label htmlFor="price" className="text-gray-700 font-bold text-md">
-                                    Price (₱)
-                                  </Label>
-                                  <Input
-                                    id="price"
-                                    name="price"
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    value={newFormData.price}
-                                    onChange={handleNewFormChange}
-                                    required
-                                    disabled={isCreating}
-                                    placeholder="0.00"
-                                    className="mt-1 border-blue-950 focus:border-blue-700 focus:ring-blue-800"
-                                  />
+                        <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl border-0 shadow-2xl p-0 text-gray-950">
+                          <div className="sticky top-0 z-10 bg-[#162A3A] px-6 py-5 rounded-t-2xl">
+                            <DialogHeader>
+                              <DialogTitle className="text-2xl font-bold text-white">Add New Product</DialogTitle>
+                              <p className="text-white/50 text-sm mt-0.5">Fill in the details for your new menu item.</p>
+                            </DialogHeader>
+                          </div>
+                          <div className="p-5 space-y-4 bg-[#f5f0e8]">
+                            <form onSubmit={handleCreateSubmit} className="space-y-4">
+                              <div className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                                <div className="px-5 py-3 bg-gradient-to-r from-[#162A3A] to-[#1e3a50] flex items-center gap-2">
+                                  <span className="text-[#d4a24c] text-sm font-semibold uppercase tracking-wider">Product Details</span>
                                 </div>
-
-                                <div>
-                                  <Label htmlFor="category" className="text-gray-700 font-bold text-md">
-                                    Category
-                                  </Label>
-                                  <Select value={newFormData.category} onValueChange={handleCategoryChange} disabled={isCreating}>
-                                    <SelectTrigger className="mt-1 border-blue-950 focus:border-blue-700 focus:ring-blue-800">
-                                      <SelectValue placeholder="Select category" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {categories.map((category) => (
-                                        <SelectItem key={category} value={category}>
-                                          <span className="text-gray-800">{category}</span>
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-
-                              <div className="flex gap-3">
-                                <div className="flex items-center justify-between rounded-lg border border-blue-950 p-4 bg-white/40">
-                                  <div className="space-y-1">
-                                    <Label className="text-gray-700 font-bold text-md">Best Seller</Label>
-                                    <p className="text-sm text-gray-600">Mark this product as a Best Seller Item</p>
-                                  </div>
-
-                                  <Switch
-                                    checked={newFormData.best_seller}
-                                    onCheckedChange={(checked) =>
-                                      setNewFormData((prev) => ({
-                                        ...prev,
-                                        best_seller: checked,
-                                      }))
-                                    }
-                                    disabled={isCreating}
-                                  />
-                                </div>
-
-                                <div className="flex items-center justify-between rounded-lg border border-blue-950 p-4 bg-white/40">
-                                  <div className="space-y-1">
-                                    <Label className="text-gray-700 font-bold text-md">Set</Label>
-                                    <p className="text-sm text-gray-600">Mark this product as a Set Item</p>
-                                  </div>
-
-                                  <Switch
-                                    checked={newFormData.set}
-                                    onCheckedChange={(checked) =>
-                                      setNewFormData((prev) => ({
-                                        ...prev,
-                                        set: checked,
-                                      }))
-                                    }
-                                    disabled={isCreating}
-                                  />
-                                </div>
-                              </div>
-
-                              <div>
-                                <Label htmlFor="image" className="text-gray-700 font-bold text-md">
-                                  Product Image
-                                </Label>
-                                <div className="flex items-center gap-4 mt-1 text-gray-800">
-                                  <Input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageSelect}
-                                    disabled={isCreating}
-                                    className="flex-1 border-blue-950 focus:border-blue-700 focus:ring-blue-800"
-                                  />
-                                </div>
-                                {imagePreview && (
-                                  <div className="mt-3">
-                                    <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-blue-200 shadow-md">
-                                      <Image
-                                        src={imagePreview || "/placeholder.svg"}
-                                        alt="Preview"
-                                        width={80}
-                                        height={80}
-                                        className="object-cover w-full h-full"
+                                <div className="p-5 bg-white space-y-4">
+                                  <div className="grid grid-cols-1 gap-4">
+                                    <div>
+                                      <Label htmlFor="name" className="text-gray-700 font-bold text-md">
+                                        Product Name
+                                      </Label>
+                                      <Input
+                                        id="name"
+                                        name="name"
+                                        value={newFormData.name}
+                                        onChange={handleNewFormChange}
+                                        required
+                                        disabled={isCreating}
+                                        placeholder="e.g., Kimchi Fried Rice"
+                                        className="mt-1 border-blue-950 focus:border-blue-700 focus:ring-blue-800"
                                       />
                                     </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
 
-                            <DialogFooter className="gap-2">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => {
-                                  setIsCreateModalOpen(false)
-                                  resetForm()
-                                }}
-                                disabled={isCreating}
-                                className="flex-1 sm:flex-none border-blue-300 text-blue-950 hover:bg-blue-200"
-                              >
-                                Cancel
-                              </Button>
-                              <Button
-                                type="submit"
-                                disabled={isCreating}
-                                className="flex-1 sm:flex-none bg-[#162A3A] hover:bg-blue-800 text-white font-semibold shadow-lg"
-                              >
-                                {isCreating ? (
-                                  <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Creating...
-                                  </>
-                                ) : (
-                                  "Create Product"
-                                )}
-                              </Button>
-                            </DialogFooter>
-                          </form>
+                                    <div>
+                                      <Label htmlFor="description" className="text-gray-700 font-bold text-md">
+                                        Description
+                                      </Label>
+                                      <Textarea
+                                        id="description"
+                                        name="description"
+                                        value={newFormData.description}
+                                        onChange={handleNewFormChange}
+                                        rows={3}
+                                        disabled={isCreating}
+                                        placeholder="Describe the dish, ingredients, and preparation..."
+                                        className="mt-1 resize-none border-blue-950 focus:border-blue-700 focus:ring-blue-800"
+                                      />
+                                    </div>
+
+                                    <div>
+                                      <Label htmlFor="ingredients" className="text-gray-700 font-bold text-md">
+                                        Ingredients
+                                        <span className="text-gray-400">(use | separator)</span>
+                                      </Label>
+                                      <Textarea
+                                        id="ingredients"
+                                        name="ingredients"
+                                        value={newFormData.ingredients}
+                                        onChange={handleNewFormChange}
+                                        rows={3}
+                                        disabled={isCreating}
+                                        placeholder="Enter ingredients (use | separator)"
+                                        className="mt-1 resize-none border-blue-950 focus:border-blue-700 focus:ring-blue-800"
+                                      />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <Label htmlFor="price" className="text-gray-700 font-bold text-md">
+                                          Price (₱)
+                                        </Label>
+                                        <Input
+                                          id="price"
+                                          name="price"
+                                          type="number"
+                                          step="0.01"
+                                          min="0"
+                                          value={newFormData.price}
+                                          onChange={handleNewFormChange}
+                                          required
+                                          disabled={isCreating}
+                                          placeholder="0.00"
+                                          className="mt-1 border-blue-950 focus:border-blue-700 focus:ring-blue-800"
+                                        />
+                                      </div>
+
+                                      <div>
+                                        <Label htmlFor="category" className="text-gray-700 font-bold text-md">
+                                          Category
+                                        </Label>
+                                        <Select value={newFormData.category} onValueChange={handleCategoryChange} disabled={isCreating}>
+                                          <SelectTrigger className="mt-1 border-blue-950 focus:border-blue-700 focus:ring-blue-800">
+                                            <SelectValue placeholder="Select category" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {categories.map((category) => (
+                                              <SelectItem key={category} value={category}>
+                                                <span className="text-gray-800">{category}</span>
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex gap-3">
+                                      <div className="flex items-center justify-between rounded-lg border border-blue-950 p-4 bg-white/40">
+                                        <div className="space-y-1">
+                                          <Label className="text-gray-700 font-bold text-md">Best Seller</Label>
+                                          <p className="text-sm text-gray-600">Mark this product as a Best Seller Item</p>
+                                        </div>
+
+                                        <Switch
+                                          checked={newFormData.best_seller}
+                                          onCheckedChange={(checked) =>
+                                            setNewFormData((prev) => ({
+                                              ...prev,
+                                              best_seller: checked,
+                                            }))
+                                          }
+                                          disabled={isCreating}
+                                        />
+                                      </div>
+
+                                      <div className="flex items-center justify-between rounded-lg border border-blue-950 p-4 bg-white/40">
+                                        <div className="space-y-1">
+                                          <Label className="text-gray-700 font-bold text-md">Set</Label>
+                                          <p className="text-sm text-gray-600">Mark this product as a Set Item</p>
+                                        </div>
+
+                                        <Switch
+                                          checked={newFormData.set}
+                                          onCheckedChange={(checked) =>
+                                            setNewFormData((prev) => ({
+                                              ...prev,
+                                              set: checked,
+                                            }))
+                                          }
+                                          disabled={isCreating}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    <div>
+                                      <Label htmlFor="image" className="text-gray-700 font-bold text-md">
+                                        Product Image
+                                      </Label>
+                                      <div className="flex items-center gap-4 mt-1 text-gray-800">
+                                        <Input
+                                          ref={fileInputRef}
+                                          type="file"
+                                          accept="image/*"
+                                          onChange={handleImageSelect}
+                                          disabled={isCreating}
+                                          className="flex-1 border-blue-950 focus:border-blue-700 focus:ring-blue-800"
+                                        />
+                                      </div>
+                                      {imagePreview && (
+                                        <div className="mt-3">
+                                          <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-blue-200 shadow-md">
+                                            <Image
+                                              src={imagePreview || "/placeholder.svg"}
+                                              alt="Preview"
+                                              width={80}
+                                              height={80}
+                                              className="object-cover w-full h-full"
+                                            />
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <div className="flex gap-3 pb-2">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      onClick={() => {
+                                        setIsCreateModalOpen(false)
+                                        resetForm()
+                                      }}
+                                      disabled={isCreating}
+                                      className="flex-1 h-10 text-gray-600 border-gray-300 bg-white"
+                                    >
+                                      Cancel
+                                    </Button>
+                                    <Button
+                                      type="submit"
+                                      disabled={isCreating}
+                                      className="flex-1 h-10 bg-[#162A3A] hover:bg-[#1e3a50] text-white rounded-xl font-semibold shadow-md"
+                                    >
+                                      {isCreating ? (
+                                        <>
+                                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                          Creating...
+                                        </>
+                                      ) : (
+                                        "Create Product"
+                                      )}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </form>
+                          </div>
                         </DialogContent>
                       </Dialog>
                     </div>
@@ -980,109 +996,107 @@ export default function ProductsAdminPage() {
                       </Select>
                     </div>
                   </div>
+
                   <div className="w-full">
-                    <div className="rounded-lg border border-blue-200 overflow-hidden shadow-lg">
-                      <div className="overflow-x-auto">
-                        <table className="w-full min-w-[600px]">
-                          <thead className="bg-gradient-to-r from-blue-100 to-blue-100 h-10 text-gray-950 font-semibold">
-                            <tr className="border-b border-blue-200">
-                              {table.getHeaderGroups().map((headerGroup) =>
-                                headerGroup.headers.map((header) => (
-                                  <th key={header.id} className="text-left p-3 sm:p-4 text-md font-semibold text-gray-700">
-                                    {header.isPlaceholder ? null : (
-                                      <div className="flex items-center gap-2">
-                                        {typeof header.column.columnDef.header === "function"
-                                          ? header.column.columnDef.header(header.getContext())
-                                          : header.column.columnDef.header}
-                                      </div>
-                                    )}
-                                  </th>
-                                )),
-                              )}
+                    <div className="overflow-x-auto rounded-3xl border border-gray-100 shadow-sm">
+                      <table className="w-full min-w-[600px]">
+                        <thead>
+                          <tr className="bg-gray-50 border-b border-gray-100">
+                            {table.getHeaderGroups().map((headerGroup) =>
+                              headerGroup.headers.map((header) => (
+                                <th key={header.id} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                                  {header.isPlaceholder ? null : (
+                                    <div className="flex items-center gap-2">
+                                      {typeof header.column.columnDef.header === "function"
+                                        ? header.column.columnDef.header(header.getContext())
+                                        : header.column.columnDef.header}
+                                    </div>
+                                  )}
+                                </th>
+                              )),
+                            )}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {paginatedRows.map((row, index) => (
+                            <tr
+                              key={row.id}
+                              className="hover:bg-gray-50/60 transition-colors"
+                            >
+                              {row.getVisibleCells().map((cell) => (
+                                <td key={cell.id} className="px-4 py-3 text-sm">
+                                  {typeof cell.column.columnDef.cell === "function"
+                                    ? cell.column.columnDef.cell(cell.getContext())
+                                    : (cell.getValue() as React.ReactNode)}
+                                </td>
+                              ))}
                             </tr>
-                          </thead>
-                          <tbody>
-                            {paginatedRows.map((row, index) => (
-                              <tr
-                                key={row.id}
-                                className={`border-b border-blue-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-50 transition-all duration-200 ${index % 2 === 0 ? "bg-white" : "bg-blue-25"}`}
-                              >
-                                {row.getVisibleCells().map((cell) => (
-                                  <td key={cell.id} className="p-3 sm:p-4 text-sm">
-                                    {typeof cell.column.columnDef.cell === "function"
-                                      ? cell.column.columnDef.cell(cell.getContext())
-                                      : (cell.getValue() as React.ReactNode)}
-                                  </td>
-                                ))}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  {table.getRowModel().rows.length === 0 && (
+                    <div className="text-center py-12 text-gray-400 text-sm bg-white rounded-2xl border border-gray-100 shadow-xl mt-4">
+                      <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                      <p className="text-lg font-medium text-gray-600">No products found</p>
+                      {globalFilter && <p className="text-sm mt-1 text-gray-500">Try adjusting your search terms</p>}
+                    </div>
+                  )}
+
+                  {/* Pagination Controls */}
+                  {totalPages > 1 && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 pt-4 border-t border-blue-200">
+                      <div className="text-sm text-gray-600">
+                        Page {currentPage} of {totalPages}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(1)}
+                          disabled={currentPage === 1}
+                          className="border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                        >
+                          First
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                          disabled={currentPage === 1}
+                          className="border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                        >
+                          Previous
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                          disabled={currentPage === totalPages}
+                          className="border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                        >
+                          Next
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(totalPages)}
+                          disabled={currentPage === totalPages}
+                          className="border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                        >
+                          Last
+                        </Button>
                       </div>
                     </div>
-                    {table.getRowModel().rows.length === 0 && (
-                      <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-blue-200 mt-4">
-                        <div className="bg-gradient-to-r from-blue-100 to-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Search className="w-8 h-8 text-blue-500" />
-                        </div>
-                        <p className="text-lg font-medium text-gray-700">No products found</p>
-                        {globalFilter && <p className="text-sm mt-1 text-gray-500">Try adjusting your search terms</p>}
-                      </div>
-                    )}
 
-                    {/* Pagination Controls */}
-                    {totalPages > 1 && (
-                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 pt-4 border-t border-blue-200">
-                        <div className="text-sm text-gray-600">
-                          Page {currentPage} of {totalPages}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(1)}
-                            disabled={currentPage === 1}
-                            className="border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-50"
-                          >
-                            First
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                            disabled={currentPage === 1}
-                            className="border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-50"
-                          >
-                            Previous
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                            disabled={currentPage === totalPages}
-                            className="border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-50"
-                          >
-                            Next
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(totalPages)}
-                            disabled={currentPage === totalPages}
-                            className="border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-50"
-                          >
-                            Last
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                  )}
+              </CardContent>
+            </Card>
             </div>
           </main>
         </div>
-      </div>
-    </SidebarProvider>
+      </div >
+    </SidebarProvider >
   )
 }

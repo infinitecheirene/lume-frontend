@@ -443,185 +443,189 @@ export default function BlogPostsAdmin() {
                         <Plus size={16} /> New Post
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-white text-black w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl p-4 sm:p-6">
-                      <DialogHeader className="space-y-1">
-                        <DialogTitle className="text-black text-lg sm:text-xl font-semibold">{editingId ? "Edit" : "Create"} Post</DialogTitle>
-                      </DialogHeader>
-
-                      <form className="space-y-4 text-black" onSubmit={handleSubmit}>
-                        {/* TITLE */}
-                        <div className="space-y-1">
-                          <label className="text-sm font-medium">Title</label>
-                          <Input id="title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
-                        </div>
-
-                        {/* AUTHOR */}
-                        <div className="space-y-1">
-                          <label className="text-sm font-medium">Author</label>
-                          <Input
-                            id="author"
-                            value={formData.author}
-                            onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                            required
-                          />
-                        </div>
-
-                        {/* EXCERPT */}
-                        <div className="space-y-1">
-                          <label className="text-sm font-medium">Excerpt</label>
-                          <Textarea
-                            id="excerpt"
-                            value={formData.excerpt}
-                            onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                            className="min-h-[80px]"
-                          />
-                        </div>
-
-                        {/* CONTENT */}
-                        <div className="space-y-1">
-                          <label className="text-sm font-medium">Content</label>
-                          <Textarea
-                            id="content"
-                            className="min-h-[140px] sm:min-h-[180px]"
-                            value={formData.content}
-                            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                          />
-                        </div>
-
-                        {/* TABS */}
-                        <div className="space-y-3">
-                          {/* TAB BUTTONS */}
-                          <div className="flex flex-col sm:flex-row gap-2">
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant={activeTab === "media" ? "default" : "outline"}
-                              className={
-                                activeTab === "media"
-                                  ? "bg-yellow-600 hover:bg-yellow-500 text-white w-full sm:w-auto"
-                                  : "border-yellow-300 text-yellow-700 hover:bg-yellow-50 hover:text-yellow-700 w-full sm:w-auto"
-                              }
-                              onClick={() => {
-                                setActiveTab("media")
-
-                                if (!editingId) {
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    image: null,
-                                  }))
-                                }
-                              }}
-                              disabled={editingId && formData.imageUrl ? true : false}
-                            >
-                              Video
-                            </Button>
-
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant={activeTab === "image" ? "default" : "outline"}
-                              className={
-                                activeTab === "image"
-                                  ? "bg-yellow-600 hover:bg-yellow-500 text-white w-full sm:w-auto"
-                                  : "border-yellow-300 text-yellow-700 hover:bg-yellow-50 hover:text-yellow-700 w-full sm:w-auto"
-                              }
-                              onClick={() => {
-                                setActiveTab("image")
-                                if (!editingId) {
-                                  setVideoFile(null)
-                                  setFormData((prev) => ({ ...prev, thumbnail: null }))
-                                }
-                              }}
-                              disabled={editingId && formData.videoUrl ? true : false}
-                            >
-                              Image
-                            </Button>
+                    <DialogContent className="w-[95vw] sm:max-w-3xl max-h-[92vh] overflow-y-auto rounded-2xl border-0 shadow-2xl p-0 text-gray-950">
+                      <div className="sticky top-0 z-10 bg-[#162A3A] px-6 py-5 rounded-t-2xl">
+                        <DialogHeader>
+                          <DialogTitle className="text-2xl font-bold text-white">{editingId ? "Edit Blog Post" : "Create New Blog Post"}</DialogTitle>
+                          <p className="text-white/50 text-sm mt-0.5">{editingId ? "Update your blog post details" : "Create a new blog post for your customers"}</p>
+                        </DialogHeader>
+                      </div>
+                      <div className="p-5 space-y-4 bg-[#f5f0e8]">
+                        <form className="space-y-4" onSubmit={handleSubmit}>
+                          {/* TITLE */}
+                          <div className="space-y-1">
+                            <label className="text-sm font-medium">Title</label>
+                            <Input id="title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
                           </div>
 
-                          {/* TAB 1: VIDEO + THUMB */}
-                          {activeTab === "media" && (
-                            <div className="space-y-4">
-                              {editingId && formData.videoUrl && (
-                                <div className="relative w-full rounded-md overflow-hidden border border-blue-200">
-                                  <video
-                                    controls
-                                    className="w-full rounded-lg max-h-[250px] sm:max-h-[320px]"
-                                    poster={formData.thumbnailUrl ? getImageUrl(formData.thumbnailUrl) : "/video-placeholder.jpg"}
-                                  >
-                                    <source src={getVideoUrl(formData.videoUrl)} type="video/mp4" />
-                                    Your browser does not support the video tag.
-                                  </video>
-                                </div>
-                              )}
+                          {/* AUTHOR */}
+                          <div className="space-y-1">
+                            <label className="text-sm font-medium">Author</label>
+                            <Input
+                              id="author"
+                              value={formData.author}
+                              onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                              required
+                            />
+                          </div>
 
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                  <label className="text-sm font-medium">Upload Video</label>
-                                  <Input type="file" accept="video/*" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} />
+                          {/* EXCERPT */}
+                          <div className="space-y-1">
+                            <label className="text-sm font-medium">Excerpt</label>
+                            <Textarea
+                              id="excerpt"
+                              value={formData.excerpt}
+                              onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                              className="min-h-[80px]"
+                            />
+                          </div>
+
+                          {/* CONTENT */}
+                          <div className="space-y-1">
+                            <label className="text-sm font-medium">Content</label>
+                            <Textarea
+                              id="content"
+                              className="min-h-[140px] sm:min-h-[180px]"
+                              value={formData.content}
+                              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                            />
+                          </div>
+
+                          {/* TABS */}
+                          <div className="space-y-3">
+                            {/* TAB BUTTONS */}
+                            <div className="flex flex-col sm:flex-row gap-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant={activeTab === "media" ? "default" : "outline"}
+                                className={
+                                  activeTab === "media"
+                                    ? "bg-yellow-600 hover:bg-yellow-500 text-white w-full sm:w-auto"
+                                    : "border-yellow-300 text-yellow-700 hover:bg-yellow-50 hover:text-yellow-700 w-full sm:w-auto"
+                                }
+                                onClick={() => {
+                                  setActiveTab("media")
+
+                                  if (!editingId) {
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      image: null,
+                                    }))
+                                  }
+                                }}
+                                disabled={editingId && formData.imageUrl ? true : false}
+                              >
+                                Video
+                              </Button>
+
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant={activeTab === "image" ? "default" : "outline"}
+                                className={
+                                  activeTab === "image"
+                                    ? "bg-yellow-600 hover:bg-yellow-500 text-white w-full sm:w-auto"
+                                    : "border-yellow-300 text-yellow-700 hover:bg-yellow-50 hover:text-yellow-700 w-full sm:w-auto"
+                                }
+                                onClick={() => {
+                                  setActiveTab("image")
+                                  if (!editingId) {
+                                    setVideoFile(null)
+                                    setFormData((prev) => ({ ...prev, thumbnail: null }))
+                                  }
+                                }}
+                                disabled={editingId && formData.videoUrl ? true : false}
+                              >
+                                Image
+                              </Button>
+                            </div>
+
+                            {/* TAB 1: VIDEO + THUMB */}
+                            {activeTab === "media" && (
+                              <div className="space-y-4">
+                                {editingId && formData.videoUrl && (
+                                  <div className="relative w-full rounded-md overflow-hidden border border-blue-200">
+                                    <video
+                                      controls
+                                      className="w-full rounded-lg max-h-[250px] sm:max-h-[320px]"
+                                      poster={formData.thumbnailUrl ? getImageUrl(formData.thumbnailUrl) : "/video-placeholder.jpg"}
+                                    >
+                                      <source src={getVideoUrl(formData.videoUrl)} type="video/mp4" />
+                                      Your browser does not support the video tag.
+                                    </video>
+                                  </div>
+                                )}
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                  <div className="space-y-1">
+                                    <label className="text-sm font-medium">Upload Video</label>
+                                    <Input type="file" accept="video/*" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} />
+                                  </div>
+
+                                  <div className="space-y-1">
+                                    <label className="text-sm font-medium">Upload Thumbnail</label>
+                                    <Input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={(e) =>
+                                        setFormData({
+                                          ...formData,
+                                          thumbnail: e.target.files?.[0] || null,
+                                        })
+                                      }
+                                    />
+                                  </div>
                                 </div>
+                              </div>
+                            )}
+
+                            {/* TAB 2: IMAGE */}
+                            {activeTab === "image" && (
+                              <div className="space-y-3">
+                                {editingId && formData.imageUrl && (
+                                  <div className="overflow-hidden rounded-md border border-blue-100">
+                                    <Image
+                                      src={getImageUrl(formData.imageUrl || (formData as any).imageUrl)}
+                                      alt={formData.title}
+                                      width={400}
+                                      height={200}
+                                      className="w-full h-48 sm:h-56 object-cover hover:scale-105 transition-transform"
+                                    />
+                                  </div>
+                                )}
 
                                 <div className="space-y-1">
-                                  <label className="text-sm font-medium">Upload Thumbnail</label>
+                                  <label className="text-sm font-medium">Upload Image</label>
                                   <Input
                                     type="file"
                                     accept="image/*"
                                     onChange={(e) =>
                                       setFormData({
                                         ...formData,
-                                        thumbnail: e.target.files?.[0] || null,
+                                        image: e.target.files?.[0] || null,
                                       })
                                     }
                                   />
                                 </div>
                               </div>
-                            </div>
-                          )}
+                            )}
+                          </div>
 
-                          {/* TAB 2: IMAGE */}
-                          {activeTab === "image" && (
-                            <div className="space-y-3">
-                              {editingId && formData.imageUrl && (
-                                <div className="overflow-hidden rounded-md border border-blue-100">
-                                  <Image
-                                    src={getImageUrl(formData.imageUrl || (formData as any).imageUrl)}
-                                    alt={formData.title}
-                                    width={400}
-                                    height={200}
-                                    className="w-full h-48 sm:h-56 object-cover hover:scale-105 transition-transform"
-                                  />
-                                </div>
-                              )}
+                          {/* DRAFT */}
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-2">
+                            <label className="text-sm font-medium">Save as Draft</label>
+                            <Switch id="draft" checked={formData.draft} onCheckedChange={(checked) => setFormData({ ...formData, draft: checked })} />
+                          </div>
 
-                              <div className="space-y-1">
-                                <label className="text-sm font-medium">Upload Image</label>
-                                <Input
-                                  type="file"
-                                  accept="image/*"
-                                  onChange={(e) =>
-                                    setFormData({
-                                      ...formData,
-                                      image: e.target.files?.[0] || null,
-                                    })
-                                  }
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* DRAFT */}
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-2">
-                          <label className="text-sm font-medium">Save as Draft</label>
-                          <Switch id="draft" checked={formData.draft} onCheckedChange={(checked) => setFormData({ ...formData, draft: checked })} />
-                        </div>
-
-                        {/* FOOTER */}
-                        <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-end">
-                          <Button type="submit" disabled={uploadingVideo} className="w-full sm:w-auto">
-                            {uploadingVideo ? "Uploading video..." : "Save"}
-                          </Button>
-                        </DialogFooter>
-                      </form>
+                          <div className="flex gap-3 pb-2">
+                            <Button variant="outline" className="flex-1 h-10 text-gray-600 border-gray-300 bg-white" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                            <Button type="submit" disabled={uploadingVideo} className="flex-1 h-10 bg-[#162A3A] hover:bg-[#1e3a50] text-white rounded-xl font-semibold shadow-md">
+                              {uploadingVideo ? "Uploading video..." : editingId ? "Update Post" : "Create Post"}
+                            </Button>
+                          </div>
+                        </form>
+                      </div>
                     </DialogContent>
                   </Dialog>
                 </div>
@@ -629,7 +633,7 @@ export default function BlogPostsAdmin() {
 
               {/* POSTS */}
               {filteredPosts.length === 0 ? (
-                <div className="w-full flex flex-col items-center justify-center py-20 px-4 rounded-xl border border-dashed border-yellow-300 bg-white text-center">
+                <div className="w-full flex flex-col items-center justify-center py-20 px-4 rounded-2xl border border-gray-100 shadow-xl bg-white text-center">
                   <div className="w-14 h-14 flex items-center justify-center rounded-full bg-yellow-100 border border-yellow-200">
                     <Search className="w-6 h-6 text-yellow-600" />
                   </div>
@@ -676,7 +680,7 @@ export default function BlogPostsAdmin() {
                         setViewPost(post)
                         setViewOpen(true)
                       }}
-                      className="bg-white border border-blue-100 shadow-sm hover:shadow-md hover:border-yellow-400 transition-all cursor-pointer"
+                      className="bg-white rounded-2xl border border-gray-100 shadow-xl hover:shadow-2xl hover:border-[#d4a24c]/50 transition-all cursor-pointer"
                     >
                       <CardContent className="p-5 space-y-3 text-gray-900">
                         {/* IMAGE */}
@@ -698,11 +702,10 @@ export default function BlogPostsAdmin() {
 
                           <div className="flex flex-wrap gap-2 items-center text-xs">
                             <span
-                              className={`px-2 py-1 rounded-full font-medium ${
-                                (post as any).draft === 1
+                              className={`px-2 py-1 rounded-full font-medium ${(post as any).draft === 1
                                   ? "bg-yellow-100 text-yellow-800 border border-yellow-300"
                                   : "bg-blue-100 text-blue-800 border border-blue-300"
-                              }`}
+                                }`}
                             >
                               {(post as any).draft === 1 ? "Draft" : "Published"}
                             </span>
@@ -739,86 +742,89 @@ export default function BlogPostsAdmin() {
                 </div>
               )}
               <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-                <DialogContent className="bg-white text-gray-900 border border-blue-200 max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle className="text-blue-900 text-xl">{viewPost?.title}</DialogTitle>
-                  </DialogHeader>
+                <DialogContent className="lg:max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl shadow-lg border border-gray-200 p-0 bg-white">
+                  <div className="sticky top-0 z-10 bg-[#162A3A] px-6 py-5 rounded-t-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-bold text-white">{viewPost?.title}</DialogTitle>
+                      <p className="text-white/50 text-sm mt-0.5">By {viewPost?.author} • {viewPost?.draft ? "Draft" : "Published"}</p>
+                    </DialogHeader>
+                  </div>
+                  <div className="p-6">
+                    {viewPost && (
+                      <div className="space-y-4">
+                        {viewPost.video_url ? (
+                          <div className="space-y-2">
+                            <p className="text-sm text-blue-700 font-medium">Video Preview</p>
 
-                  {viewPost && (
-                    <div className="space-y-4">
-                      {viewPost.video_url ? (
-                        <div className="space-y-2">
-                          <p className="text-sm text-blue-700 font-medium">Video Preview</p>
-
-                          <div className="relative w-full rounded-md overflow-hidden border border-blue-200">
-                            <video
-                              controls
-                              className="w-full rounded-lg"
-                              poster={viewPost.thumbnail ? getImageUrl(viewPost.thumbnail) : "/video-placeholder.jpg"}
-                            >
-                              <source src={getVideoUrl(viewPost.video_url)} type="video/mp4" />
-                              Your browser does not support the video tag.
-                            </video>
+                            <div className="relative w-full rounded-md overflow-hidden border border-blue-200">
+                              <video
+                                controls
+                                className="w-full rounded-lg"
+                                poster={viewPost.thumbnail ? getImageUrl(viewPost.thumbnail) : "/video-placeholder.jpg"}
+                              >
+                                <source src={getVideoUrl(viewPost.video_url)} type="video/mp4" />
+                                Your browser does not support the video tag.
+                              </video>
+                            </div>
                           </div>
-                        </div>
-                      ) : viewPost.image ? (
-                        <>
-                          <p className="text-sm text-blue-700 font-medium">Image Preview</p>
-                          <Image
-                            src={getImageUrl(viewPost.image)}
-                            alt={viewPost.title}
-                            width={800}
-                            height={400}
-                            className="w-full h-60 object-cover rounded-md border border-blue-200"
-                          />
-                        </>
-                      ) : (
-                        <div className="w-full h-60 flex flex-col items-center justify-center rounded-md border border-dashed border-blue-300 bg-blue-50">
-                          <div className="text-center space-y-1">
-                            <p className="text-blue-700 font-medium">No media available</p>
-                            <p className="text-xs text-gray-500">This post doesn&apos;t have a video or image yet.</p>
+                        ) : viewPost.image ? (
+                          <>
+                            <p className="text-sm text-blue-700 font-medium">Image Preview</p>
+                            <Image
+                              src={getImageUrl(viewPost.image)}
+                              alt={viewPost.title}
+                              width={800}
+                              height={400}
+                              className="w-full h-60 object-cover rounded-md border border-blue-200"
+                            />
+                          </>
+                        ) : (
+                          <div className="w-full h-60 flex flex-col items-center justify-center rounded-md border border-dashed border-blue-300 bg-blue-50">
+                            <div className="text-center space-y-1">
+                              <p className="text-blue-700 font-medium">No media available</p>
+                              <p className="text-xs text-gray-500">This post doesn&apos;t have a video or image yet.</p>
+                            </div>
                           </div>
-                        </div>
-                      )}
-
-                      {/* BADGES */}
-                      <div className="flex gap-2 text-xs">
-                        <span
-                          className={`px-2 py-1 rounded-full border ${
-                            viewPost.draft === 1 ? "bg-yellow-100 text-yellow-800 border-yellow-300" : "bg-blue-100 text-blue-800 border-blue-300"
-                          }`}
-                        >
-                          {viewPost.draft === 1 ? "Draft" : "Published"}
-                        </span>
-
-                        {viewPost.video_url && (
-                          <span className="bg-yellow-200 text-yellow-900 px-2 py-1 rounded-full border border-yellow-400">Video Attached</span>
                         )}
+
+                        {/* BADGES */}
+                        <div className="flex gap-2 text-xs">
+                          <span
+                            className={`px-2 py-1 rounded-full border ${viewPost.draft === 1 ? "bg-yellow-100 text-yellow-800 border-yellow-300" : "bg-blue-100 text-blue-800 border-blue-300"
+                              }`}
+                          >
+                            {viewPost.draft === 1 ? "Draft" : "Published"}
+                          </span>
+
+                          {viewPost.video_url && (
+                            <span className="bg-yellow-200 text-yellow-900 px-2 py-1 rounded-full border border-yellow-400">Video Attached</span>
+                          )}
+                        </div>
+
+                        <p className="text-gray-600">{viewPost.excerpt}</p>
+                        <p className="text-gray-600">{viewPost.author}</p>
+
+                        <div className="text-sm text-gray-700 whitespace-pre-wrap">{viewPost.content}</div>
                       </div>
-
-                      <p className="text-gray-600">{viewPost.excerpt}</p>
-                      <p className="text-gray-600">{viewPost.author}</p>
-
-                      <div className="text-sm text-gray-700 whitespace-pre-wrap">{viewPost.content}</div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </DialogContent>
               </Dialog>
 
               {/* DELETE */}
               <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-                <AlertDialogContent className="bg-white text-black">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete post?</AlertDialogTitle>
-                    <AlertDialogDescription>Are you sure you want to delete this announcement? This action cannot be undone.</AlertDialogDescription>
-                  </AlertDialogHeader>
-
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-red-700 hover:bg-red-500">
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
+                <AlertDialogContent className="w-[92vw] max-w-sm rounded-2xl border-0 shadow-2xl p-0 overflow-hidden">
+                  <div className="bg-[#162A3A] px-6 py-5">
+                    <AlertDialogTitle className="text-xl font-bold text-white">Delete Blog Post?</AlertDialogTitle>
+                    <p className="text-white/50 text-sm mt-1">This action cannot be undone.</p>
+                  </div>
+                  <div className="p-6 space-y-5 bg-white">
+                    <p className="text-sm text-gray-700">Are you sure you want to delete this blog post? This action cannot be undone.</p>
+                    <div className="flex gap-2 pt-1">
+                      <AlertDialogCancel className="flex-1 text-gray-700 border-gray-200">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete} className="flex-1 bg-[#162A3A] hover:bg-[#1e3a50] text-white rounded-xl">Yes, Delete</AlertDialogAction>
+                    </div>
+                  </div>
                 </AlertDialogContent>
               </AlertDialog>
             </div>

@@ -39,7 +39,7 @@ const items = [
       { title: "Testimonials", url: "/admin/testimonials" },
     ],
   },
-   { title: "Settings", url: "/admin/settings", icon: Settings },
+  { title: "Settings", url: "/admin/settings", icon: Settings },
 ]
 
 export function AppSidebar() {
@@ -128,6 +128,10 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-3 border-t border-blue-200">
+        <Button variant="ghost" className="w-full justify-start" onClick={() => router.push("/")}>
+          <Home className="h-4 w-4 mr-2 text-[#162A3A]" />
+          Go Back to Site
+        </Button>
         <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
           <LogOut className="h-4 w-4 mr-2 text-[#162A3A]" />
           Logout

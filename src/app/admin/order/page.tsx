@@ -947,55 +947,49 @@ export default function OrdersAdminPage() {
                   </div>
 
                   <div className="w-full">
-                    <div className="rounded-lg border border-blue-200 overflow-hidden shadow-lg">
-                      <div className="overflow-x-auto">
-                        <table className="w-full min-w-[800px]">
-                          <thead className="bg-gradient-to-r from-blue-100 to-blue-100 h-10 text-gray-950 font-semibold">
-                            <tr className="border-b border-blue-200">
-                              {table.getHeaderGroups().map((headerGroup) =>
-                                headerGroup.headers.map((header) => (
-                                  <th key={header.id} className="text-left p-2 sm:p-3 text-md font-semibold text-gray-700">
-                                    {header.isPlaceholder ? null : (
-                                      <div>
-                                        {typeof header.column.columnDef.header === "function"
-                                          ? header.column.columnDef.header(header.getContext())
-                                          : header.column.columnDef.header}
-                                      </div>
-                                    )}
-                                  </th>
-                                )),
-                              )}
-                            </tr>
-                          </thead>
+                    <div className="overflow-x-auto rounded-3xl border border-gray-100 shadow-sm">
+                      <table className="w-full min-w-[800px]">
+                        <thead>
+                          <tr className="bg-gray-50 border-b border-gray-100">
+                            {table.getHeaderGroups().map((headerGroup) =>
+                              headerGroup.headers.map((header) => (
+                                <th key={header.id} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                                  {header.isPlaceholder ? null : (
+                                    <div>
+                                      {typeof header.column.columnDef.header === "function"
+                                        ? header.column.columnDef.header(header.getContext())
+                                        : header.column.columnDef.header}
+                                    </div>
+                                  )}
+                                </th>
+                              )),
+                            )}
+                          </tr>
+                        </thead>
 
-                          <tbody>
-                            {table.getRowModel().rows.map((row, index) => (
-                              <tr
-                                key={row.id}
-                                className={`border-b border-orange-100 hover:bg-gradient-to-r hover:from-orange-50 hover:to-blue-50 transition-all duration-200 ${
-                                  index % 2 === 0 ? "bg-white" : "bg-orange-25"
-                                }`}
-                              >
-                                {row.getVisibleCells().map((cell) => (
-                                  <td key={cell.id} className="p-2 sm:p-3 text-xs sm:text-sm">
-                                    {typeof cell.column.columnDef.cell === "function"
-                                      ? cell.column.columnDef.cell(cell.getContext())
-                                      : (cell.getValue() as React.ReactNode)}
-                                  </td>
-                                ))}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                        <tbody className="divide-y divide-gray-50">
+                          {table.getRowModel().rows.map((row, index) => (
+                            <tr
+                              key={row.id}
+                              className="hover:bg-gray-50/60 transition-colors"
+                            >
+                              {row.getVisibleCells().map((cell) => (
+                                <td key={cell.id} className="px-4 py-3 text-sm">
+                                  {typeof cell.column.columnDef.cell === "function"
+                                    ? cell.column.columnDef.cell(cell.getContext())
+                                    : (cell.getValue() as React.ReactNode)}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
 
                     {table.getRowModel().rows.length === 0 && (
-                      <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-orange-200 mt-4">
-                        <div className="bg-gradient-to-r from-orange-100 to-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Package className="w-8 h-8 text-orange-500" />
-                        </div>
-                        <p className="text-lg font-medium text-gray-700">No orders found</p>
+                      <div className="text-center py-12 text-gray-400 text-sm bg-white rounded-2xl border border-gray-100 shadow-xl mt-4">
+                        <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                        <p className="text-lg font-medium text-gray-600">No orders found</p>
                         {globalFilter && <p className="text-sm mt-1 text-gray-500">Try adjusting your search terms or filters</p>}
                       </div>
                     )}

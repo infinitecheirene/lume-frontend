@@ -328,7 +328,6 @@ export default function AdminAnnouncementsPage() {
                     <p className="text-gray-600 mt-1">Manage your restaurant&apos;s announcements and promos</p>
                   </div>
 
-                  {/* Adding New Announcement */}
                   <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
                       <Button
@@ -336,83 +335,90 @@ export default function AdminAnnouncementsPage() {
                           setEditingAnnouncement(null)
                           setFormData({ title: "", description: "", type: "", badge: "", is_active: true })
                         }}
-                        className="bg-yellow-600 hover:bg-orange-700 w-full md:w-auto"
+                        className="bg-[#162A3A] hover:bg-[#1e3a50] text-white rounded-xl shadow-md w-full md:w-auto"
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         New Announcement
                       </Button>
                     </DialogTrigger>
 
-                    <DialogContent className="text-black">
-                      <DialogHeader>
-                        <DialogTitle>{editingAnnouncement ? "Edit Announcement" : "Create New Announcement"}</DialogTitle>
-                        <DialogDescription>
-                          {editingAnnouncement ? "Update your announcement details" : "Create a new announcement for your customers"}
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="title">Title</Label>
-                          <Input
-                            id="title"
-                            value={formData.title}
-                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                            placeholder="Enter announcement title"
-                          />
+                    <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl border-0 shadow-2xl p-0 text-gray-950">
+                      <div className="sticky top-0 z-10 bg-[#162A3A] px-6 py-5 rounded-t-2xl">
+                        <DialogHeader>
+                          <DialogTitle className="text-2xl font-bold text-white">{editingAnnouncement ? "Edit Announcement" : "Create New Announcement"}</DialogTitle>
+                          <p className="text-white/50 text-sm mt-0.5">{editingAnnouncement ? "Update your announcement details" : "Create a new announcement for your customers"}</p>
+                        </DialogHeader>
+                      </div>
+                      <div className="p-5 space-y-4 bg-[#f5f0e8]">
+                        <div className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                          <div className="px-5 py-3 bg-gradient-to-r from-[#162A3A] to-[#1e3a50] flex items-center gap-2">
+                            <span className="text-[#d4a24c] text-sm font-semibold uppercase tracking-wider">Announcement Details</span>
+                          </div>
+                          <div className="p-5 bg-white space-y-4">
+                            <div className="space-y-2">
+                              <label className="block text-sm font-medium text-gray-700 mb-1.5">Title <span className="text-red-500 ml-0.5">*</span></label>
+                              <Input
+                                value={formData.title}
+                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                placeholder="Enter announcement title"
+                                className="h-9 bg-white border-gray-200"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="block text-sm font-medium text-gray-700 mb-1.5">Description <span className="text-red-500 ml-0.5">*</span></label>
+                              <Textarea
+                                value={formData.description}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                placeholder="Enter announcement description"
+                                rows={4}
+                                className="bg-white border-gray-200 resize-none"
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">Type</label>
+                                <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
+                                  <SelectTrigger className="h-9 bg-white border-gray-200">
+                                    <SelectValue placeholder="Select type" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="news">News</SelectItem>
+                                    <SelectItem value="promo">Promo</SelectItem>
+                                    <SelectItem value="event">Event</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">Badge (optional)</label>
+                                <Input
+                                  value={formData.badge}
+                                  onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
+                                  placeholder="e.g. New, Hot, Limited"
+                                  className="h-9 bg-white border-gray-200"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <label className="block text-sm font-medium text-gray-700">Active</label>
+                              <Switch
+                                checked={formData.is_active}
+                                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                              />
+                            </div>
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="content">Content</Label>
-                          <Textarea
-                            id="content"
-                            value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            placeholder="Enter announcement description"
-                            rows={4}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="type">Type</Label>
-                          <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                            <SelectTrigger id="type">
-                              <SelectValue placeholder="Select announcement type" />
-                            </SelectTrigger>
-
-                            <SelectContent>
-                              <SelectItem value="news">News</SelectItem>
-                              <SelectItem value="promo">Promo</SelectItem>
-                              <SelectItem value="event">Event</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="badge">Badge (optional)</Label>
-                          <Input
-                            id="badge"
-                            value={formData.badge}
-                            onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
-                            placeholder="e.g. New, Hot, Limited"
-                          />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="is_active">Active</Label>
-                          <Switch
-                            id="is_active"
-                            checked={formData.is_active}
-                            onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-                          />
+                        <div className="flex gap-3 pb-2">
+                          <Button variant="outline" className="flex-1 h-10 text-gray-600 border-gray-300 bg-white" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                          <Button
+                            onClick={editingAnnouncement ? handleUpdate : handleCreate}
+                            disabled={isSubmitting}
+                            className="flex-1 h-10 bg-[#162A3A] hover:bg-[#1e3a50] text-white rounded-xl font-semibold shadow-md"
+                          >
+                            {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                            {editingAnnouncement ? "Update Announcement" : "Create Announcement"}
+                          </Button>
                         </div>
                       </div>
-                      <DialogFooter>
-                        <Button
-                          onClick={editingAnnouncement ? handleUpdate : handleCreate}
-                          disabled={isSubmitting}
-                          className="bg-yellow-600 hover:bg-yellow-700"
-                        >
-                          {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                          {editingAnnouncement ? "Update" : "Create"}
-                        </Button>
-                      </DialogFooter>
                     </DialogContent>
                   </Dialog>
                 </div>
@@ -420,26 +426,26 @@ export default function AdminAnnouncementsPage() {
                 <div className="flex flex-col gap-2">
                   {/* Active and Inactive Stats */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Card className="border-l-4 border-green-500 h-[96px]">
+                    <Card className="rounded-2xl border border-gray-100 shadow-xl p-0 pb-5">
                       <CardContent className="p-5 flex items-center justify-between h-full">
                         <div>
                           <p className="text-sm text-gray-600">Active Announcements</p>
-                          <h2 className="text-xl font-bold text-gray-900">{activeCount}</h2>
+                          <h2 className="text-2xl font-bold text-gray-900">{activeCount}</h2>
                         </div>
-                        <div className="p-3 bg-green-100 rounded-full">
-                          <CheckCircle className="w-5 h-5 text-green-600" />
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-5 h-5 text-emerald-600" />
                         </div>
                       </CardContent>
                     </Card>
 
-                    <Card className="border-l-4 border-red-500 h-[96px]">
+                    <Card className="rounded-2xl border border-gray-100 shadow-xl p-0 pb-5">
                       <CardContent className="p-5 flex items-center justify-between h-full">
                         <div>
                           <p className="text-sm text-gray-600">Inactive Announcements</p>
-                          <h2 className="text-xl font-bold text-gray-900">{inactiveCount}</h2>
+                          <h2 className="text-2xl font-bold text-gray-900">{inactiveCount}</h2>
                         </div>
-                        <div className="p-3 bg-red-100 rounded-full">
-                          <XCircle className="w-6 h-6 text-red-600" />
+                        <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
+                          <XCircle className="w-5 h-5 text-red-600" />
                         </div>
                       </CardContent>
                     </Card>
@@ -462,16 +468,16 @@ export default function AdminAnnouncementsPage() {
             </div>
 
             {/* Announcements List */}
-            <div className="space-y-4 grid grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+            <div className="space-y-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
               {loading ? (
-                <Card>
+                <Card className="col-span-full rounded-2xl border border-gray-100 shadow-xl p-0 pb-5">
                   <CardContent className="text-center py-12">
-                    <Loader2 className="w-8 h-8 text-orange-600 mx-auto mb-4 animate-spin" />
+                    <Loader2 className="w-8 h-8 text-[#d4a24c] mx-auto mb-4 animate-spin" />
                     <p className="text-gray-600">Loading announcements...</p>
                   </CardContent>
                 </Card>
               ) : filteredAnnouncements.length === 0 ? (
-                <Card>
+                <Card className="col-span-full rounded-2xl border border-gray-100 shadow-xl p-0 pb-5">
                   <CardContent className="text-center py-12">
                     <Megaphone className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600">No announcements yet</p>
@@ -481,15 +487,15 @@ export default function AdminAnnouncementsPage() {
               ) : (
                 filteredAnnouncements.map((announcement) => (
                   <div key={announcement.id} className="">
-                    <Card className="overflow-hidden flex flex-col h-[220px]">
-                      <CardHeader>
+                    <Card className="overflow-hidden flex flex-col h-[220px] rounded-2xl border border-gray-100 shadow-xl">
+                      <CardHeader className="pb-3">
                         <div className="flex items-start justify-between">
                           <div className="flex-1 space-y-3">
-                            <Badge variant={announcement.is_active ? "default" : "secondary"}>{announcement.is_active ? "Active" : "Inactive"}</Badge>
+                            <Badge variant={announcement.is_active ? "default" : "secondary"} className={announcement.is_active ? "bg-emerald-100 text-emerald-800 border-emerald-200" : "bg-gray-100 text-gray-600 border-gray-200"}>{announcement.is_active ? "Active" : "Inactive"}</Badge>
                             <div className="flex items-center gap-2 mb-2">
-                              <CardTitle className="text-lg font-bold">{announcement.title}</CardTitle>
+                              <CardTitle className="text-lg font-bold text-gray-900">{announcement.title}</CardTitle>
                             </div>
-                            <CardDescription className="flex items-center gap-2 text-sm">
+                            <CardDescription className="flex items-center gap-2 text-sm text-gray-500">
                               <Calendar className="w-4 h-4" />
                               {new Date(announcement.created_at).toLocaleDateString("en-US", {
                                 month: "long",
@@ -537,20 +543,18 @@ export default function AdminAnnouncementsPage() {
                                     </Button>
                                   </AlertDialogTrigger>
 
-                                  <AlertDialogContent className="text-black">
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Delete Announcement?</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Are you sure you want to delete this announcement? This action cannot be undone.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction onClick={() => handleDelete(announcement.id)} className="bg-yellow-600 hover:bg-yellow-700">
-                                        Yes, Delete
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
+                                  <AlertDialogContent className="w-[92vw] max-w-sm rounded-2xl border-0 shadow-2xl p-0 overflow-hidden">
+                                    <div className="bg-[#162A3A] px-6 py-5">
+                                      <AlertDialogTitle className="text-xl font-bold text-white">Delete Announcement?</AlertDialogTitle>
+                                      <p className="text-white/50 text-sm mt-1">This action cannot be undone.</p>
+                                    </div>
+                                    <div className="p-6 space-y-5 bg-white">
+                                      <p className="text-sm text-gray-700">Are you sure you want to delete this announcement? This action cannot be undone.</p>
+                                      <div className="flex gap-2 pt-1">
+                                        <AlertDialogCancel className="flex-1 text-gray-700 border-gray-200">Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete(announcement.id)} className="flex-1 bg-[#162A3A] hover:bg-[#1e3a50] text-white rounded-xl">Yes, Delete</AlertDialogAction>
+                                      </div>
+                                    </div>
                                   </AlertDialogContent>
                                 </AlertDialog>
                               </DropdownMenuItem>
@@ -558,8 +562,8 @@ export default function AdminAnnouncementsPage() {
                           </DropdownMenu>
                         </div>
                       </CardHeader>
-                      <CardContent>
-                        <p className="text-gray-700">{announcement.description}</p>
+                      <CardContent className="flex-1">
+                        <p className="text-gray-700 line-clamp-3">{announcement.description}</p>
                       </CardContent>
                     </Card>
                   </div>

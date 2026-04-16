@@ -546,104 +546,113 @@ export default function SettingsPage() {
                             resetPaymentForm()
                             setIsPaymentDialogOpen(true)
                           }}
-                          className="bg-white text-yellow-600 hover:bg-yellow-100 font-medium shadow-sm"
+                          className="bg-[#162A3A] hover:bg-[#1e3a50] text-white rounded-xl shadow-md"
                         >
                           Add Payment Method
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-lg text-gray-800">
-                        <DialogHeader>
-                          <DialogTitle className="text-yellow-600 font-bold">
-                            {editPaymentId ? "Edit Payment Method" : "Add Payment Method"}
-                          </DialogTitle>
-                        </DialogHeader>
-
-                        <div className="space-y-4">
-                          {/* Mode */}
-                          <div className="space-y-1">
-                            <Label className="text-gray-700">
-                              Mode<span className="text-red-500"> *</span>
-                            </Label>
-                            <Input
-                              placeholder="e.g. gcash, cash, bpi"
-                              value={paymentform.key}
-                              onChange={(e) => setPaymentForm({ ...paymentform, key: e.target.value })}
-                            />
-                          </div>
-
-                          {/* Display Name */}
-                          <div className="space-y-1">
-                            <Label className="text-gray-700">
-                              Display Name<span className="text-red-500"> *</span>
-                            </Label>
-                            <Input
-                              placeholder="e.g. GCash, BPI, Security Bank"
-                              value={paymentform.display_name}
-                              onChange={(e) => setPaymentForm({ ...paymentform, display_name: e.target.value })}
-                            />
-                          </div>
-
-                          {/* Type */}
-                          <div className="space-y-1">
-                            <Label className="text-gray-700">
-                              Type<span className="text-red-500"> *</span>
-                            </Label>
-                            <select
-                              className="w-full border rounded p-2 focus:ring-2 focus:ring-yellow-500 text-gray-700"
-                              value={paymentform.type}
-                              onChange={(e) => setPaymentForm({ ...paymentform, type: e.target.value as any })}
-                            >
-                              <option value="">Select Type</option>
-                              <option value="cash">Cash</option>
-                              <option value="ewallet">E-Wallet</option>
-                              <option value="bank">Bank</option>
-                            </select>
-                          </div>
-
-                          {/* Account Number */}
-                          <div className="space-y-1">
-                            <Label className="text-gray-700">Account Number</Label>
-                            <Input
-                              placeholder="Optional"
-                              value={paymentform.account_number}
-                              onChange={(e) => setPaymentForm({ ...paymentform, account_number: e.target.value })}
-                            />
-                          </div>
-
-                          {/* Account Name */}
-                          <div className="space-y-1">
-                            <Label className="text-gray-700">Account Name</Label>
-                            <Input
-                              placeholder="L**** B*** B****"
-                              value={paymentform.account_name}
-                              onChange={(e) => setPaymentForm({ ...paymentform, account_name: e.target.value })}
-                            />
-                          </div>
-
-                          {/* QR Upload */}
-                          <div className="space-y-2">
-                            <Label className="text-gray-700">QR Code</Label>
-                            <Input type="file" accept="image/*" onChange={(e) => setQrCodeFile(e.target.files?.[0] || null)} />
-                            {qrCodeFile && (
-                              <div className="mt-2">
-                                <img src={URL.createObjectURL(qrCodeFile)} alt="QR Preview" className="w-32 h-32 object-cover rounded border" />
+                      <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl border-0 shadow-2xl p-0 text-gray-950">
+                        <div className="sticky top-0 z-10 bg-[#162A3A] px-6 py-5 rounded-t-2xl">
+                          <DialogHeader>
+                            <DialogTitle className="text-2xl font-bold text-white">{editPaymentId ? "Edit Payment Method" : "Add Payment Method"}</DialogTitle>
+                            <p className="text-white/50 text-sm mt-0.5">{editPaymentId ? "Update your payment method details" : "Configure a new payment option"}</p>
+                          </DialogHeader>
+                        </div>
+                        <div className="p-5 space-y-4 bg-[#f5f0e8]">
+                          <div className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                            <div className="px-5 py-3 bg-gradient-to-r from-[#162A3A] to-[#1e3a50] flex items-center gap-2">
+                              <span className="text-[#d4a24c] text-sm font-semibold uppercase tracking-wider">Payment Details</span>
+                            </div>
+                            <div className="p-5 bg-white space-y-4">
+                              {/* Mode */}
+                              <div className="space-y-1">
+                                <Label className="text-gray-700">
+                                  Mode<span className="text-red-500"> *</span>
+                                </Label>
+                                <Input
+                                  placeholder="e.g. gcash, cash, bpi"
+                                  value={paymentform.key}
+                                  onChange={(e) => setPaymentForm({ ...paymentform, key: e.target.value })}
+                                />
                               </div>
-                            )}
-                          </div>
 
-                          {/* Enabled */}
-                          <div className="flex items-center gap-2">
-                            <Switch checked={paymentform.is_enabled} onCheckedChange={(v) => setPaymentForm({ ...paymentform, is_enabled: v })} />
-                            <Label className="text-gray-700">Enabled</Label>
-                          </div>
+                              {/* Display Name */}
+                              <div className="space-y-1">
+                                <Label className="text-gray-700">
+                                  Display Name<span className="text-red-500"> *</span>
+                                </Label>
+                                <Input
+                                  placeholder="e.g. GCash, BPI, Security Bank"
+                                  value={paymentform.display_name}
+                                  onChange={(e) => setPaymentForm({ ...paymentform, display_name: e.target.value })}
+                                />
+                              </div>
 
-                          {/* Action */}
-                          <Button
-                            className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold"
-                            onClick={editPaymentId ? handleUpdate : handleCreate}
-                          >
-                            {editPaymentId ? "Update Payment Method" : "Create Payment Method"}
-                          </Button>
+                              {/* Type */}
+                              <div className="space-y-1">
+                                <Label className="text-gray-700">
+                                  Type<span className="text-red-500"> *</span>
+                                </Label>
+                                <select
+                                  className="w-full border rounded p-2 focus:ring-2 focus:ring-yellow-500 text-gray-700"
+                                  value={paymentform.type}
+                                  onChange={(e) => setPaymentForm({ ...paymentform, type: e.target.value as any })}
+                                >
+                                  <option value="">Select Type</option>
+                                  <option value="cash">Cash</option>
+                                  <option value="ewallet">E-Wallet</option>
+                                  <option value="bank">Bank</option>
+                                </select>
+                              </div>
+
+                              {/* Account Number */}
+                              <div className="space-y-1">
+                                <Label className="text-gray-700">Account Number</Label>
+                                <Input
+                                  placeholder="Optional"
+                                  value={paymentform.account_number}
+                                  onChange={(e) => setPaymentForm({ ...paymentform, account_number: e.target.value })}
+                                />
+                              </div>
+
+                              {/* Account Name */}
+                              <div className="space-y-1">
+                                <Label className="text-gray-700">Account Name</Label>
+                                <Input
+                                  placeholder="L**** B*** B****"
+                                  value={paymentform.account_name}
+                                  onChange={(e) => setPaymentForm({ ...paymentform, account_name: e.target.value })}
+                                />
+                              </div>
+
+                              {/* QR Upload */}
+                              <div className="space-y-2">
+                                <Label className="text-gray-700">QR Code</Label>
+                                <Input type="file" accept="image/*" onChange={(e) => setQrCodeFile(e.target.files?.[0] || null)} />
+                                {qrCodeFile && (
+                                  <div className="mt-2">
+                                    <img src={URL.createObjectURL(qrCodeFile)} alt="QR Preview" className="w-32 h-32 object-cover rounded border" />
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Enabled */}
+                              <div className="flex items-center gap-2">
+                                <Switch checked={paymentform.is_enabled} onCheckedChange={(v) => setPaymentForm({ ...paymentform, is_enabled: v })} />
+                                <Label className="text-gray-700">Enabled</Label>
+                              </div>
+
+                              <div className="flex gap-3 pb-2">
+                                <Button variant="outline" className="flex-1 h-10 text-gray-600 border-gray-300 bg-white" onClick={() => setIsPaymentDialogOpen(false)}>Cancel</Button>
+                                <Button
+                                  className="flex-1 h-10 bg-[#162A3A] hover:bg-[#1e3a50] text-white rounded-xl font-semibold shadow-md"
+                                  onClick={editPaymentId ? handleUpdate : handleCreate}
+                                >
+                                  {editPaymentId ? "Update Payment Method" : "Create Payment Method"}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </DialogContent>
                     </Dialog>

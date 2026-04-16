@@ -490,33 +490,30 @@ export default function UsersAdminPage() {
                 </Button>
               </DialogTrigger>
 
-              <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl">
+              <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl border-0 shadow-2xl p-0 text-gray-950">
                 {selectedUser && (
                   <>
-                    <DialogHeader>
-                      <DialogTitle className="text-black">User Details - {selectedUser.name}</DialogTitle>
-                      <DialogDescription>Complete information for this user</DialogDescription>
-                    </DialogHeader>
-
-                    <div className="mt-6 space-y-6">
+                    <div className="sticky top-0 z-10 bg-[#162A3A] px-6 py-5 rounded-t-2xl">
+                      <DialogHeader>
+                        <DialogTitle className="text-2xl font-bold text-white">User Details - {selectedUser.name}</DialogTitle>
+                        <p className="text-white/50 text-sm mt-0.5">Complete information for this user</p>
+                      </DialogHeader>
+                    </div>
+                    <div className="p-5 space-y-4 bg-[#f5f0e8]">
                       {/* User Info Card */}
-                      <Card className="gap-0 p-0">
-                        <CardHeader className="py-3 bg-slate-700 text-white rounded-t-lg">
-                          <h3 className="font-semibold text-lg flex items-center gap-2">
-                            <UserCheck className="w-5 h-5" />
-                            Personal Information
-                          </h3>
-                        </CardHeader>
-
-                        <CardContent className="space-y-4 pt-4">
+                      <div className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                        <div className="px-5 py-3 bg-gradient-to-r from-[#162A3A] to-[#1e3a50] flex items-center gap-2">
+                          <span className="text-[#d4a24c] text-sm font-semibold uppercase tracking-wider">Personal Information</span>
+                        </div>
+                        <CardContent className="space-y-4 pt-4 bg-white">
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <p className="text-md font-semibold text-gray-800">Full Name</p>
+                              <p className="text-md font-semibold text-gray-900">Full Name</p>
                               <p className="font-medium">{selectedUser.name}</p>
                             </div>
 
                             <div>
-                              <p className="text-md font-semibold text-gray-800">Role</p>
+                              <p className="text-md font-semibold text-gray-900">Role</p>
                               <Badge variant="outline" className="text-sm">
                                 {selectedUser.role}
                               </Badge>
@@ -561,7 +558,10 @@ export default function UsersAdminPage() {
                             </p>
                           </div>
                         </CardContent>
-                      </Card>
+                      </div>
+                      <div className="flex gap-3 pb-2">
+                        <Button variant="outline" className="flex-1 h-10 text-gray-600 border-gray-300 bg-white" onClick={() => setSelectedUser(null)}>Close</Button>
+                      </div>
                     </div>
                   </>
                 )}
@@ -703,11 +703,11 @@ export default function UsersAdminPage() {
                     Showing {table.getFilteredRowModel().rows.length} of {users.length} users
                   </div>
                   <div className="w-full">
-                    <div className="rounded-lg border border-blue-200 overflow-hidden shadow-lg">
+                    <div className="rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
                       <div className="overflow-x-auto">
                         <table className="w-full min-w-[800px]">
-                          <thead className="bg-gradient-to-r from-blue-100 to-blue-100 h-10 text-gray-950 font-semibold">
-                            <tr className="border-b border-blue-200">
+                          <thead className="bg-gray-50">
+                            <tr className="border-b border-gray-50">
                               {table.getHeaderGroups().map((headerGroup) =>
                                 headerGroup.headers.map((header) => (
                                   <th key={header.id} className="text-left p-2 sm:p-3 text-md font-semibold text-gray-700">
@@ -723,11 +723,11 @@ export default function UsersAdminPage() {
                               )}
                             </tr>
                           </thead>
-                          <tbody>
+                          <tbody className="divide-y divide-gray-50">
                             {table.getRowModel().rows.map((row, index) => (
                               <tr
                                 key={row.id}
-                                className={`border-b border-yellow-100 hover:bg-gradient-to-r hover:from-yellow-50 hover:to-yellow-50 transition-all duration-200 ${index % 2 === 0 ? "bg-white" : "bg-yellow-25"}`}
+                                className="hover:bg-gray-50 transition-all duration-200 bg-white"
                               >
                                 {row.getVisibleCells().map((cell) => (
                                   <td key={cell.id} className="p-2 sm:p-3 text-xs sm:text-sm">
@@ -743,9 +743,9 @@ export default function UsersAdminPage() {
                       </div>
                     </div>
                     {table.getRowModel().rows.length === 0 && (
-                      <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-yellow-200 mt-4">
-                        <div className="bg-gradient-to-r from-yellow-100 to-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <UsersIcon className="w-8 h-8 text-yellow-500" />
+                      <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-gray-100 mt-4">
+                        <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <UsersIcon className="w-8 h-8 text-gray-400" />
                         </div>
                         <p className="text-lg font-medium text-gray-700">No users found</p>
                         {globalFilter && <p className="text-sm mt-1 text-gray-500">Try adjusting your search terms</p>}
@@ -760,12 +760,14 @@ export default function UsersAdminPage() {
       </div>
 
       <Dialog open={showOrdersDialog} onOpenChange={setShowOrdersDialog}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-black">Orders for {selectedUser?.name}</DialogTitle>
-            <DialogDescription>View all orders placed by this customer</DialogDescription>
-          </DialogHeader>
-          <div className="mt-4">
+        <DialogContent className="w-[95vw] sm:max-w-4xl max-h-[92vh] overflow-y-auto rounded-2xl border-0 shadow-2xl p-0 text-gray-950">
+          <div className="sticky top-0 z-10 bg-[#162A3A] px-6 py-5 rounded-t-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-white">Orders for {selectedUser?.name}</DialogTitle>
+              <p className="text-white/50 text-sm mt-0.5">View all orders placed by this customer</p>
+            </DialogHeader>
+          </div>
+          <div className="p-5 space-y-4 bg-[#f5f0e8]">
             {loadingOrders ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin text-yellow-500" />
@@ -779,182 +781,115 @@ export default function UsersAdminPage() {
             ) : (
               <div className="space-y-4">
                 {userOrders.map((order) => (
-                  <Card key={order.id} className="border-yellow-200">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <p className="font-semibold text-lg">Order #{order.order_number}</p>
-                            <Badge
-                              variant={
-                                order.order_status === "delivered" ? "default" : order.order_status === "cancelled" ? "destructive" : "outline"
-                              }
-                              className="capitalize"
-                            >
-                              {order.order_status}
-                            </Badge>
-                          </div>
-                          <div className="space-y-1 text-sm text-gray-600">
-                            <div className="flex items-center gap-2">
-                              <MapPin className="w-4 h-4" />
-                              <p>{order.delivery_address}</p>
-                            </div>
-                            {order.delivery_city && (
-                              <p className="ml-6 text-xs">
-                                {order.delivery_city}, {order.delivery_zip_code}
-                              </p>
-                            )}
-                            <div className="flex items-center gap-2">
-                              <Phone className="w-4 h-4" />
-                              <p>{order.customer_phone}</p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Calendar className="w-4 h-4" />
-                              <p className="text-xs">
-                                {new Date(order.created_at).toLocaleDateString("en-US", {
-                                  month: "long",
-                                  day: "2-digit",
-                                  year: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </p>
-                            </div>
-                          </div>
+                  <Card key={order.id} className="rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <CardHeader className="bg-gradient-to-r from-[#162A3A] to-[#1e3a50] text-white rounded-t-2xl">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <CardTitle className="text-lg">Order #{order.order_number}</CardTitle>
+                          <CardDescription className="text-white/80">
+                            Placed on {new Date(order.created_at).toLocaleDateString()}
+                          </CardDescription>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold text-xl text-yellow-600">₱{(order.total_amount ?? 0).toFixed(2)}</p>
-                          <Badge variant="outline" className="mt-2 text-xs capitalize">
-                            {order.payment_method}
-                          </Badge>
-                        </div>
+                        <Badge
+                          variant={
+                            order.order_status === "delivered" ? "default" : order.order_status === "cancelled" ? "destructive" : "outline"
+                          }
+                          className="capitalize"
+                        >
+                          {order.order_status}
+                        </Badge>
                       </div>
-                      <p className="font-bold text-md text-gray-600">Delivery Fee: ₱{(order.delivery_fee ?? 0).toFixed(2)}</p>
-
-                      {/* Order Items */}
-                      {order.order_items?.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-yellow-100">
-                          <div className="flex items-center justify-between mb-3">
-                            <p className="text-sm font-semibold text-gray-700">Order Items</p>
-                            <span className="text-xs text-gray-500">({order.order_items.length})</span>
-                          </div>
-
-                          <div className="space-y-3">
-                            {order.order_items.map((item, index) => {
-                              const total = item.price * item.quantity
-
-                              return (
-                                <div key={index} className="rounded-lg border border-yellow-100 bg-yellow-50/60 p-3">
-                                  <div className="flex items-start justify-between gap-4">
-                                    {/* LEFT */}
-                                    <div className="flex-1 space-y-1">
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        <p className="font-medium text-gray-900 leading-tight">{item.name}</p>
-
-                                        {item.category && (
-                                          <Badge variant="outline" className="text-[10px] px-2 py-0.5 capitalize">
-                                            {item.category}
-                                          </Badge>
-                                        )}
-                                      </div>
-
-                                      {item.description && <p className="text-xs text-gray-600 line-clamp-2">{item.description}</p>}
-                                    </div>
-
-                                    {/* RIGHT */}
-                                    <div className="text-right shrink-0 min-w-[120px] space-y-1">
-                                      <p className="text-xs text-gray-500">
-                                        Qty: <span className="font-medium text-gray-700">{item.quantity}</span>
-                                      </p>
-
-                                      <p className="text-xs text-gray-500">₱{item.price.toFixed(2)} each</p>
-
-                                      <p className="text-sm font-semibold text-yellow-700">₱{total.toFixed(2)}</p>
-                                    </div>
-                                  </div>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Special Notes */}
-                      {order.notes && (
-                        <div className="mt-4 pt-4 border-t border-yellow-100">
-                          <p className="text-sm font-semibold mb-1 text-gray-700">Special Notes:</p>
-                          <p className="text-sm text-gray-600 bg-yellow-50 p-2 rounded">{order.notes}</p>
-                        </div>
-                      )}
+                    </CardHeader>
+                    <CardContent className="p-4 bg-white">
+                      <div className="space-y-2">
+                        <p className="text-sm text-gray-600">
+                          <strong>Total:</strong> ₱{(order.total_amount ?? 0).toFixed(2)}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          <strong>Items:</strong> {order.order_items?.length || 0}
+                        </p>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
             )}
+            <div className="flex gap-3 pb-2">
+              <Button variant="outline" className="flex-1 h-10 text-gray-600 border-gray-300 bg-white" onClick={() => setShowOrdersDialog(false)}>Close</Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
 
       <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
-        <DialogContent className="text-black">
-          <DialogHeader>
-            <DialogTitle className="text-black">Send Email to {selectedUser?.name}</DialogTitle>
-            <DialogDescription>Compose and send an email to this customer</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <div>
-              <Label htmlFor="email-to" className="text-black">
-                To
-              </Label>
-              <Input id="email-to" value={selectedUser?.email || ""} disabled className="mt-1" />
+        <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl border-0 shadow-2xl p-0 text-gray-950">
+          <div className="sticky top-0 z-10 bg-[#162A3A] px-6 py-5 rounded-t-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-white">Send Email to {selectedUser?.name}</DialogTitle>
+              <p className="text-white/50 text-sm mt-0.5">Compose and send an email to this customer</p>
+            </DialogHeader>
+          </div>
+          <div className="p-5 space-y-4 bg-[#f5f0e8]">
+            <div className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+              <div className="px-5 py-3 bg-gradient-to-r from-[#162A3A] to-[#1e3a50] flex items-center gap-2">
+                <span className="text-[#d4a24c] text-sm font-semibold uppercase tracking-wider">Email Details</span>
+              </div>
+              <div className="p-5 bg-white space-y-4">
+                <div>
+                  <Label htmlFor="email-to" className="text-gray-900 font-semibold">
+                    To
+                  </Label>
+                  <Input id="email-to" value={selectedUser?.email || ""} disabled className="mt-1 border-gray-300 focus:border-[#162A3A]" />
+                </div>
+                <div>
+                  <Label htmlFor="email-subject" className="text-gray-900 font-semibold">
+                    Subject
+                  </Label>
+                  <Input
+                    id="email-subject"
+                    placeholder="Enter email subject"
+                    value={emailSubject}
+                    onChange={(e) => setEmailSubject(e.target.value)}
+                    className="mt-1 border-gray-300 focus:border-[#162A3A]"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email-message" className="text-gray-900 font-semibold">
+                    Message
+                  </Label>
+                  <Textarea
+                    id="email-message"
+                    placeholder="Enter your message"
+                    value={emailMessage}
+                    onChange={(e) => setEmailMessage(e.target.value)}
+                    className="mt-1 min-h-[150px] border-gray-300 focus:border-[#162A3A]"
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="email-subject" className="text-black">
-                Subject
-              </Label>
-              <Input
-                id="email-subject"
-                placeholder="Enter email subject"
-                value={emailSubject}
-                onChange={(e) => setEmailSubject(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="email-message" className="text-black">
-                Message
-              </Label>
-              <Textarea
-                id="email-message"
-                placeholder="Enter your message"
-                value={emailMessage}
-                onChange={(e) => setEmailMessage(e.target.value)}
-                className="mt-1 min-h-[150px]"
-              />
+            <div className="flex gap-3 pb-2">
+              <Button variant="outline" onClick={() => setShowEmailDialog(false)} disabled={sendingEmail} className="flex-1 h-10 text-gray-600 border-gray-300 bg-white">
+                Cancel
+              </Button>
+              <Button
+                onClick={sendEmail}
+                disabled={sendingEmail || !emailSubject || !emailMessage}
+                className="flex-1 h-10 bg-[#162A3A] hover:bg-[#1e3a50] text-white rounded-xl font-semibold shadow-md"
+              >
+                {sendingEmail ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Send Email
+                  </>
+                )}
+              </Button>
             </div>
           </div>
-          <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setShowEmailDialog(false)} disabled={sendingEmail} className="text-black">
-              Cancel
-            </Button>
-            <Button
-              onClick={sendEmail}
-              disabled={sendingEmail || !emailSubject || !emailMessage}
-              className="bg-yellow-700 hover:bg-yellow-800 text-white"
-            >
-              {sendingEmail ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Send className="mr-2 h-4 w-4" />
-                  Send Email
-                </>
-              )}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 
