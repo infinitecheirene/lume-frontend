@@ -11,7 +11,6 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Playfair_Display } from "next/font/google"
-import { useAdminRoute } from "@/hooks/use-protected-route"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -31,7 +30,6 @@ interface ContactInquiry {
 const ITEMS_PER_PAGE = 10
 
 export default function ContactsAdmin() {
-  useAdminRoute() // Protect this route - only admins can access
   const [contacts, setContacts] = useState<ContactInquiry[]>([])
   const [loading, setLoading] = useState(true)
   const [viewOpen, setViewOpen] = useState(false)
@@ -159,21 +157,24 @@ export default function ContactsAdmin() {
                 ) : paginated.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">{contacts.length === 0 ? "No contacts yet" : "No results found"}</div>
                 ) : (
-                  <div className="overflow-x-auto rounded-3xl border border-gray-100 shadow-sm">
-                    <table className="w-full text-sm min-w-[960px]">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-100">
-                          {["Name", "Email", "Subject", "Message", "Date", "Actions"].map((h) => (
-                            <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
-                          ))}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="border-b bg-gray-100">
+                        <tr>
+                          <th className="text-left py-3 px-4 font-semibold">Name</th>
+                          <th className="text-left py-3 px-4 font-semibold">Email</th>
+                          <th className="text-left py-3 px-4 font-semibold">Subject</th>
+                          <th className="text-left py-3 px-4 font-semibold">Message</th>
+                          <th className="text-left py-3 px-4 font-semibold">Date</th>
+                          <th className="text-left py-3 px-4 font-semibold">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-50">
+                      <tbody>
                         {paginated.map((c) => (
-                          <tr key={c.id} className="hover:bg-gray-50/60 transition-colors">
-                            <td className="px-4 py-3 font-medium text-gray-900">{c.name}</td>
-                            <td className="px-4 py-3 text-gray-600">{c.email}</td>
-                            <td className="px-4 py-3 text-gray-700">
+                          <tr key={c.id} className="border-b hover:bg-gray-50">
+                            <td className="py-3 px-4 font-medium">{c.name}</td>
+                            <td className="py-3 px-4 text-gray-600">{c.email}</td>
+                            <td className="py-3 px-4 text-gray-700">
                               {c.subject === "general"
                                 ? "General Inquiry"
                                 : c.subject === "reservation"
@@ -184,18 +185,15 @@ export default function ContactsAdmin() {
                                       ? "Suggestion"
                                       : c.subject || "-"}
                             </td>
-                            <td className="px-4 py-3 max-w-xs truncate text-gray-700">{c.message}</td>
-                            <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{new Date(c.created_at).toLocaleDateString()}</td>
-                            <td className="px-4 py-3">
-                              <Button size="sm" variant="outline" className="h-7 text-xs border-gray-200 hover:border-[#162A3A]" onClick={() => openViewModal(c)}>
-                                View
+                            <td className="py-3 px-4 max-w-xs truncate">{c.message}</td>
+                            <td className="py-3 px-4 text-gray-600">{new Date(c.created_at).toLocaleDateString()}</td>
+                            <td className="py-3 px-4">
+                              <Button size="sm" variant="outline" onClick={() => openViewModal(c)}>
+                                <Eye className="h-4 w-4" />
                               </Button>
                             </td>
                           </tr>
                         ))}
-                        {paginated.length === 0 && (
-                          <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-400 text-sm">No contacts found</td></tr>
-                        )}
                       </tbody>
                     </table>
                   </div>

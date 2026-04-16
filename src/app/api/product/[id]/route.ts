@@ -1,156 +1,191 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
-// Helper to get auth token
+// Get token from Authorization header OR cookies
 function getAuthToken(request: NextRequest): string | null {
   const authHeader = request.headers.get("authorization")
-  return authHeader?.replace("Bearer ", "") || null
+
+  if (authHeader?.startsWith("Bearer ")) {
+    return authHeader.replace("Bearer ", "")
+  }
+
+  // fallback cookie names
+  return (
+    request.cookies.get("token")?.value ||
+    request.cookies.get("auth_token")?.value ||
+    request.cookies.get("access_token")?.value ||
+    null
+  )
 }
 
-// GET - fetch a single product
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+// ======================
+// GET SINGLE PRODUCT
+// ======================
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const resolvedParams = await params
-    const { id } = resolvedParams
+    const { id } = await params
 
     const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
       method: "GET",
-      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      headers: {
+        Accept: "application/json",
+      },
       cache: "no-cache",
     })
 
-    let data: any
-    const text = await response.text()
-    try {
-      data = text ? JSON.parse(text) : {}
-    } catch {
-      data = { message: text }
-    }
+    const data = await response.json()
 
     if (!response.ok) {
-      return NextResponse.json({ message: data.message || "Failed to fetch product" }, { status: response.status })
+      return NextResponse.json(
+        { message: data.message || "Failed to fetch product" },
+        { status: response.status }
+      )
     }
 
     return NextResponse.json(data)
   } catch (error: any) {
-    console.error("Error fetching product:", error)
-    return NextResponse.json({ message: error.message || "Internal server error" }, { status: 500 })
+    return NextResponse.json(
+      { message: error.message || "Internal server error" },
+      { status: 500 }
+    )
   }
 }
 
-// PUT
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+// ======================
+// UPDATE PRODUCT
+// ======================
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { id } = await params
 
-    // Check auth token
     const token = getAuthToken(request)
-    console.log("Auth token:", token ? "Present" : "Missing")
+
     if (!token) {
-      console.warn("Unauthorized request – missing token")
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+      return NextResponse.json(
+        { message: "Unauthorized - missing token" },
+        { status: 401 }
+      )
     }
 
-    // Read incoming form data
     const formData = await request.formData()
-    console.log("Incoming formData keys:", Array.from(formData.keys()))
-
     const laravelFormData = new FormData()
-    // Append fields with debug
-    const fields = ["name", "description", "ingredients", "price", "category", "best_seller", "image"]
+
+    // Normal fields
+    const fields = [
+      "name",
+      "description",
+      "ingredients",
+      "price",
+      "category",
+    ]
+
     fields.forEach((field) => {
       const value = formData.get(field)
-      let convertedValue: string
-      if (field.startsWith("is_")) {
-        convertedValue = value === "true" ? "1" : "0"
-      } else {
-        convertedValue = value as string
+      if (value !== null) {
+        laravelFormData.append(field, String(value))
       }
-      laravelFormData.append(field, convertedValue)
-      console.log(`Appending to laravelFormData: ${field} = ${convertedValue}`)
     })
 
-    // Handle image
-    const image = formData.get("image") as File
+    // Boolean fields
+    laravelFormData.append(
+      "best_seller",
+      formData.get("best_seller") === "1" ? "1" : "0"
+    )
+
+    laravelFormData.append(
+      "set",
+      formData.get("set") === "1" ? "1" : "0"
+    )
+
+    // Image
+    const image = formData.get("image") as File | null
+
     if (image && image.size > 0) {
       laravelFormData.append("image", image)
-      console.log("Image appended:", image.name, image.size, "bytes")
-    } else {
-      console.log("No image file provided")
     }
 
-    // Debug: show laravelFormData keys before sending
-    console.log("laravelFormData keys to send:", Array.from(laravelFormData.keys()))
+    // Laravel PUT with multipart usually needs POST + _method
+    laravelFormData.append("_method", "PUT")
 
-    // Send to Laravel API
     const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
-      method: "PUT",
+      method: "POST",
       headers: {
-        // NOTE: Content-Type should NOT be set when sending FormData
         Authorization: `Bearer ${token}`,
+        Accept: "application/json",
       },
       body: laravelFormData,
     })
 
-    console.log("Laravel API response status:", response.status, response.statusText)
-    const text = await response.text()
-    console.log("Raw response text:", text)
-
-    let responseData: any
-    try {
-      responseData = text ? JSON.parse(text) : {}
-    } catch {
-      responseData = { message: text }
-    }
+    const data = await response.json()
 
     if (!response.ok) {
-      console.error("Failed to update product:", responseData)
       return NextResponse.json(
         {
-          message: responseData.message || "Failed to update product",
-          errors: responseData.errors || null,
+          message: data.message || "Failed to update product",
+          errors: data.errors || null,
         },
-        { status: response.status },
+        { status: response.status }
       )
     }
 
-    console.log("Product updated successfully:", responseData)
-    return NextResponse.json(responseData)
+    return NextResponse.json(data)
   } catch (error: any) {
-    console.error("Error in PUT /api/product/[id]:", error)
-    return NextResponse.json({ message: error.message || "Internal server error" }, { status: 500 })
+    return NextResponse.json(
+      { message: error.message || "Internal server error" },
+      { status: 500 }
+    )
   }
 }
 
-// DELETE - delete product
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+// ======================
+// DELETE PRODUCT
+// ======================
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { id } = await params
+
     const token = getAuthToken(request)
 
-    if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+    if (!token) {
+      return NextResponse.json(
+        { message: "Unauthorized - missing token" },
+        { status: 401 }
+      )
+    }
 
     const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
     })
 
-    let responseData: any
-    const text = await response.text()
-    try {
-      responseData = text ? JSON.parse(text) : {}
-    } catch {
-      responseData = { message: text || "Failed to delete product" }
-    }
+    const data = await response.json()
 
     if (!response.ok) {
-      return NextResponse.json({ message: responseData.message || "Failed to delete product" }, { status: response.status })
+      return NextResponse.json(
+        { message: data.message || "Failed to delete product" },
+        { status: response.status }
+      )
     }
 
-    return NextResponse.json(responseData)
+    return NextResponse.json(data)
   } catch (error: any) {
-    console.error("Error deleting product:", error)
-    return NextResponse.json({ message: error.message || "Internal server error" }, { status: 500 })
+    return NextResponse.json(
+      { message: error.message || "Internal server error" },
+      { status: 500 }
+    )
   }
 }

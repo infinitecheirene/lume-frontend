@@ -1,138 +1,133 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
-// GET - Fetch all products
+/* =====================================================
+   GET - Fetch Products
+===================================================== */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
 
-    // Build query parameters
     const queryParams = new URLSearchParams()
 
-    // Add all search parameters to the Laravel API call
     searchParams.forEach((value, key) => {
       queryParams.append(key, value)
     })
 
-    const apiUrl = `${API_BASE_URL}/api/products${queryParams.toString() ? `?${queryParams.toString()}` : ""}`
+    const apiUrl = `${API_BASE_URL}/api/products${
+      queryParams.toString() ? `?${queryParams.toString()}` : ""
+    }`
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         Accept: "application/json",
-        "Content-Type": "application/json",
       },
-      cache: "no-cache", // Disable caching for fresh data
+      cache: "no-store",
     })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: "Unknown error" }))
-      return NextResponse.json({ message: errorData.message || "Failed to fetch products" }, { status: response.status })
-    }
 
     const data = await response.json()
 
-    // Handle paginated response - extract the data array
-    const products = data.data || data
+    if (!response.ok) {
+      return NextResponse.json(
+        {
+          message: data.message || "Failed to fetch products",
+        },
+        { status: response.status }
+      )
+    }
 
-    return NextResponse.json(products)
+    return NextResponse.json(data.data || data)
   } catch (error) {
-    console.error("Error fetching products:", error)
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 })
+    console.error("GET Products Error:", error)
+
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    )
   }
 }
 
-// POST - Create new product
+/* =====================================================
+   POST - Create Product
+===================================================== */
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData()
+    const incoming = await request.formData()
 
-    console.log("=== Incoming FormData ===")
-    for (const [key, value] of formData.entries()) {
-      console.log(key, value)
-    }
+    const formData = new FormData()
 
-    // Create Laravel FormData
-    const laravelFormData = new FormData()
+    const getString = (key: string) =>
+      String(incoming.get(key) || "").trim()
 
-    // Helper: normalize boolean-like values
     const toBooleanString = (value: FormDataEntryValue | null) => {
       return value === "true" ||
         value === "1" ||
-        value === 1 ||
-        value === true ||
         value === "on"
         ? "1"
         : "0"
     }
 
-    // Helper: safe string cast
-    const getString = (key: string) => (formData.get(key) as string) ?? ""
+    /* Basic Fields */
+    formData.append("name", getString("name"))
+    formData.append("description", getString("description"))
+    formData.append("ingredients", getString("ingredients"))
+    formData.append("price", getString("price"))
+    formData.append("category", getString("category"))
 
-    // Fields mapping (iterate instead of manual repetition)
-    const fields = {
-      name: getString("name"),
-      description: getString("description"),
-      price: getString("price"),
-      category: getString("category"),
-    }
+    /* Boolean Fields */
+    formData.append(
+      "best_seller",
+      toBooleanString(incoming.get("best_seller"))
+    )
 
-    console.log("=== Parsed Fields ===", fields)
+    formData.append(
+      "set",
+      toBooleanString(incoming.get("set"))
+    )
 
-    Object.entries(fields).forEach(([key, value]) => {
-      console.log(`Appending field: ${key} =`, value)
-      laravelFormData.append(key, value)
-    })
+    /* Image */
+    const image = incoming.get("image") as File | null
 
-    // Boolean fields handling (FIXED)
-    const isFeatured = toBooleanString(formData.get("is_featured"))
-    const bestSeller = toBooleanString(formData.get("best_seller"))
-
-    console.log("is_featured raw:", formData.get("is_featured"))
-    console.log("best_seller raw:", formData.get("best_seller"))
-    console.log("normalized is_featured:", isFeatured)
-    console.log("normalized best_seller:", bestSeller)
-
-    laravelFormData.append("is_featured", isFeatured)
-    laravelFormData.append("best_seller", bestSeller)
-
-    // File handling
-    const image = formData.get("image") as File | null
     if (image && image.size > 0) {
-      console.log("Appending image:", image.name, image.size)
-      laravelFormData.append("image", image)
-    } else {
-      console.log("No valid image provided")
+      formData.append("image", image)
     }
 
-    console.log("=== Final Laravel FormData Preview ===")
-    for (const [key, value] of laravelFormData.entries()) {
-      console.log(key, value)
-    }
+    /* Forward token/cookie */
+    const token = request.cookies.get("token")?.value
 
     const response = await fetch(`${API_BASE_URL}/api/products`, {
       method: "POST",
-      body: laravelFormData,
+      body: formData,
+      headers: {
+        Accept: "application/json",
+        ...(token && {
+          Authorization: `Bearer ${token}`,
+        }),
+      },
     })
 
-    const responseData = await response.json()
-
-    console.log("=== Laravel Response ===", responseData)
+    const data = await response.json()
 
     if (!response.ok) {
       return NextResponse.json(
         {
-          message: responseData.message || "Failed to create product",
-          errors: responseData.errors || null,
+          message: data.message || "Failed to create product",
+          errors: data.errors || null,
         },
-        { status: response.status },
+        { status: response.status }
       )
     }
 
-    return NextResponse.json(responseData, { status: 201 })
+    return NextResponse.json(data, { status: 201 })
   } catch (error) {
-    console.error("Error creating product:", error)
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 })
+    console.error("POST Product Error:", error)
+
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    )
   }
 }

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MoreHorizontal, Eye, Plus, Search, Loader2, ArrowUpDown, Edit, Trash2, Upload, Flame, Leaf, Star } from "lucide-react"
+import { MoreHorizontal, CheckCircle2, Eye, Plus, Search, Upload, Loader2, ArrowUpDown, Edit, Trash2, Save } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,6 +46,7 @@ import {
 } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import Image from "next/image"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Playfair_Display } from "next/font/google"
 import { Switch } from "@/components/ui/switch"
 
@@ -73,7 +74,7 @@ const categories = ["Signature", "Classics", "Drinks", "Coffee", "Refreshers", "
 
 const getImageUrl = (imagePath: string): string => {
   if (!imagePath) {
-    return "/placeholder-food.jpg"
+    return "/public/placeholder-food.jpg"
   }
 
   if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
@@ -98,6 +99,8 @@ export default function ProductsAdminPage() {
   const { toast } = useToast()
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
@@ -125,6 +128,22 @@ export default function ProductsAdminPage() {
     best_seller: false,
     set: false,
   })
+
+  const [openEdit, setOpenEdit] = useState(false)
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    description: "",
+    ingredients: "",
+    price: "",
+    category: "",
+    best_seller: false,
+    set: false,
+  })
+
+  const [editImage, setEditImage] = useState<File | null>(null)
+  const [editPreview, setEditPreview] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const editFileRef = useRef<HTMLInputElement>(null)
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [isCreating, setIsCreating] = useState(false)
@@ -186,6 +205,7 @@ export default function ProductsAdminPage() {
       const response = await fetch("/api/product", {
         method: "POST",
         body: formData,
+        credentials: "include",
       })
 
       const result = await response.json()
@@ -275,6 +295,96 @@ export default function ProductsAdminPage() {
         variant: "destructive",
         title: "Error",
         description: "Failed to load products",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleEditOpen = (product: Product) => {
+    setEditingId(product.id)
+    setOpenEdit(true)
+
+    setEditFormData({
+      name: product.name || "",
+      description: product.description || "",
+      ingredients: product.ingredients || "",
+      price: product.price?.toString() || "",
+      category: product.category || "",
+      best_seller: product.best_seller || false,
+      set: product.set || false,
+    })
+
+    setEditPreview(null)
+    setEditImage(null)
+  }
+
+  const handleEditSwitch = (name: string, value: boolean) => {
+    setEditFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleEditChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target
+    setEditFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleEditImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setEditImage(file)
+
+    const reader = new FileReader()
+    reader.onload = () => setEditPreview(reader.result as string)
+    reader.readAsDataURL(file)
+  }
+
+  const handleEditSubmit = async () => {
+    if (!editingId) return
+
+    try {
+      setLoading(true)
+
+      const fd = new FormData()
+
+      Object.entries(editFormData).forEach(([key, value]) => {
+        fd.append(
+          key,
+          typeof value === "boolean" ? (value ? "1" : "0") : String(value)
+        )
+      })
+
+      if (editImage) {
+        fd.append("image", editImage)
+      }
+
+      const res = await fetch(`/api/product/${editingId}`, {
+        method: "PUT",
+        body: fd,
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+        },
+      })
+      
+      const result = await res.json()
+
+      if (!res.ok) throw new Error(result.message)
+
+      toast({
+        title: "Success",
+        description: "Product updated successfully!",
+      })
+
+      setOpenEdit(false)
+      fetchProducts()
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: err.message || "Failed to update product",
       })
     } finally {
       setLoading(false)
@@ -585,7 +695,11 @@ export default function ProductsAdminPage() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => router.push(`/admin/product/${product.id}`)}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    handleEditOpen(product)
+                  }}
+                >
                   <Edit className="mr-2 h-4 w-4" /> Edit
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -1091,10 +1205,206 @@ export default function ProductsAdminPage() {
                     </div>
 
                   )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
             </div>
           </main>
+
+          {/* EDIT SHEET */}
+          <Sheet open={openEdit} onOpenChange={setOpenEdit}>
+            <SheetContent
+              side="right"
+              className="w-[95vw] sm:max-w-2xl h-full overflow-y-auto bg-[#f5f0e8] p-0 border-l border-gray-200 shadow-2xl"
+            >
+              {/* HEADER */}
+              <div className="sticky top-0 z-10 bg-[#162A3A] px-6 py-5">
+                <SheetHeader className="text-left">
+                  <SheetTitle className="text-2xl font-bold text-white">
+                    Edit Product
+                  </SheetTitle>
+                  <p className="text-white/50 text-sm mt-1 truncate">
+                    {editFormData.name || "Untitled product"}
+                  </p>
+                </SheetHeader>
+              </div>
+
+              {/* CONTENT */}
+              <div className="p-5 space-y-6 text-gray-950">
+
+                {/* IMAGE SECTION */}
+                <div className="bg-white rounded-2xl border shadow-sm p-5 space-y-4">
+                  <Label className="text-gray-700 font-semibold">Product Image</Label>
+
+                  <label className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-[#d4a24c]/40 bg-amber-50/50 cursor-pointer hover:border-[#d4a24c] hover:bg-amber-50 transition-all group">
+                    <div className="w-10 h-10 rounded-full bg-[#d4a24c]/10 group-hover:bg-[#d4a24c]/20 flex items-center justify-center flex-shrink-0">
+                      <Upload className="w-4 h-4 text-[#d4a24c]" />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-700 truncate">
+                        {editImage ? editImage.name : "Upload product image"}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        PNG, JPG up to 10MB
+                      </p>
+                    </div>
+
+                    {editImage && (
+                      <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                    )}
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleEditImage}
+                      ref={editFileRef}
+                    />
+                  </label>
+
+                  {/* PREVIEW */}
+                  {(editPreview || editingId) && (
+                    <div className="mt-3 relative w-28 h-28 rounded-xl overflow-hidden border bg-white">
+                      <Image
+                        src={
+                          editPreview ||
+                          getImageUrl(
+                            editingId
+                              ? products.find((p) => p.id === editingId)?.image || ""
+                              : ""
+                          )
+                        }
+                        alt="Product preview"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* FORM SECTION */}
+                <div className="bg-white rounded-2xl border shadow-sm p-5 space-y-5">
+
+                  <div>
+                    <Label>Product Name *</Label>
+                    <Input
+                      name="name"
+                      value={editFormData.name}
+                      onChange={handleEditChange}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Description *</Label>
+                    <Textarea
+                      name="description"
+                      value={editFormData.description}
+                      onChange={handleEditChange}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>
+                      Ingredients <span className="text-gray-400">( | separator )</span>
+                    </Label>
+                    <Textarea
+                      name="ingredients"
+                      value={editFormData.ingredients}
+                      onChange={handleEditChange}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  {/* GRID */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                    <div>
+                      <Label>Price (₱) *</Label>
+                      <Input
+                        name="price"
+                        value={editFormData.price}
+                        onChange={handleEditChange}
+                        className="mt-1"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Category *</Label>
+                      <Select
+                        value={editFormData.category}
+                        onValueChange={(value) =>
+                          setEditFormData((prev) => ({ ...prev, category: value }))
+                        }
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((c) => (
+                            <SelectItem key={c} value={c}>
+                              {c}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* TOGGLES */}
+                  <div className="flex flex-col gap-4 pt-2">
+
+                    <div className="flex items-center justify-between border rounded-xl p-3">
+                      <div>
+                        <p className="font-medium">Best Seller</p>
+                        <p className="text-xs text-gray-500">Mark as featured item</p>
+                      </div>
+                      <Switch
+                        checked={editFormData.best_seller}
+                        onCheckedChange={(v) =>
+                          handleEditSwitch("best_seller", v)
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between border rounded-xl p-3">
+                      <div>
+                        <p className="font-medium">Set Item</p>
+                        <p className="text-xs text-gray-500">Mark as bundle/set</p>
+                      </div>
+                      <Switch
+                        checked={editFormData.set}
+                        onCheckedChange={(v) =>
+                          handleEditSwitch("set", v)
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* ACTIONS */}
+                <div className="sticky bottom-0 bg-[#f5f0e8] pt-4 border-t flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setOpenEdit(false)}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+
+                  <Button
+                    onClick={handleEditSubmit}
+                    className="flex-1 bg-[#162A3A] text-white"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Changes
+                  </Button>
+                </div>
+
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div >
     </SidebarProvider >
