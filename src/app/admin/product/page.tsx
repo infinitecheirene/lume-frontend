@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useAdminRoute } from "@/hooks/use-protected-route"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import type React from "react"
 import { AppSidebar } from "@/components/app-sidebar"
@@ -91,6 +91,7 @@ const getImageUrl = (imagePath: string): string => {
 }
 
 export default function ProductsAdminPage() {
+  useAdminRoute() // Protect this route - only admins can access
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)

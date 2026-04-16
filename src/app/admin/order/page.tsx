@@ -66,6 +66,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Playfair_Display } from "next/font/google"
+import { useAdminRoute } from "@/hooks/use-protected-route"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -144,6 +145,7 @@ const getImageUrl = (imagePath: string): string => {
 const ITEMS_PER_PAGE = 10
 
 export default function OrdersAdminPage() {
+  useAdminRoute() // Protect this route - only admins can access
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
 

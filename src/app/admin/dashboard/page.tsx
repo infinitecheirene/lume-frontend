@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Loader2, TrendingUp, ShoppingCart, DollarSign, Users, ArrowUpRight, ArrowDownRight } from "lucide-react"
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts"
 import { Playfair_Display } from "next/font/google"
+import { useAdminRoute } from "@/hooks/use-protected-route"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -97,6 +98,7 @@ const MetricCard = ({
 )
 
 export default function AdminDashboard() {
+  useAdminRoute() // Protect this route - only admins can access
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

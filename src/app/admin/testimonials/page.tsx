@@ -15,6 +15,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Playfair_Display } from "next/font/google"
+import { useAdminRoute } from "@/hooks/use-protected-route"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -34,6 +35,7 @@ interface Testimonial {
 const ITEMS_PER_PAGE = 10
 
 export default function TestimonialsAdmin() {
+  useAdminRoute() // Protect this route - only admins can access
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [loading, setLoading] = useState(true)
 

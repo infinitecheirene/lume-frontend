@@ -22,6 +22,7 @@ import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
 import { useAuthStore } from "@/store/authStore"
 import EventBookingModal from "@/components/event-booking-modal"
+import { useProtectedRoute } from "@/hooks/use-protected-route"
 
 interface Event {
   id: number
@@ -39,6 +40,7 @@ interface Event {
 }
 
 const EventsHistory = () => {
+  useProtectedRoute() // Protect this route - only logged in users can access
   const [events, setEvents] = useState<Event[]>([])
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)

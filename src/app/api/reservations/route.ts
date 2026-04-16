@@ -11,28 +11,28 @@ const transporter = nodemailer.createTransport({
   },
 })
 
-// Admin Notification Email
+// ─── Admin Notification Email ─────────────────────────────────────────────────
 
 async function sendAdminNotification(reservationData: any) {
   try {
+    const isWalkIn = reservationData.is_walkin === "1" || reservationData.is_walkin === true
+
     const mailOptions = {
       from: process.env.SMTP_FROM,
       to: process.env.ADMIN_EMAIL,
-      subject: `New Reservation — ${reservationData.name}`,
+      subject: `${isWalkIn ? "Walk-In Guest" : "New Reservation"} — ${reservationData.name}`,
       html: `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>New Reservation</title>
+  <title>${isWalkIn ? "Walk-In Guest" : "New Reservation"}</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f0f0ed;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
-
 <table role="presentation" width="100%" style="border-collapse:collapse;">
   <tr>
     <td style="padding:32px 16px;">
-
       <table role="presentation" width="100%" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:14px;border:1px solid #e0dfd9;overflow:hidden;border-collapse:collapse;">
 
         <!-- Header -->
@@ -41,11 +41,17 @@ async function sendAdminNotification(reservationData: any) {
             <table role="presentation" width="100%" style="border-collapse:collapse;">
               <tr>
                 <td style="vertical-align:middle;">
-                  <p style="margin:0;color:#c9943d;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:600;">New reservation</p>
-                  <h1 style="margin:4px 0 0;color:#ffffff;font-size:18px;font-weight:500;">${reservationData.name} — Table booked</h1>
+                  <p style="margin:0;color:#c9943d;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:600;">
+                    ${isWalkIn ? "Walk-in guest" : "New reservation"}
+                  </p>
+                  <h1 style="margin:4px 0 0;color:#ffffff;font-size:18px;font-weight:500;">
+                    ${reservationData.name} — ${isWalkIn ? "Arrived now" : "Table booked"}
+                  </h1>
                 </td>
                 <td style="vertical-align:middle;text-align:right;">
-                  <span style="background:#c9943d;color:#1a2e3b;font-size:11px;font-weight:700;padding:5px 14px;border-radius:20px;letter-spacing:0.5px;white-space:nowrap;">Action needed</span>
+                  <span style="background:${isWalkIn ? "#3b82f6" : "#c9943d"};color:#ffffff;font-size:11px;font-weight:700;padding:5px 14px;border-radius:20px;letter-spacing:0.5px;white-space:nowrap;">
+                    ${isWalkIn ? "Walk-in" : "Action needed"}
+                  </span>
                 </td>
               </tr>
             </table>
@@ -87,7 +93,7 @@ async function sendAdminNotification(reservationData: any) {
                   <table role="presentation" width="100%" style="background:#f7f6f2;border-radius:10px;border-collapse:collapse;">
                     <tr><td style="padding:14px 16px;">
                       <p style="margin:0 0 4px;font-size:11px;color:#9ca3af;letter-spacing:1.5px;text-transform:uppercase;">Dining</p>
-                      <p style="margin:0;font-size:15px;font-weight:500;color:#1a2e3b;">${reservationData.dining_preference}</p>
+                      <p style="margin:0;font-size:15px;font-weight:500;color:#1a2e3b;">${reservationData.dining_preference || "N/A"}</p>
                     </td></tr>
                   </table>
                 </td>
@@ -111,11 +117,11 @@ async function sendAdminNotification(reservationData: any) {
               </tr>
               <tr style="border-bottom:1px solid #f0f0ed;">
                 <td style="padding:10px 16px;color:#9ca3af;font-size:14px;">Email</td>
-                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;">${reservationData.email}</td>
+                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;">${reservationData.email || "N/A"}</td>
               </tr>
               <tr style="border-bottom:1px solid #f0f0ed;">
                 <td style="padding:10px 16px;color:#9ca3af;font-size:14px;">Phone</td>
-                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;">${reservationData.phone}</td>
+                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;">${reservationData.phone || "N/A"}</td>
               </tr>
               <tr style="border-bottom:1px solid #f0f0ed;">
                 <td style="padding:10px 16px;color:#9ca3af;font-size:14px;">Occasion</td>
@@ -140,30 +146,37 @@ async function sendAdminNotification(reservationData: any) {
               </tr>
               <tr style="border-bottom:1px solid #f0f0ed;">
                 <td style="padding:10px 16px;color:#9ca3af;font-size:14px;width:40%;">Reservation fee</td>
-                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;">₱${reservationData.reservation_fee}</td>
+                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;">₱${Number(reservationData.reservation_fee || 0).toFixed(2)}</td>
               </tr>
               <tr style="border-bottom:1px solid #f0f0ed;">
                 <td style="padding:10px 16px;color:#9ca3af;font-size:14px;">Service charge</td>
-                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;">₱${Number(reservationData.service_charge).toFixed(2)}</td>
+                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;">₱${Number(reservationData.service_charge || 0).toFixed(2)}</td>
               </tr>
               <tr style="border-bottom:1px solid #f0f0ed;">
                 <td style="padding:10px 16px;color:#6b7280;font-size:14px;font-weight:600;">Total</td>
-                <td style="padding:10px 16px;color:#c9943d;font-size:15px;font-weight:700;">₱${Number(reservationData.total_bill).toFixed(2)}</td>
+                <td style="padding:10px 16px;color:#c9943d;font-size:15px;font-weight:700;">₱${Number(reservationData.total_fee || 0).toFixed(2)}</td>
               </tr>
               <tr style="border-bottom:1px solid #f0f0ed;">
                 <td style="padding:10px 16px;color:#9ca3af;font-size:14px;">Method</td>
                 <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;">${reservationData.payment_method || "N/A"}</td>
               </tr>
-              <tr>
+              <tr style="border-bottom:1px solid #f0f0ed;">
                 <td style="padding:10px 16px;color:#9ca3af;font-size:14px;">Reference</td>
                 <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;">${reservationData.payment_reference || "N/A"}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;color:#9ca3af;font-size:14px;">Status</td>
+                <td style="padding:10px 16px;">
+                  <span style="background:${reservationData.payment_status === "paid" ? "#d1fae5" : "#fef3c7"};color:${reservationData.payment_status === "paid" ? "#065f46" : "#92400e"};font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;">
+                    ${reservationData.payment_status || "pending"}
+                  </span>
+                </td>
               </tr>
             </table>
           </td>
         </tr>
 
         ${reservationData.special_requests ? `
-        <!-- Special Requests -->
         <tr>
           <td style="padding:16px 28px 0;">
             <table role="presentation" width="100%" style="background:#fffbf2;border:1px solid #e8d9b0;border-radius:10px;border-collapse:collapse;">
@@ -186,10 +199,8 @@ async function sendAdminNotification(reservationData: any) {
     </td>
   </tr>
 </table>
-
 </body>
-</html>
-      `,
+</html>`,
     }
 
     await transporter.sendMail(mailOptions)
@@ -200,38 +211,36 @@ async function sendAdminNotification(reservationData: any) {
   }
 }
 
-// Customer Confirmation Email 
+// ─── Online Reservation Confirmation Email ────────────────────────────────────
 
 async function sendCustomerConfirmation(reservationData: any) {
   try {
     const mailOptions = {
       from: process.env.SMTP_FROM,
       to: reservationData.email,
-      subject: `Reservation Confirmed — Lumè Bean & Bar`,
+      subject: `Reservation Received — Lumè Bean & Bar`,
       html: `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reservation Confirmed</title>
+  <title>Reservation Received</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f0f0ed;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
-
 <table role="presentation" width="100%" style="border-collapse:collapse;">
   <tr>
     <td style="padding:32px 16px;">
-
       <table role="presentation" width="100%" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:14px;border:1px solid #e0dfd9;overflow:hidden;border-collapse:collapse;">
 
         <!-- Header -->
         <tr>
           <td style="background:#1a2e3b;padding:36px 30px;text-align:center;">
-            <div style="width:52px;height:52px;border-radius:50%;background:#c9943d;margin:0 auto 16px;display:inline-block;line-height:52px;text-align:center;">
-              <span style="color:#ffffff;font-size:22px;font-weight:700;line-height:52px;">✓</span>
+            <div style="width:52px;height:52px;border-radius:50%;background:#c9943d;margin:0 auto 16px;display:inline-flex;align-items:center;justify-content:center;">
+              <span style="color:#ffffff;font-size:22px;font-weight:700;">✓</span>
             </div>
-            <h1 style="margin:0 0 6px;color:#ffffff;font-size:20px;font-weight:500;">Reservation confirmed</h1>
-            <p style="margin:0;color:#9ba8b0;font-size:13px;">We look forward to welcoming you</p>
+            <h1 style="margin:0 0 6px;color:#ffffff;font-size:20px;font-weight:500;">Reservation received</h1>
+            <p style="margin:0;color:#9ba8b0;font-size:13px;">We'll confirm your booking shortly</p>
           </td>
         </tr>
 
@@ -239,12 +248,14 @@ async function sendCustomerConfirmation(reservationData: any) {
         <tr>
           <td style="padding:28px 28px 20px;">
             <p style="margin:0 0 6px;color:#1a2e3b;font-size:15px;">Hi <strong>${reservationData.name}</strong>,</p>
-            <p style="margin:0 0 24px;color:#6b7280;font-size:14px;line-height:1.7;">Your reservation at Lumè Bean &amp; Bar has been received. See the details below — we'll see you soon.</p>
+            <p style="margin:0 0 24px;color:#6b7280;font-size:14px;line-height:1.7;">
+              Thank you for booking at Lumè Bean &amp; Bar. Your reservation request has been received and is currently <strong style="color:#d97706;">pending review</strong>. We'll send you a confirmation once payment has been verified.
+            </p>
 
-            <!-- Booking Details Grid -->
+            <!-- Booking Details -->
             <table role="presentation" width="100%" style="background:#f7f6f2;border-radius:12px;border-collapse:collapse;margin-bottom:16px;">
               <tr>
-                <td style="padding:16px 18px 8px;" colspan="4">
+                <td style="padding:16px 18px 8px;" colspan="2">
                   <p style="margin:0;font-size:11px;color:#aaaaaa;letter-spacing:1.5px;text-transform:uppercase;">Booking details</p>
                 </td>
               </tr>
@@ -280,23 +291,30 @@ async function sendCustomerConfirmation(reservationData: any) {
               </tr>
             </table>
 
-            <!-- Payment -->
+            <!-- Payment summary -->
             <table role="presentation" width="100%" style="border:1px solid #e5e5e2;border-radius:12px;border-collapse:collapse;margin-bottom:16px;overflow:hidden;">
               <tr style="border-bottom:1px solid #f0f0ed;">
-                <td style="padding:11px 16px;color:#6b7280;font-size:14px;">Total bill</td>
-                <td style="padding:11px 16px;color:#1a2e3b;font-weight:600;font-size:14px;text-align:right;">₱${Number(reservationData.total_bill).toFixed(2)}</td>
-              </tr>
-              <tr>
                 <td style="padding:11px 16px;color:#6b7280;font-size:14px;">Payment method</td>
                 <td style="padding:11px 16px;color:#1a2e3b;font-size:14px;text-align:right;">${reservationData.payment_method || "N/A"}</td>
               </tr>
+              <tr style="border-bottom:1px solid #f0f0ed;">
+                <td style="padding:11px 16px;color:#6b7280;font-size:14px;">Down payment</td>
+                <td style="padding:11px 16px;color:#1a2e3b;font-size:14px;text-align:right;">₱${Number(reservationData.down_payment || 0).toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td style="padding:11px 16px;color:#6b7280;font-size:14px;">Total bill</td>
+                <td style="padding:11px 16px;color:#1a2e3b;font-weight:600;font-size:14px;text-align:right;">₱${Number(reservationData.total_fee || 0).toFixed(2)}</td>
+              </tr>
             </table>
 
-            <!-- Info Banner -->
-            <table role="presentation" width="100%" style="background:#1a2e3b;border-radius:10px;border-collapse:collapse;margin-bottom:16px;">
+            <!-- Status banner -->
+            <table role="presentation" width="100%" style="background:#fffbf2;border:1px solid #e8d9b0;border-radius:10px;border-collapse:collapse;margin-bottom:16px;">
               <tr>
                 <td style="padding:14px 18px;">
-                  <p style="margin:0;font-size:13px;color:#9ba8b0;line-height:1.6;">Please arrive <strong style="color:#ffffff;">10–15 minutes early.</strong> Log in to your account to track your reservation status. If you don't have an account yet, sign up to access your booking history.</p>
+                  <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#92400e;text-transform:uppercase;letter-spacing:1px;">Pending verification</p>
+                  <p style="margin:0;font-size:13px;color:#7a6030;line-height:1.6;">
+                    Our team is reviewing your payment screenshot. You'll receive a confirmation email once your booking is approved — usually within a few hours.
+                  </p>
                 </td>
               </tr>
             </table>
@@ -316,10 +334,151 @@ async function sendCustomerConfirmation(reservationData: any) {
     </td>
   </tr>
 </table>
-
 </body>
-</html>
-      `,
+</html>`,
+    }
+
+    await transporter.sendMail(mailOptions)
+    return true
+  } catch (error) {
+    console.error(error)
+    return false
+  }
+}
+
+// ─── Walk-In Guest Email ──────────────────────────────────────────────────────
+
+async function sendWalkInConfirmation(reservationData: any) {
+  try {
+    const mailOptions = {
+      from: process.env.SMTP_FROM,
+      to: reservationData.email,
+      subject: `Welcome to Lumè Bean & Bar — Visit Summary`,
+      html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Walk-In Visit Summary</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f0f0ed;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+<table role="presentation" width="100%" style="border-collapse:collapse;">
+  <tr>
+    <td style="padding:32px 16px;">
+      <table role="presentation" width="100%" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:14px;border:1px solid #e0dfd9;overflow:hidden;border-collapse:collapse;">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:#1a2e3b;padding:36px 30px;text-align:center;">
+            <div style="width:52px;height:52px;border-radius:50%;background:#3b82f6;margin:0 auto 16px;display:inline-flex;align-items:center;justify-content:center;">
+              <span style="color:#ffffff;font-size:22px;font-weight:700;">👋</span>
+            </div>
+            <h1 style="margin:0 0 6px;color:#ffffff;font-size:20px;font-weight:500;">Thanks for visiting!</h1>
+            <p style="margin:0;color:#9ba8b0;font-size:13px;">Here's a summary of your visit today</p>
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="padding:28px 28px 20px;">
+            <p style="margin:0 0 6px;color:#1a2e3b;font-size:15px;">Hi <strong>${reservationData.name}</strong>,</p>
+            <p style="margin:0 0 24px;color:#6b7280;font-size:14px;line-height:1.7;">
+              It was great having you at Lumè Bean &amp; Bar today. Your walk-in has been recorded and your table is confirmed. We hope you have a wonderful time!
+            </p>
+
+            <!-- Visit Details -->
+            <table role="presentation" width="100%" style="background:#f7f6f2;border-radius:12px;border-collapse:collapse;margin-bottom:16px;">
+              <tr>
+                <td style="padding:16px 18px 8px;" colspan="2">
+                  <p style="margin:0;font-size:11px;color:#aaaaaa;letter-spacing:1.5px;text-transform:uppercase;">Visit details</p>
+                </td>
+              </tr>
+              <tr>
+                <td width="50%" style="padding:6px 18px 14px;vertical-align:top;">
+                  <p style="margin:0 0 3px;font-size:11px;color:#9ca3af;">Reference no.</p>
+                  <p style="margin:0;font-size:14px;font-weight:700;color:#3b82f6;letter-spacing:0.5px;">${reservationData.reservation_number}</p>
+                </td>
+                <td width="50%" style="padding:6px 18px 14px;vertical-align:top;">
+                  <p style="margin:0 0 3px;font-size:11px;color:#9ca3af;">Type</p>
+                  <p style="margin:0;font-size:14px;color:#1a2e3b;">Walk-in</p>
+                </td>
+              </tr>
+              <tr>
+                <td width="50%" style="padding:6px 18px 14px;vertical-align:top;">
+                  <p style="margin:0 0 3px;font-size:11px;color:#9ca3af;">Date</p>
+                  <p style="margin:0;font-size:14px;color:#1a2e3b;">${new Date(reservationData.date).toDateString()}</p>
+                </td>
+                <td width="50%" style="padding:6px 18px 14px;vertical-align:top;">
+                  <p style="margin:0 0 3px;font-size:11px;color:#9ca3af;">Arrived</p>
+                  <p style="margin:0;font-size:14px;color:#1a2e3b;">${reservationData.time}</p>
+                </td>
+              </tr>
+              <tr>
+                <td width="50%" style="padding:6px 18px 18px;vertical-align:top;">
+                  <p style="margin:0 0 3px;font-size:11px;color:#9ca3af;">Guests</p>
+                  <p style="margin:0;font-size:14px;color:#1a2e3b;">${reservationData.guests} persons</p>
+                </td>
+                <td width="50%" style="padding:6px 18px 18px;vertical-align:top;">
+                  <p style="margin:0 0 3px;font-size:11px;color:#9ca3af;">Table / Area</p>
+                  <p style="margin:0;font-size:14px;color:#1a2e3b;">${reservationData.dining_preference || "N/A"}</p>
+                </td>
+              </tr>
+            </table>
+
+            ${Number(reservationData.total_fee) > 0 ? `
+            <!-- Payment summary -->
+            <table role="presentation" width="100%" style="border:1px solid #e5e5e2;border-radius:12px;border-collapse:collapse;margin-bottom:16px;overflow:hidden;">
+              <tr>
+                <td style="padding:11px 16px 3px 16px;" colspan="2">
+                  <p style="margin:0;font-size:11px;color:#aaaaaa;letter-spacing:1.5px;text-transform:uppercase;">Payment</p>
+                </td>
+              </tr>
+              ${reservationData.payment_method ? `
+              <tr style="border-bottom:1px solid #f0f0ed;">
+                <td style="padding:8px 16px;color:#6b7280;font-size:14px;">Method</td>
+                <td style="padding:8px 16px;color:#1a2e3b;font-size:14px;text-align:right;">${reservationData.payment_method}</td>
+              </tr>` : ""}
+              ${reservationData.payment_reference ? `
+              <tr style="border-bottom:1px solid #f0f0ed;">
+                <td style="padding:8px 16px;color:#6b7280;font-size:14px;">Reference</td>
+                <td style="padding:8px 16px;color:#1a2e3b;font-size:14px;font-family:monospace;text-align:right;">${reservationData.payment_reference}</td>
+              </tr>` : ""}
+              <tr>
+                <td style="padding:8px 16px 12px;color:#6b7280;font-size:14px;font-weight:600;">Total</td>
+                <td style="padding:8px 16px 12px;color:#c9943d;font-size:15px;font-weight:700;text-align:right;">₱${Number(reservationData.total_fee).toFixed(2)}</td>
+              </tr>
+            </table>` : ""}
+
+            <!-- Come back banner -->
+            <table role="presentation" width="100%" style="background:#1a2e3b;border-radius:10px;border-collapse:collapse;margin-bottom:16px;">
+              <tr>
+                <td style="padding:16px 18px;text-align:center;">
+                  <p style="margin:0 0 4px;color:#c9943d;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">See you again soon</p>
+                  <p style="margin:0;font-size:13px;color:#9ba8b0;line-height:1.6;">
+                    For future visits, book ahead online to secure your preferred table and time slot.
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.6;">Questions or concerns? Reply to this email and we'll be happy to help.</p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="border-top:1px solid #e5e5e2;padding:16px 28px;text-align:center;background:#f7f6f2;">
+            <p style="margin:0;font-size:12px;color:#aaaaaa;">Lumè Bean &amp; Bar · Thank you for dining with us</p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>`,
     }
 
     await transporter.sendMail(mailOptions)
@@ -368,8 +527,6 @@ export async function POST(request: NextRequest) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL
     if (!apiUrl) throw new Error("NEXT_PUBLIC_API_URL is not configured")
 
-    console.log("=== POST Reservation ===")
-
     const contentType = request.headers.get("content-type") || ""
 
     let formData: FormData | null = null
@@ -404,19 +561,27 @@ export async function POST(request: NextRequest) {
       throw new Error(data.message || "Failed to create reservation")
     }
 
-    console.log("✅ Reservation created successfully")
-
     const enrichedData = {
       ...reservationData,
       reservation_number: data?.data?.reservation_number || "N/A",
     }
 
-    console.log("📧 Sending emails...")
+    const isWalkIn = reservationData.is_walkin === "1" || reservationData.is_walkin === true
+    const hasEmail = !!reservationData.email?.trim()
 
-    const [adminEmailSent, customerEmailSent] = await Promise.all([
-      sendAdminNotification(enrichedData),
-      sendCustomerConfirmation(enrichedData),
-    ])
+    // Always notify admin
+    // Only email customer if they provided an address
+    const emailPromises: Promise<boolean>[] = [sendAdminNotification(enrichedData)]
+
+    if (hasEmail) {
+      emailPromises.push(
+        isWalkIn
+          ? sendWalkInConfirmation(enrichedData)
+          : sendCustomerConfirmation(enrichedData)
+      )
+    }
+
+    const [adminEmailSent, customerEmailSent = false] = await Promise.all(emailPromises)
 
     return NextResponse.json(
       {
@@ -430,7 +595,6 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     console.error("❌ POST Reservation Error:", error)
-
     return NextResponse.json(
       {
         success: false,

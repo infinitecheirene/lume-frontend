@@ -11,6 +11,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Playfair_Display } from "next/font/google"
+import { useAdminRoute } from "@/hooks/use-protected-route"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -30,6 +31,7 @@ interface ContactInquiry {
 const ITEMS_PER_PAGE = 10
 
 export default function ContactsAdmin() {
+  useAdminRoute() // Protect this route - only admins can access
   const [contacts, setContacts] = useState<ContactInquiry[]>([])
   const [loading, setLoading] = useState(true)
   const [viewOpen, setViewOpen] = useState(false)

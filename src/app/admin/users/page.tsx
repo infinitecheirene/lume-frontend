@@ -49,6 +49,7 @@ import { Label } from "@/components/ui/label"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { useAdminRoute } from "@/hooks/use-protected-route"
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -115,6 +116,7 @@ interface OrderItem {
 }
 
 export default function UsersAdminPage() {
+  useAdminRoute() // Protect this route - only admins can access
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)

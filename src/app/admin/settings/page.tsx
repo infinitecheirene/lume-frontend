@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Playfair_Display } from "next/font/google"
+import { useAdminRoute } from "@/hooks/use-protected-route"
 
 type SettingsType = {
   restaurantName: string
@@ -52,6 +53,7 @@ const playfair = Playfair_Display({
 })
 
 export default function SettingsPage() {
+  useAdminRoute() // Protect this route - only admins can access
   const { toast } = useToast()
   const [isMobile, setIsMobile] = useState(false)
   const [saving, setSaving] = useState(false)

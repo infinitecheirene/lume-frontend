@@ -9,6 +9,7 @@ import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
 import { useAuthStore } from "@/store/authStore"
 import { Playfair_Display } from "next/font/google"
+import { useProtectedRoute } from "@/hooks/use-protected-route"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -16,6 +17,7 @@ const playfair = Playfair_Display({
 })
 
 const ReservationsHistory = () => {
+  useProtectedRoute() // Protect this route - only logged in users can access
   const [reservations, setReservations] = useState<any[]>([])
   const [filteredReservations, setFilteredReservations] = useState<any[]>([])
   const [loading, setLoading] = useState(true)

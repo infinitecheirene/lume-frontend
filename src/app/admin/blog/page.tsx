@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Playfair_Display } from "next/font/google"
 import { Switch } from "@/components/ui/switch"
+import { useAdminRoute } from "@/hooks/use-protected-route"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -44,6 +45,7 @@ interface BlogPost {
 }
 
 export default function BlogPostsAdmin() {
+  useAdminRoute() // Protect this route - only admins can access
   const { toast } = useToast()
 
   const [posts, setPosts] = useState<BlogPost[]>([])

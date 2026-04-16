@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Playfair_Display } from "next/font/google"
+import { useAdminRoute } from "@/hooks/use-protected-route"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -46,6 +47,7 @@ interface Announcement {
 }
 
 export default function AdminAnnouncementsPage() {
+  useAdminRoute() // Protect this route - only admins can access
   const { toast } = useToast()
   const [search, setSearch] = useState("")
   const [announcements, setAnnouncements] = useState<Announcement[]>([])

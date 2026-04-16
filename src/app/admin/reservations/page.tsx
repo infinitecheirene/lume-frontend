@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -13,7 +13,14 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import Image from "next/image"
 import { Switch } from "@/components/ui/switch"
+import { useAdminRoute } from "@/hooks/use-protected-route"
 import { useToast } from "@/hooks/use-toast"
+import { Playfair_Display } from "next/font/google"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+})
 
 interface Package {
   id: string
@@ -90,6 +97,33 @@ const SEATING_CONFIG = {
     "Aurora Lounge": 1500,
     "Velvet Room": 1500,
   } as Record<string, number>,
+}
+
+const OCCASION_FEES: Record<string, number> = {
+  Celebration: 500,
+  Romantic: 700,
+  "Night Life": 1000,
+  Professional: 2000,
+  Casual: 0,
+  Other: 300,
+}
+
+const calculateReservationFee = (
+  occasionType: string,
+  guests: number,
+  diningPreference: string,
+  packagePrice?: number
+): number => {
+  if (packagePrice && packagePrice > 0) return packagePrice
+  const occasionFee = OCCASION_FEES[occasionType] ?? 0
+  const seatingFee = getSeatingFee(diningPreference)
+  const extraGuestsFee = Math.max(0, guests - 4) * 200
+  return occasionFee + seatingFee + extraGuestsFee
+}
+
+const calculateTotalBill = (reservationFee: number) => {
+  const serviceCharge = reservationFee * 0.1
+  return { serviceCharge, total: reservationFee + serviceCharge }
 }
 
 function getSeatingFee(diningPreference: string): number {
@@ -273,6 +307,7 @@ function FieldLabel({ children, required }: { children: React.ReactNode; require
 }
 
 export default function ReservationsAdmin() {
+  useAdminRoute() // Protect this route - only admins can access
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -461,6 +496,12 @@ export default function ReservationsAdmin() {
       if (blockedSlots.has(formData.time)) { toast({ title: "Unavailable", description: "That slot is already booked.", variant: "destructive" }); return }
     }
 
+    // replace the existing payload block inside handleCreateReservation
+    const now = new Date()
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
+    const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`
+
+
     try {
       const form = new FormData()
       const payload = {
@@ -468,7 +509,11 @@ export default function ReservationsAdmin() {
         reservation_status: formData.is_walkin ? "confirmed" : formData.reservation_status,
         payment_status: formData.is_walkin ? formData.payment_status : "pending",
         remaining_balance: formData.is_walkin ? formData.remaining_balance : calculatedRemaining,
+        date: formData.is_walkin ? (formData.date || todayStr) : formData.date,
+        time: formData.is_walkin ? (formData.time || currentTime) : formData.time,
+        phone: formData.phone || "",
       }
+
       Object.entries(payload).forEach(([k, v]) => {
         if (v === null || v === undefined) return
         form.append(k, typeof v === "boolean" ? (v ? "1" : "0") : String(v))
@@ -556,17 +601,66 @@ export default function ReservationsAdmin() {
     setRefreshing(false)
   }
 
+  // ─── Place these three blocks BEFORE the `if (loading)` early return ───
+
+  const selectedPackage = useMemo(() => {
+    return PACKAGES.find((p) => p.name === formData.package) ?? null
+  }, [formData.package])
+
+  const computedReservationFee = useMemo(() => {
+    if (selectedPackage) return selectedPackage.price ?? 0
+    return calculateReservationFee(
+      formData.occasion ?? "",
+      Number(formData.guests) || 1,
+      formData.dining_preference
+    )
+  }, [selectedPackage, formData.occasion, formData.guests, formData.dining_preference])
+
+  useEffect(() => {
+    const fee = Number(computedReservationFee) || 0
+    const { serviceCharge, total } = calculateTotalBill(fee)
+    const downPayment = parseFloat((fee * 0.5).toFixed(2))
+    const remaining = parseFloat(Math.max(total - downPayment, 0).toFixed(2))
+
+    setFormData((prev) => ({
+      ...prev,
+      reservation_fee: parseFloat(fee.toFixed(2)),
+      service_charge: parseFloat(serviceCharge.toFixed(2)),
+      total_fee: parseFloat(total.toFixed(2)),
+      // Only auto-fill down_payment & remaining for non-walk-ins
+      ...(!prev.is_walkin
+        ? { down_payment: downPayment, remaining_balance: remaining }
+        : {}),
+    }))
+  }, [computedReservationFee])
+
   if (loading) {
     return (
       <SidebarProvider defaultOpen={!isDesktop}>
         <div className="flex min-h-screen w-full bg-amber-50">
           <AppSidebar />
-          <div className="flex-1 flex items-center justify-center">
-            <div className="bg-[#162A3A] rounded-2xl px-10 py-8 flex flex-col items-center gap-4 shadow-2xl border border-[#d4a24c]/30">
-              <Loader2 className="h-8 w-8 animate-spin text-[#d4a24c]" />
-              <p className="text-white font-medium">Loading Reservations…</p>
-              <div className="flex gap-1.5">
-                {[0, 1, 2].map((i) => <span key={i} className="w-2 h-2 rounded-full bg-[#d4a24c] animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />)}
+
+          <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
+            <div className="flex items-center justify-center min-h-screen w-full">
+              <div className="flex flex-col items-center gap-4 bg-[#162A3A] backdrop-blur-xl px-8 py-8 rounded-2xl border border-[#d4a24c]/70 shadow-2xl">
+                {/* Spinner */}
+                <div className="relative">
+                  <Loader2 className="h-8 w-8 animate-spin text-[#d4a24c]" />
+                  <div className="absolute inset-0 rounded-full border border-[#d4a24c]/20 blur-sm" />
+                </div>
+
+                {/* Text */}
+                <div className="text-center">
+                  <p className="text-lg font-semibold text-white">Loading Products</p>
+                  <p className="text-sm text-white/60">Please wait while we fetch the data...</p>
+                </div>
+
+                {/* Animated dots */}
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-2 h-2 bg-[#d4a24c] rounded-full animate-bounce" />
+                </div>
               </div>
             </div>
           </div>
@@ -581,32 +675,61 @@ export default function ReservationsAdmin() {
     if (isWalkIn) {
       return (
         <FormSection title="Payment Details" icon={<TrendingUp className="w-4 h-4" />}>
-          {/* Total fee only */}
-          <div>
-            <FieldLabel>Total Fee</FieldLabel>
-            <div className="relative max-w-[200px] text-gray-800">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₱</span>
+          {/* Fee fields */}
+          <div className="grid grid-cols-2 gap-3 text-gray-800">
+            <div>
+              <FieldLabel>Total Fee</FieldLabel>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₱</span>
+                <Input
+                  type="number" min={0} step={0.01}
+                  value={formData.total_fee}
+                  onChange={(e) => setFormData({ ...formData, total_fee: parseFloat(e.target.value) || 0 })}
+                  className="pl-7 h-9 bg-white border-gray-200"
+                />
+              </div>
+            </div>
+            <div>
+              <FieldLabel>Service Charge</FieldLabel>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₱</span>
+                <Input
+                  type="number" min={0} step={0.01}
+                  value={formData.service_charge}
+                  onChange={(e) => setFormData({ ...formData, service_charge: parseFloat(e.target.value) || 0 })}
+                  className="pl-7 h-9 bg-white border-gray-200"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Payment method + reference */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-gray-800">
+            <div>
+              <FieldLabel required>Payment Method</FieldLabel>
+              <Select value={formData.payment_method} onValueChange={(v) => setFormData({ ...formData, payment_method: v })}>
+                <SelectTrigger className="h-9 bg-white border-gray-200"><SelectValue placeholder="Select method" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="GCash">GCash</SelectItem>
+                  <SelectItem value="Security Bank">Security Bank</SelectItem>
+                  <SelectItem value="BPI">BPI</SelectItem>
+                  <SelectItem value="Cash">Cash</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <FieldLabel>Reference Number</FieldLabel>
               <Input
-                type="number" min={0} step={0.01}
-                value={formData.total_fee}
-                onChange={(e) => setFormData({ ...formData, total_fee: parseFloat(e.target.value) || 0 })}
-                className="pl-7 h-9 bg-white border-gray-200"
+                placeholder="Transaction ID / Ref # (optional)"
+                value={formData.payment_reference}
+                onChange={(e) => setFormData({ ...formData, payment_reference: e.target.value })}
+                className="h-9 bg-white border-gray-200"
               />
             </div>
           </div>
 
-          {/* Payment method — free text for walk-ins */}
-          <div>
-            <FieldLabel>Payment Method</FieldLabel>
-            <Input
-              placeholder="e.g. Cash, GCash, Card…"
-              value={formData.payment_method}
-              onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
-              className="h-9 bg-white border-gray-200"
-            />
-          </div>
-
-          {/* Payment status */}
+          {/* Payment status — walk-in defaults to paid */}
           <div>
             <FieldLabel>Payment Status</FieldLabel>
             <div className="flex flex-wrap gap-2">
@@ -615,7 +738,7 @@ export default function ReservationsAdmin() {
                   key={s} type="button"
                   onClick={() => setFormData({ ...formData, payment_status: s })}
                   className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all capitalize
-                    ${formData.payment_status === s
+                ${formData.payment_status === s
                       ? s === "paid" ? "bg-emerald-600 text-white border-emerald-600"
                         : s === "pending" ? "bg-amber-500 text-white border-amber-500"
                           : "bg-red-500 text-white border-red-500"
@@ -624,6 +747,7 @@ export default function ReservationsAdmin() {
                 >{s}</button>
               ))}
             </div>
+            <p className="text-xs text-gray-400 mt-1">Walk-in payments are collected on arrival — defaults to Paid.</p>
           </div>
         </FormSection>
       )
@@ -784,11 +908,24 @@ export default function ReservationsAdmin() {
     return (
       <FormSection title="Schedule" icon={<Clock className="w-4 h-4" />}>
         {isWalkIn ? (
-          <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 flex items-center gap-3 text-gray-800">
-            <Footprints className="w-5 h-5 text-blue-600 flex-shrink-0" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-gray-800">
             <div>
-              <p className="text-sm font-semibold text-blue-800">Walk-In Guest</p>
-              <p className="text-xs text-blue-600">Date and time selection is disabled. Walk-in guests are served on arrival.</p>
+              <FieldLabel required>Date</FieldLabel>
+              <Input
+                type="date"
+                value={formData.date || new Date().toISOString().split("T")[0]}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                className="h-9 bg-white border-gray-200"
+              />
+            </div>
+            <div>
+              <FieldLabel required>Time</FieldLabel>
+              <Input
+                type="time"
+                value={formData.time || `${String(new Date().getHours()).padStart(2, "0")}:${String(new Date().getMinutes()).padStart(2, "0")}`}
+                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                className="h-9 bg-white border-gray-200"
+              />
             </div>
           </div>
         ) : (
@@ -854,209 +991,209 @@ export default function ReservationsAdmin() {
     <SidebarProvider defaultOpen={!isDesktop}>
       <div className="flex min-h-screen w-full bg-amber-50">
         <AppSidebar />
-        <div className={`flex-1 min-w-0 transition-all duration-300 ${isDesktop ? "ml-0" : "ml-72"}`}>
-
+        <div className={`flex-1 min-w-0 ${isDesktop ? "ml-0" : "ml-72"}`}>
           {isDesktop && (
             <div className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b bg-[#162A3A] px-4 shadow-sm">
-              <SidebarTrigger />
-              <Image src="/logo.jpg" alt="Lumè Bean and Bar" width={36} height={36} className="rounded-full object-contain" />
-              <h1 className="text-lg font-semibold text-white">Lumè Bean and Bar</h1>
+              <SidebarTrigger className="-ml-1" />
+              <Image src="/logo.jpg" alt="Lumè Bean and Bar Logo" width={40} height={40} className="object-contain rounded-full" />
+              <h1 className={`${playfair.className} text-lg font-semibold text-white`}>Lumè Bean and Bar</h1>
             </div>
           )}
 
-          <main className="px-4 py-6 md:px-6 md:py-6 lg:px-8 lg:py-8 max-w-7xl mx-auto space-y-6">
-
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-[#162A3A]">Reservations</h1>
-                <p className="text-gray-500 mt-1 text-sm">Manage tables, walk-ins, and guest scheduling</p>
-              </div>
-
-              <Button
-                onClick={() => setIsAddingReservation(true)}
-                className="h-10 px-5 font-semibold bg-[#162A3A] text-white hover:bg-[#1e3a50] rounded-xl shadow-md"
-              >
-                <Plus className="w-4 h-4 mr-2" /> New Reservation
-              </Button>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                { label: "Confirmed", value: confirmedCount, icon: <CheckCircle2 className="w-5 h-5 text-emerald-600" />, bg: "bg-white", accent: "text-emerald-700", border: "border-emerald-100" },
-                { label: "Pending", value: pendingCount, icon: <Clock className="w-5 h-5 text-amber-500" />, bg: "bg-white", accent: "text-amber-700", border: "border-amber-100" },
-                { label: "Guests", value: guestCount, icon: <Users className="w-5 h-5 text-blue-500" />, bg: "bg-white", accent: "text-blue-700", border: "border-blue-100" },
-                { label: "Walk-ins", value: walkInCount, icon: <Footprints className="w-5 h-5 text-violet-500" />, bg: "bg-white", accent: "text-violet-700", border: "border-violet-100" },
-              ].map(({ label, value, icon, bg, accent, border }) => (
-                <div key={label} className={`${bg} border ${border} rounded-2xl p-4 flex items-center gap-3 shadow-sm`}>
-                  <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0">{icon}</div>
-                  <div>
-                    <p className="text-xs text-gray-500">{label}</p>
-                    <p className={`text-2xl font-bold ${accent}`}>{value}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Calendar panel */}
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-
-              {/* Panel header */}
-              <div className="flex flex-row items-start sm:items-center justify-between gap-3 px-5 py-4 bg-[#162A3A]">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-lg font-bold text-white">
-                    {viewMode === "list" ? "All Reservations" : viewMode === "week" ? formatWeekRange(currentDate) : formatMonthYear(currentDate)}
-                  </h2>
-                  <Button size="sm" variant="outline" onClick={() => setCurrentDate(new Date())} className="text-[#162A3A] bg-white/90 border-0 h-7 text-xs">Today</Button>
-                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 h-7 w-7"
-                    onClick={() => viewMode === "week" ? setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 7)) : setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}>
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 h-7 w-7"
-                    onClick={() => viewMode === "week" ? setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 7)) : setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}>
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
+          <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6">
+            <div className="max-w-full space-y-4 sm:space-y-6">
+              {/* Header */}
+              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-bold text-[#162A3A]">Reservations</h1>
+                  <p className="text-gray-500 mt-1 text-sm">Manage tables, walk-ins, and guest scheduling</p>
                 </div>
 
-                {/* Refresh Button */}
                 <Button
-                  onClick={handleRefresh}
-                  variant="outline"
-                  disabled={refreshing}
-                  className="h-10 px-4 rounded-xl border-gray-200"
+                  onClick={() => setIsAddingReservation(true)}
+                  className="h-10 px-5 font-semibold bg-[#162A3A] text-white hover:bg-[#1e3a50] rounded-xl shadow-md"
                 >
-                  {refreshing ? "Refreshing..." : "Refresh"}
+                  <Plus className="w-4 h-4 mr-2" /> New Reservation
                 </Button>
               </div>
 
-              <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as typeof viewMode)}>
-                <div className="px-5 pt-4">
-                  <TabsList className="h-9 bg-gray-100 rounded-lg p-1">
-                    <TabsTrigger value="list" className="text-xs h-7 rounded-md">List</TabsTrigger>
-                    <TabsTrigger value="week" className="text-xs h-7 rounded-md">Week</TabsTrigger>
-                    <TabsTrigger value="month" className="text-xs h-7 rounded-md">Month</TabsTrigger>
-                  </TabsList>
+              {/* Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: "Confirmed", value: confirmedCount, icon: <CheckCircle2 className="w-5 h-5 text-emerald-600" />, bg: "bg-white", accent: "text-emerald-700", border: "border-emerald-100" },
+                  { label: "Pending", value: pendingCount, icon: <Clock className="w-5 h-5 text-amber-500" />, bg: "bg-white", accent: "text-amber-700", border: "border-amber-100" },
+                  { label: "Guests", value: guestCount, icon: <Users className="w-5 h-5 text-blue-500" />, bg: "bg-white", accent: "text-blue-700", border: "border-blue-100" },
+                  { label: "Walk-ins", value: walkInCount, icon: <Footprints className="w-5 h-5 text-violet-500" />, bg: "bg-white", accent: "text-violet-700", border: "border-violet-100" },
+                ].map(({ label, value, icon, bg, accent, border }) => (
+                  <div key={label} className={`${bg} border ${border} rounded-2xl p-4 flex items-center gap-3 shadow-sm`}>
+                    <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0">{icon}</div>
+                    <div>
+                      <p className="text-xs text-gray-500">{label}</p>
+                      <p className={`text-2xl font-bold ${accent}`}>{value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Calendar panel */}
+              <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+
+                {/* Panel header */}
+                <div className="flex flex-row items-start sm:items-center justify-between gap-3 px-5 py-4 bg-[#162A3A]">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-lg font-bold text-white">
+                      {viewMode === "list" ? "All Reservations" : viewMode === "week" ? formatWeekRange(currentDate) : formatMonthYear(currentDate)}
+                    </h2>
+                    <Button size="sm" variant="outline" onClick={() => setCurrentDate(new Date())} className="text-[#162A3A] bg-white/90 border-0 h-7 text-xs">Today</Button>
+                    <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 h-7 w-7"
+                      onClick={() => viewMode === "week" ? setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 7)) : setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}>
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 h-7 w-7"
+                      onClick={() => viewMode === "week" ? setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 7)) : setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}>
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  {/* Refresh Button */}
+                  <Button
+                    onClick={handleRefresh}
+                    variant="outline"
+                    disabled={refreshing}
+                    className="p-4 rounded-xl border-gray-200"
+                  >
+                    {refreshing ? "Refreshing..." : "Refresh"}
+                  </Button>
                 </div>
 
-                {/* List View */}
-                <TabsContent value="list" className="p-5 bg-white">
-                  <div className="overflow-x-auto rounded-3xl border border-gray-100 shadow-sm">
-                    <table className="w-full text-sm min-w-[960px]">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-100">
-                          {["Reservation #", "Date", "Time", "Guest", "Pax", "Type", "Res Status", "Pay Status", "Actions"].map((h) => (
-                            <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-50">
-                        {reservations.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((r) => (
-                          <tr key={r.id} className="hover:bg-gray-50/60 transition-colors">
-                            <td className="px-4 py-3 font-mono text-xs text-gray-500">{r.reservation_number}</td>
-                            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{formatDate(r.date)}</td>
-                            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{formatTime(r.time)}</td>
-                            <td className="px-4 py-3 font-medium text-gray-900">{r.name}</td>
-                            <td className="px-4 py-3 text-gray-600">{r.guests}</td>
-                            <td className="px-4 py-3">
-                              {r.is_walkin
-                                ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium"><Footprints className="w-3 h-3" />Walk-in</span>
-                                : <span className="text-xs text-gray-500">Online</span>}
-                            </td>
-                            <td className="px-4 py-3">
-                              <button onClick={() => { setStatusDialogReservation(r); setStatusUpdate(r.reservation_status); setOpenStatusDialog(true) }}>
-                                <StatusBadge status={r.reservation_status} small />
-                              </button>
-                            </td>
-                            <td className="px-4 py-3"><PaymentBadge status={r.payment_status} /></td>
-                            <td className="px-4 py-3">
-                              <Button size="sm" variant="outline" className="h-7 text-xs border-gray-200 hover:border-[#162A3A]"
-                                onClick={() => { setViewingReservation(r); setOpenView(true) }}>View</Button>
-                            </td>
-                          </tr>
-                        ))}
-                        {reservations.length === 0 && (
-                          <tr><td colSpan={9} className="px-4 py-12 text-center text-gray-400 text-sm">No reservations found</td></tr>
-                        )}
-                      </tbody>
-                    </table>
+                <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as typeof viewMode)}>
+                  <div className="px-5 pt-4">
+                    <TabsList className="h-9 bg-gray-100 rounded-lg p-1">
+                      <TabsTrigger value="list" className="text-xs h-7 rounded-md">List</TabsTrigger>
+                      <TabsTrigger value="week" className="text-xs h-7 rounded-md">Week</TabsTrigger>
+                      <TabsTrigger value="month" className="text-xs h-7 rounded-md">Month</TabsTrigger>
+                    </TabsList>
                   </div>
-                </TabsContent>
 
-                {/* Week View */}
-                <TabsContent value="week" className="p-4 bg-white rounded-b-3xl">
-                  <div className="overflow-x-auto">
-                    <div className="min-w-[720px]">
-                      <div className="grid grid-cols-8 mb-1 border-b border-gray-100">
-                        <div className="p-2" />
-                        {getWeekDates(currentDate).map((date, i) => (
-                          <div key={i} className="p-2 text-center">
-                            <div className="text-xs font-medium text-gray-500">{date.toLocaleDateString("en-US", { weekday: "short" })}</div>
-                            <div className={`text-sm font-bold mt-0.5 w-7 h-7 mx-auto flex items-center justify-center rounded-full ${isToday(date) ? "bg-[#d4a24c] text-white" : "text-gray-700"}`}>{date.getDate()}</div>
+                  {/* List View */}
+                  <TabsContent value="list" className="p-5 bg-white">
+                    <div className="overflow-x-auto rounded-3xl border border-gray-100 shadow-sm">
+                      <table className="w-full text-sm min-w-[960px]">
+                        <thead>
+                          <tr className="bg-gray-50 border-b border-gray-100">
+                            {["Reservation #", "Date", "Time", "Guest", "Pax", "Type", "Res Status", "Pay Status", "Actions"].map((h) => (
+                              <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {reservations.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((r) => (
+                            <tr key={r.id} className="hover:bg-gray-50/60 transition-colors">
+                              <td className="px-4 py-3 font-mono text-xs text-gray-500">{r.reservation_number}</td>
+                              <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{formatDate(r.date)}</td>
+                              <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{formatTime(r.time)}</td>
+                              <td className="px-4 py-3 font-medium text-gray-900">{r.name}</td>
+                              <td className="px-4 py-3 text-gray-600">{r.guests}</td>
+                              <td className="px-4 py-3">
+                                {r.is_walkin
+                                  ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium"><Footprints className="w-3 h-3" />Walk-in</span>
+                                  : <span className="text-xs text-gray-500">Online</span>}
+                              </td>
+                              <td className="px-4 py-3">
+                                <button onClick={() => { setStatusDialogReservation(r); setStatusUpdate(r.reservation_status); setOpenStatusDialog(true) }}>
+                                  <StatusBadge status={r.reservation_status} small />
+                                </button>
+                              </td>
+                              <td className="px-4 py-3"><PaymentBadge status={r.payment_status} /></td>
+                              <td className="px-4 py-3">
+                                <Button size="sm" variant="outline" className="h-7 text-xs border-gray-200 hover:border-[#162A3A]"
+                                  onClick={() => { setViewingReservation(r); setOpenView(true) }}>View</Button>
+                              </td>
+                            </tr>
+                          ))}
+                          {reservations.length === 0 && (
+                            <tr><td colSpan={9} className="px-4 py-12 text-center text-gray-400 text-sm">No reservations found</td></tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </TabsContent>
+
+                  {/* Week View */}
+                  <TabsContent value="week" className="p-4 bg-white rounded-b-3xl">
+                    <div className="overflow-x-auto">
+                      <div className="min-w-[720px]">
+                        <div className="grid grid-cols-8 mb-1 border-b border-gray-100">
+                          <div className="p-2" />
+                          {getWeekDates(currentDate).map((date, i) => (
+                            <div key={i} className="p-2 text-center">
+                              <div className="text-xs font-medium text-gray-500">{date.toLocaleDateString("en-US", { weekday: "short" })}</div>
+                              <div className={`text-sm font-bold mt-0.5 w-7 h-7 mx-auto flex items-center justify-center rounded-full ${isToday(date) ? "bg-[#d4a24c] text-white" : "text-gray-700"}`}>{date.getDate()}</div>
+                            </div>
+                          ))}
+                        </div>
+                        {Array.from({ length: MAX_HOUR - MIN_HOUR }, (_, i) => MIN_HOUR + i).map((hour) => (
+                          <div key={hour} className="grid grid-cols-8 border-b border-gray-50">
+                            <div className="px-2 py-1 text-right text-xs text-gray-400 pt-1.5">{formatHour(hour)}</div>
+                            {getWeekDates(currentDate).map((date, di) => {
+                              const { isClosed, opening, closing } = getDayHours(date.getDay())
+                              if (isClosed) return <div key={di} className="min-h-[48px] bg-gray-50/50 border-r border-gray-100" />
+                              const slots = buildAllSlots(opening, closing).filter(s => parseInt(s.split(":")[0]) === hour)
+                              return (
+                                <div key={di} className="min-h-[48px] p-0.5 border-r border-gray-100">
+                                  {slots.map((slot) =>
+                                    reservations.filter(r => r.date.substring(0, 10) === `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}` && r.time.substring(0, 5) === slot)
+                                      .map((res) => (
+                                        <div key={res.id} onClick={() => { setViewingReservation(res); setOpenView(true) }}
+                                          className={`text-xs p-1.5 rounded-lg mb-0.5 cursor-pointer truncate font-medium border ${getCalendarColor(res)}`}>
+                                          {res.name}
+                                        </div>
+                                      ))
+                                  )}
+                                </div>
+                              )
+                            })}
                           </div>
                         ))}
                       </div>
-                      {Array.from({ length: MAX_HOUR - MIN_HOUR }, (_, i) => MIN_HOUR + i).map((hour) => (
-                        <div key={hour} className="grid grid-cols-8 border-b border-gray-50">
-                          <div className="px-2 py-1 text-right text-xs text-gray-400 pt-1.5">{formatHour(hour)}</div>
-                          {getWeekDates(currentDate).map((date, di) => {
-                            const { isClosed, opening, closing } = getDayHours(date.getDay())
-                            if (isClosed) return <div key={di} className="min-h-[48px] bg-gray-50/50 border-r border-gray-100" />
-                            const slots = buildAllSlots(opening, closing).filter(s => parseInt(s.split(":")[0]) === hour)
-                            return (
-                              <div key={di} className="min-h-[48px] p-0.5 border-r border-gray-100">
-                                {slots.map((slot) =>
-                                  reservations.filter(r => r.date.substring(0, 10) === `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}` && r.time.substring(0, 5) === slot)
-                                    .map((res) => (
-                                      <div key={res.id} onClick={() => { setViewingReservation(res); setOpenView(true) }}
-                                        className={`text-xs p-1.5 rounded-lg mb-0.5 cursor-pointer truncate font-medium border ${getCalendarColor(res)}`}>
-                                        {res.name}
-                                      </div>
-                                    ))
-                                )}
-                              </div>
-                            )
-                          })}
-                        </div>
-                      ))}
                     </div>
-                  </div>
-                </TabsContent>
+                  </TabsContent>
 
-                {/* Month View */}
-                <TabsContent value="month" className="p-4 bg-white rounded-b-3xl">
-                  <div className="grid grid-cols-7 gap-2">
-                    {weekDays.map((d) => (
-                      <div key={d} className="p-2 text-center text-xs font-semibold text-gray-500 uppercase">{d}</div>
-                    ))}
-                    {getDaysInMonth(currentDate).map((date, idx) => {
-                      if (!date) return <div key={idx} className="min-h-[80px] rounded-xl bg-gray-50/30" />
-                      const dayRes = getReservationsForDate(date)
-                      const { isClosed } = getDayHours(date.getDay())
-                      const fullyBooked = !isClosed && isDayFullyBooked(date, reservations)
-                      return (
-                        <div key={idx} onClick={() => { if (!isClosed) { setCurrentDate(date); setViewMode("week") } }}
-                          className={`min-h-[80px] rounded-xl p-2 border cursor-pointer transition-all hover:shadow-sm ${isToday(date) ? "bg-amber-50 border-[#d4a24c]/50" : isClosed ? "bg-gray-50 border-gray-100" : "bg-white border-gray-100 hover:border-gray-300"}`}>
-                          <div className={`text-sm font-bold mb-1 w-6 h-6 flex items-center justify-center rounded-full ${isToday(date) ? "bg-[#d4a24c] text-white" : "text-gray-700"}`}>{date.getDate()}</div>
-                          {isClosed ? <p className="text-xs text-gray-400">Closed</p>
-                            : fullyBooked ? <p className="text-xs text-red-500 font-medium">Full</p>
-                              : (
-                                <div className="space-y-0.5">
-                                  {dayRes.slice(0, 2).map((r) => (
-                                    <div key={r.id} onClick={(e) => { e.stopPropagation(); setViewingReservation(r); setOpenView(true) }}
-                                      className={`text-xs px-1.5 py-0.5 rounded-md truncate border ${getCalendarColor(r)}`}>
-                                      {r.time.substring(0, 5)} {r.name}
-                                    </div>
-                                  ))}
-                                  {dayRes.length > 2 && <p className="text-xs text-gray-400 pl-1">+{dayRes.length - 2}</p>}
-                                </div>
-                              )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </TabsContent>
-              </Tabs>
+                  {/* Month View */}
+                  <TabsContent value="month" className="p-4 bg-white rounded-b-3xl">
+                    <div className="grid grid-cols-7 gap-2">
+                      {weekDays.map((d) => (
+                        <div key={d} className="p-2 text-center text-xs font-semibold text-gray-500 uppercase">{d}</div>
+                      ))}
+                      {getDaysInMonth(currentDate).map((date, idx) => {
+                        if (!date) return <div key={idx} className="min-h-[80px] rounded-xl bg-gray-50/30" />
+                        const dayRes = getReservationsForDate(date)
+                        const { isClosed } = getDayHours(date.getDay())
+                        const fullyBooked = !isClosed && isDayFullyBooked(date, reservations)
+                        return (
+                          <div key={idx} onClick={() => { if (!isClosed) { setCurrentDate(date); setViewMode("week") } }}
+                            className={`min-h-[80px] rounded-xl p-2 border cursor-pointer transition-all hover:shadow-sm ${isToday(date) ? "bg-amber-50 border-[#d4a24c]/50" : isClosed ? "bg-gray-50 border-gray-100" : "bg-white border-gray-100 hover:border-gray-300"}`}>
+                            <div className={`text-sm font-bold mb-1 w-6 h-6 flex items-center justify-center rounded-full ${isToday(date) ? "bg-[#d4a24c] text-white" : "text-gray-700"}`}>{date.getDate()}</div>
+                            {isClosed ? <p className="text-xs text-gray-400">Closed</p>
+                              : fullyBooked ? <p className="text-xs text-red-500 font-medium">Full</p>
+                                : (
+                                  <div className="space-y-0.5">
+                                    {dayRes.slice(0, 2).map((r) => (
+                                      <div key={r.id} onClick={(e) => { e.stopPropagation(); setViewingReservation(r); setOpenView(true) }}
+                                        className={`text-xs px-1.5 py-0.5 rounded-md truncate border ${getCalendarColor(r)}`}>
+                                        {r.time.substring(0, 5)} {r.name}
+                                      </div>
+                                    ))}
+                                    {dayRes.length > 2 && <p className="text-xs text-gray-400 pl-1">+{dayRes.length - 2}</p>}
+                                  </div>
+                                )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
             </div>
           </main>
         </div>
@@ -1242,7 +1379,12 @@ export default function ReservationsAdmin() {
                   <Footprints className="w-4 h-4 text-white/70" />
                   <span className="text-white/80 text-sm">Walk-In</span>
                   <Switch checked={formData.is_walkin}
-                    onCheckedChange={(c) => setFormData({ ...formData, is_walkin: c, reservation_status: c ? "confirmed" : formData.reservation_status })} />
+                    onCheckedChange={(c) => setFormData({
+                      ...formData, is_walkin: c,
+                      reservation_status: c ? "confirmed" : formData.reservation_status,
+                      payment_status: c ? "paid" : formData.payment_status,   // ← add this line
+                    })}
+                  />
                 </div>
               </div>
             </SheetHeader>
@@ -1423,7 +1565,7 @@ export default function ReservationsAdmin() {
 
       {/* CREATE RESERVATION DIALOG */}
       <Dialog open={isAddingReservation} onOpenChange={(o) => { setIsAddingReservation(o); if (!o) { setFormData(initialFormData); setPaymentFile(null) } }}>
-        <DialogContent className="w-[95vw] sm:max-w-3xl max-h-[92vh] overflow-y-auto rounded-2xl border-0 shadow-2xl p-0">
+        <DialogContent className="w-[95vw] sm:max-w-3xl max-h-[92vh] overflow-y-auto rounded-2xl border-0 shadow-2xl p-0 text-gray-950">
 
           {/* Header */}
           <div className="sticky top-0 z-10 bg-[#162A3A] px-6 py-5 rounded-t-2xl">
@@ -1440,8 +1582,9 @@ export default function ReservationsAdmin() {
                   onCheckedChange={(c) => setFormData({
                     ...formData, is_walkin: c,
                     reservation_status: c ? "confirmed" : "pending",
-                    payment_status: c ? formData.payment_status : "pending",
-                  })} />
+                    payment_status: c ? "paid" : "pending",   // ← was: c ? formData.payment_status : "pending"
+                  })}
+                />
               </label>
             </div>
           </div>
@@ -1534,11 +1677,17 @@ export default function ReservationsAdmin() {
                 >
                   <SelectTrigger className="h-9 bg-white border-gray-200"><SelectValue placeholder="Select a package" /></SelectTrigger>
                   <SelectContent>
-                    {PACKAGES.map((p) => (
-                      <SelectItem key={p.id} value={p.name}>
-                        {p.name} — {p.room} (₱{p.price.toLocaleString()})
+                    <SelectContent>
+                      <SelectItem value="No Package / Walk-in">
+                        No Package / Walk-in
                       </SelectItem>
-                    ))}
+
+                      {PACKAGES.map((p) => (
+                        <SelectItem key={p.id} value={p.name}>
+                          {p.name} — {p.room} (₱{p.price.toLocaleString()})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </SelectContent>
                 </Select>
               </div>

@@ -40,6 +40,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Playfair_Display } from "next/font/google"
 import { useSettingsStore } from "@/store/settingsStore"
+import { useProtectedRoute } from "@/hooks/use-protected-route"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -47,6 +48,7 @@ const playfair = Playfair_Display({
 })
 
 const Orders = () => {
+  useProtectedRoute() // Protect this route - only logged in users can access
   const [orders, setOrders] = useState<Order[]>([])
   const [reservations, setReservations] = useState<any[]>([])
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([])

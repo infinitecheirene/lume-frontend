@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 import { ArrowLeft, Plus, Edit, Trash2, Check, MapPin, Mail, Phone, User } from "lucide-react"
 import { AddAddressModal, type AddressFormData } from "@/components/add-address-modal"
 import { toast } from "@/hooks/use-toast"
+import { useProtectedRoute } from "@/hooks/use-protected-route"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,6 +53,7 @@ interface User {
 }
 
 export default function ProfilePage() {
+  useProtectedRoute() // Protect this route - only logged in users can access
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [addresses, setAddresses] = useState<Address[]>([])
