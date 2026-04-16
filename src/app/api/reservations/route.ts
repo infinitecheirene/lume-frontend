@@ -146,15 +146,19 @@ async function sendAdminNotification(reservationData: any) {
               </tr>
               <tr style="border-bottom:1px solid #f0f0ed;">
                 <td style="padding:10px 16px;color:#9ca3af;font-size:14px;width:40%;">Reservation fee</td>
-                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;">₱${Number(reservationData.reservation_fee || 0).toFixed(2)}</td>
+                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;">₱${reservationData.reservation_fee || 0}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #f0f0ed;">
+                <td style="padding:10px 16px;color:#9ca3af;font-size:14px;width:40%;">Remaining balance</td>
+                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;">₱${reservationData.remaining_balance || 0}</td>
               </tr>
               <tr style="border-bottom:1px solid #f0f0ed;">
                 <td style="padding:10px 16px;color:#9ca3af;font-size:14px;">Service charge</td>
-                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;">₱${Number(reservationData.service_charge || 0).toFixed(2)}</td>
+                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;">₱${reservationData.service_charge || 0}</td>
               </tr>
               <tr style="border-bottom:1px solid #f0f0ed;">
-                <td style="padding:10px 16px;color:#6b7280;font-size:14px;font-weight:600;">Total</td>
-                <td style="padding:10px 16px;color:#c9943d;font-size:15px;font-weight:700;">₱${Number(reservationData.total_fee || 0).toFixed(2)}</td>
+                <td style="padding:10px 16px;color:#6b7280;font-size:14px;font-weight:600;">Total <span style="font-size: 10px"><br>(Remaining Balance + Service Charge)</span></td>
+                <td style="padding:10px 16px;color:#c9943d;font-size:15px;font-weight:700;">₱${reservationData.total_fee || 0} </td>
               </tr>
               <tr style="border-bottom:1px solid #f0f0ed;">
                 <td style="padding:10px 16px;color:#9ca3af;font-size:14px;">Method</td>
@@ -293,18 +297,76 @@ async function sendCustomerConfirmation(reservationData: any) {
 
             <!-- Payment summary -->
             <table role="presentation" width="100%" style="border:1px solid #e5e5e2;border-radius:12px;border-collapse:collapse;margin-bottom:16px;overflow:hidden;">
-              <tr style="border-bottom:1px solid #f0f0ed;">
-                <td style="padding:11px 16px;color:#6b7280;font-size:14px;">Payment method</td>
-                <td style="padding:11px 16px;color:#1a2e3b;font-size:14px;text-align:right;">${reservationData.payment_method || "N/A"}</td>
+              
+              <!-- Title -->
+              <tr style="background:#f7f6f2;border-bottom:1px solid #ecebe7;">
+                <td colspan="2" style="padding:12px 16px;">
+                  <p style="margin:0;font-size:11px;color:#9ca3af;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;">
+                    Payment Summary
+                  </p>
+                </td>
               </tr>
+
+              <!-- Reservation Fee -->
               <tr style="border-bottom:1px solid #f0f0ed;">
-                <td style="padding:11px 16px;color:#6b7280;font-size:14px;">Down payment</td>
-                <td style="padding:11px 16px;color:#1a2e3b;font-size:14px;text-align:right;">₱${Number(reservationData.down_payment || 0).toFixed(2)}</td>
+                <td style="padding:10px 16px;color:#6b7280;font-size:14px;width:55%;">
+                  Reservation Fee (Paid)
+                </td>
+                <td style="padding:10px 16px;color:#059669;font-size:14px;font-weight:600;text-align:right;">
+                  ₱${reservationData.reservation_fee || 0}
+                </td>
               </tr>
+
+              <!-- Remaining -->
+              <tr style="border-bottom:1px solid #f0f0ed;">
+                <td style="padding:10px 16px;color:#6b7280;font-size:14px;">
+                  Remaining Balance
+                </td>
+                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;text-align:right;">
+                  ₱${reservationData.remaining_balance || 0}
+                </td>
+              </tr>
+
+              <!-- Service Charge -->
+              <tr style="border-bottom:1px solid #f0f0ed;">
+                <td style="padding:10px 16px;color:#6b7280;font-size:14px;">
+                  Service Charge
+                </td>
+                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;text-align:right;">
+                  ₱${reservationData.service_charge || 0}
+                </td>
+              </tr>
+
+              <!-- Total Due -->
+              <tr style="background:#fffaf0;border-bottom:1px solid #f0f0ed;">
+                <td style="padding:12px 16px;color:#92400e;font-size:14px;font-weight:700;">
+                  Total Due on Visit
+                </td>
+                <td style="padding:12px 16px;color:#c9943d;font-size:16px;font-weight:700;text-align:right;">
+                  ₱${reservationData.total_fee || 0}
+                </td>
+              </tr>
+
+              <!-- Method -->
+              <tr style="border-bottom:1px solid #f0f0ed;">
+                <td style="padding:10px 16px;color:#6b7280;font-size:14px;">
+                  Payment Method
+                </td>
+                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;text-align:right;">
+                  ${reservationData.payment_method || "N/A"}
+                </td>
+              </tr>
+
+              <!-- Reference -->
               <tr>
-                <td style="padding:11px 16px;color:#6b7280;font-size:14px;">Total bill</td>
-                <td style="padding:11px 16px;color:#1a2e3b;font-weight:600;font-size:14px;text-align:right;">₱${Number(reservationData.total_fee || 0).toFixed(2)}</td>
+                <td style="padding:10px 16px;color:#6b7280;font-size:14px;">
+                  Reference No.
+                </td>
+                <td style="padding:10px 16px;color:#1a2e3b;font-size:14px;font-family:monospace;text-align:right;">
+                  ${reservationData.payment_reference || "N/A"}
+                </td>
               </tr>
+
             </table>
 
             <!-- Status banner -->
@@ -446,7 +508,7 @@ async function sendWalkInConfirmation(reservationData: any) {
               </tr>` : ""}
               <tr>
                 <td style="padding:8px 16px 12px;color:#6b7280;font-size:14px;font-weight:600;">Total</td>
-                <td style="padding:8px 16px 12px;color:#c9943d;font-size:15px;font-weight:700;text-align:right;">₱${Number(reservationData.total_fee).toFixed(2)}</td>
+                <td style="padding:8px 16px 12px;color:#c9943d;font-size:15px;font-weight:700;text-align:right;">₱${reservationData.total_fee || 0}</td>
               </tr>
             </table>` : ""}
 
@@ -535,6 +597,7 @@ export async function POST(request: NextRequest) {
 
     if (contentType.includes("multipart/form-data")) {
       formData = await request.formData()
+
       for (const [key, value] of formData.entries()) {
         if (!(value instanceof File)) {
           reservationData[key] = value
@@ -561,17 +624,53 @@ export async function POST(request: NextRequest) {
       throw new Error(data.message || "Failed to create reservation")
     }
 
+    // ✅ USE DATABASE RESPONSE VALUES FIRST
+    const savedReservation = data?.data || {}
+
+    // ✅ Proper numeric conversion
+    const reservationFee = Number(
+      savedReservation.reservation_fee ??
+      reservationData.reservation_fee ??
+      0
+    )
+
+    const remainingBalance = Number(
+      savedReservation.remaining_balance ??
+      reservationData.remaining_balance ??
+      0
+    )
+
+    const serviceCharge = Number(
+      savedReservation.service_charge ??
+      reservationData.service_charge ??
+      0
+    )
+
+    // ✅ Total Bill = Remaining Balance + Service Charge
+    const totalFee = remainingBalance + serviceCharge
+
     const enrichedData = {
       ...reservationData,
-      reservation_number: data?.data?.reservation_number || "N/A",
+      ...savedReservation,
+
+      reservation_number:
+        savedReservation.reservation_number || "N/A",
+
+      reservation_fee: reservationFee,
+      remaining_balance: remainingBalance,
+      service_charge: serviceCharge,
+      total_fee: totalFee,
     }
 
-    const isWalkIn = reservationData.is_walkin === "1" || reservationData.is_walkin === true
-    const hasEmail = !!reservationData.email?.trim()
+    const isWalkIn =
+      enrichedData.is_walkin === "1" ||
+      enrichedData.is_walkin === true
 
-    // Always notify admin
-    // Only email customer if they provided an address
-    const emailPromises: Promise<boolean>[] = [sendAdminNotification(enrichedData)]
+    const hasEmail = !!enrichedData.email?.trim()
+
+    const emailPromises: Promise<boolean>[] = [
+      sendAdminNotification(enrichedData),
+    ]
 
     if (hasEmail) {
       emailPromises.push(
@@ -581,7 +680,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const [adminEmailSent, customerEmailSent = false] = await Promise.all(emailPromises)
+    const [adminEmailSent, customerEmailSent = false] =
+      await Promise.all(emailPromises)
 
     return NextResponse.json(
       {
@@ -595,11 +695,15 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     console.error("❌ POST Reservation Error:", error)
+
     return NextResponse.json(
       {
         success: false,
         error: "Failed to create reservation",
-        message: error instanceof Error ? error.message : "Unknown error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unknown error",
       },
       { status: 500 }
     )

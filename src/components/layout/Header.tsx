@@ -183,9 +183,9 @@ export default function Header() {
               {/* ICON SWITCH (ADMIN vs USER) */}
               <button onClick={() => setUserMenuOpen(!userMenuOpen)}>
                 {isAdmin ? (
-                  <User size={22} className="text-[#d4a24c] hover:brightness-110 -mb-1" />
+                  <User size={22} className="text-[#d4a24c] hover:brightness-110" />
                 ) : (
-                  <User size={22} className="text-white/70 hover:text-[#d4a24c] -mb-1" />
+                  <User size={22} className="text-white/70 hover:text-[#d4a24c]" />
                 )}
               </button>
 

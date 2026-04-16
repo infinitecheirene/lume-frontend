@@ -19,7 +19,7 @@ const highlights = [
     {
         title: "Reserve Your Spot",
         desc: "Secure a table for your next morning ritual or evening rendezvous.",
-        link: "/reserve",
+        link: "/reservations",
         cta: "Book Now",
     },
 ]
