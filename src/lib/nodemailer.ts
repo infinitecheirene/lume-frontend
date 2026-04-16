@@ -45,93 +45,80 @@ export async function sendVerificationEmail(
     to: email,
     subject: 'Verify Your Email - Lumè Bean & Bar',
     html: `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              background: #0b1d26;
-              margin: 0;
-              padding: 0;
-              text-align: center;
-              color: #ffffff;
-            }
-            .container {
-              max-width: 600px;
-              margin: 40px auto;
-              background: #0b1d26;
-              border-radius: 12px;
-              padding: 30px;
-            }
-            .logo img {
-              width: 100px;
-              margin-bottom: 10px;
-            }
-            .brand {
-              font-size: 26px;
-              font-weight: bold;
-              letter-spacing: 1px;
-              margin-bottom: 20px;
-              color: #e5a834;
-              font-family: 'Playfair Display', serif;
-            }
-            .content {
-              background: #ffffff;
-              color: #333;
-              border-radius: 10px;
-              padding: 30px;
-            }
-            .content h1 {
-              color: #6b4f4f;
-              margin-bottom: 10px;
-            }
-            .button {
-              display: inline-block;
-              padding: 14px 32px;
-              margin-top: 20px;
-              background: #0b1d26;
-              color: #e5a834;
-              text-decoration: none;
-              border-radius: 6px;
-              font-weight: bold;
-            }
-            .footer {
-              margin-top: 20px;
-              font-size: 12px;
-              color: #777;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="logo">
-              <img src="${appUrl}/logo.jpg" alt="Lumè Bean & Bar Logo" />
-            </div>
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <style>
+        body { margin: 0; padding: 0; background: #f5f0e8; font-family: Georgia, serif; }
+        a { color: inherit; text-decoration: none; }
+      </style>
+    </head>
+    <body>
+      <div style="background:#f5f0e8;padding:40px 20px;">
+        <div style="max-width:560px;margin:0 auto;">
 
-            <div class="brand">Lumè Bean & Bar</div>
-
-            <div class="content">
-              <h1>Welcome, ${name}!</h1>
-              <p>Thank you for joining <strong>Lumè Bean & Bar</strong>.</p>
-              <p>Please verify your email to continue:</p>
-
-              <a href="${verificationUrl}" class="button">Verify Email</a>
-
-              <p style="margin-top: 25px; font-size: 13px; color: #666;">
-                Or copy and paste this link:<br>
-                <span style="word-break: break-all;">${verificationUrl}</span>
-              </p>
-
-              <div class="footer">
-                <p>If you didn’t sign up, you can ignore this email.</p>
-                <p>This link will expire in 24 hours.</p>
-              </div>
+          <!-- Header -->
+          <div style="text-align:center;margin-bottom:32px;">
+            <div style="font-size:11px;letter-spacing:3px;color:#8a6a3a;text-transform:uppercase;font-family:Arial,sans-serif;">
+              Lumè Bean &amp; Bar
             </div>
           </div>
-        </body>
-      </html>
-    `,
+
+          <!-- Card -->
+          <div style="background:#1a0f0a;border-radius:16px;overflow:hidden;">
+
+            <!-- Greeting -->
+            <div style="padding:40px 40px 32px;text-align:center;border-bottom:1px solid #2e1e12;">
+              <div style="font-size:22px;color:#f5e6c8;font-weight:400;margin-bottom:8px;">
+                Welcome, ${name}!
+              </div>
+              <div style="font-size:13px;color:#8a7060;font-family:Arial,sans-serif;line-height:1.6;">
+                Your table is almost ready.
+              </div>
+            </div>
+
+            <!-- Body -->
+            <div style="padding:36px 40px;">
+              <p style="font-size:14px;color:#c4a882;font-family:Arial,sans-serif;line-height:1.8;margin:0 0 24px;">
+                Thank you for joining us at Lumè Bean &amp; Bar. Before we pull your first shot,
+                we just need to confirm your email address.
+              </p>
+
+              <div style="text-align:center;margin:32px 0;">
+                <a href="${verificationUrl}"
+                   style="display:inline-block;background:#c8974a;color:#1a0f0a;font-family:Arial,sans-serif;
+                          font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+                          padding:16px 40px;border-radius:4px;">
+                  Verify my email
+                </a>
+              </div>
+
+              <div style="border-top:1px solid #2e1e12;margin-top:32px;padding-top:24px;">
+                <p style="font-size:12px;color:#5a4535;font-family:Arial,sans-serif;line-height:1.7;
+                           margin:0;text-align:center;">
+                  Or paste this link in your browser:<br>
+                  <span style="color:#8a6a3a;word-break:break-all;font-size:11px;">${verificationUrl}</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="background:#110a06;padding:24px 40px;text-align:center;">
+              <p style="font-size:11px;color:#4a3528;font-family:Arial,sans-serif;
+                         margin:0;line-height:1.8;letter-spacing:0.3px;">
+                This link expires in 24 hours &nbsp;·&nbsp; If you didn't sign up, ignore this email<br>
+                © 2025 Lumè Bean &amp; Bar
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </body>
+  </html>
+`,
     text: `
       Welcome to Lumè Bean & Bar, ${name}!
 

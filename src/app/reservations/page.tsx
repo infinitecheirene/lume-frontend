@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { ChevronRight, Users, Calendar, Clock, Mail, Phone, User, MessageSquare, AlertCircle } from "lucide-react"
+import { ChevronRight, Users, Calendar, Clock, Mail, Phone, User, MessageSquare, AlertCircle, CheckCircle } from "lucide-react"
 import { motion } from "framer-motion"
 import { Playfair_Display } from "next/font/google"
 import { useToast } from "@/hooks/use-toast"
@@ -18,6 +18,29 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 })
+
+function getDayHours(dayOfWeek: number): { opening: number; closing: number; isClosed: boolean; label: string } {
+  switch (dayOfWeek) {
+    case 0: return { opening: 0, closing: 0, isClosed: true, label: "Closed" }
+    case 1: return { opening: 10, closing: 22.5, isClosed: false, label: "10 AM – 10:30 PM" }
+    case 2: return { opening: 10, closing: 22.5, isClosed: false, label: "10 AM – 10:30 PM" }
+    case 3: return { opening: 10, closing: 22.5, isClosed: false, label: "10 AM – 10:30 PM" }
+    case 4: return { opening: 10, closing: 22.5, isClosed: false, label: "10 AM – 10:30 PM" }
+    case 5: return { opening: 10, closing: 26, isClosed: false, label: "10 AM – 2 AM" }
+    case 6: return { opening: 11, closing: 26, isClosed: false, label: "11 AM – 2 AM" }
+    default: return { opening: 10, closing: 22.5, isClosed: false, label: "10 AM – 10:30 PM" }
+  }
+}
+
+function generateTimeSlots(opening: number, closing: number, step = 30) {
+  const slots: string[] = []
+  for (let time = opening * 60; time < closing * 60; time += step) {
+    const hours = Math.floor(time / 60)
+    const minutes = time % 60
+    slots.push(`${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`)
+  }
+  return slots
+}
 
 export type Package = {
   id: string
@@ -127,11 +150,9 @@ const VIP_ROOMS = new Set(Object.keys(SEATING_CONFIG.vip))
 
 const getSeatingFee = (diningPreference: string) => {
   if (!diningPreference) return 0
-
   if (VIP_ROOMS.has(diningPreference)) {
     return SEATING_CONFIG.vip[diningPreference] ?? 1500
   }
-
   return SEATING_CONFIG.regular[diningPreference] ?? 0
 }
 
@@ -190,35 +211,16 @@ const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
 const getMinDate = () => new Date().toISOString().split("T")[0]
 
-const getMinTime = (date: string) => {
-  const today = new Date().toISOString().split("T")[0]
-  if (date === today) {
-    const now = new Date()
-    return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`
-  }
-  return undefined
-}
-
 const calculateReservationFee = (
   occasionType: string,
   guests: number,
   diningPreference: string,
   packagePrice?: number
 ): number => {
-  // If user selected a package → use package price as base
-  if (packagePrice && packagePrice > 0) {
-    return packagePrice
-  }
-
-  // Occasion base fee
+  if (packagePrice && packagePrice > 0) return packagePrice
   const occasionFee = OCCASION_FEES[occasionType] ?? 0
-
-  // Seating fee (VIP or regular)
   const seatingFee = getSeatingFee(diningPreference)
-
-  // Extra guests fee (free for first 4)
   const extraGuestsFee = Math.max(0, guests - 4) * 200
-
   return occasionFee + seatingFee + extraGuestsFee
 }
 
@@ -234,23 +236,17 @@ const generateReservationNumber = () => {
 
 export default function ReservationsPage() {
   const [step, setStep] = useState(1)
-  const [user, setUser] = useState<Record<string, string> | null>(null)
-
   const [formData, setFormData] = useState<FormData>(DEFAULT_FORM)
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null)
   const [isCustom, setIsCustom] = useState(false)
-
-  // Package whose details are shown in the preview dialog (null = dialog closed)
   const [packageDialogPreview, setPackageDialogPreview] = useState<Package | null>(null)
-
   const [openReceipt, setOpenReceipt] = useState(false)
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null)
-
   const [loading, setLoading] = useState(false)
   const [emailError, setEmailError] = useState("")
   const [phoneError, setPhoneError] = useState("")
-  const [dailyBookingsCount, setDailyBookingsCount] = useState(0)
   const [copied, setCopied] = useState(false)
+  const [confirmedReservationNumber, setConfirmedReservationNumber] = useState<string | null>(null)
 
   const selected = useMemo(
     () => PAYMENT_METHODS[formData.payment_method],
@@ -260,25 +256,6 @@ export default function ReservationsPage() {
   const { toast } = useToast()
 
   const isVIP = VIP_ROOMS.has(formData.dining_preference)
-  const isDailyLimitReached = dailyBookingsCount >= 2
-
-  useEffect(() => {
-    if (!formData.date || !user) return
-    const check = async () => {
-      try {
-        const res = await fetch(`/api/reservations/check-daily?date=${formData.date}`, {
-          method: "POST",
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setDailyBookingsCount(data.count ?? 0)
-        }
-      } catch (err) {
-        console.error("Error checking daily bookings:", err)
-      }
-    }
-    check()
-  }, [formData.date, user])
 
   useEffect(() => {
     if (selectedPackage) return
@@ -295,17 +272,11 @@ export default function ReservationsPage() {
       }
       return prev
     })
-  }, [
-    formData.occasion,
-    formData.guests,
-    formData.dining_preference,
-    selectedPackage
-  ])
+  }, [formData.occasion, formData.guests, formData.dining_preference, selectedPackage])
 
   useEffect(() => {
     const fee = Number(formData.reservation_fee) || 0
     const down = fee * 0.5
-
     setFormData((prev) => {
       if (prev.down_payment !== String(down)) {
         return { ...prev, down_payment: String(down) }
@@ -373,14 +344,12 @@ export default function ReservationsPage() {
   const handleSelectPackage = useCallback((pkg: Package) => {
     setSelectedPackage(pkg)
     setIsCustom(false)
-
     setFormData((prev) => ({
       ...prev,
       package: pkg.name,
       dining_preference: pkg.room ?? prev.dining_preference,
       reservation_fee: String(pkg.price ?? 0),
     }))
-
     setPackageDialogPreview(null)
     setStep(2)
   }, [])
@@ -388,23 +357,19 @@ export default function ReservationsPage() {
   const handleSelectCustom = useCallback(() => {
     setSelectedPackage(null)
     setIsCustom(true)
-
     setFormData((prev) => ({
       ...prev,
       package: "Custom Reservation",
       dining_preference: "Main Dining",
       reservation_fee: "0",
     }))
-
     setStep(2)
   }, [])
-
 
   const isStepValid = useCallback((): boolean => {
     switch (step) {
       case 1:
         return Boolean(formData.package)
-
       case 2:
         return (
           formData.date.trim() !== "" &&
@@ -412,7 +377,6 @@ export default function ReservationsPage() {
           formData.guests.trim() !== "" &&
           formData.dining_preference.trim() !== ""
         )
-
       case 3: {
         const phoneDigits = formData.phone.replace(/\D/g, "")
         return (
@@ -424,69 +388,60 @@ export default function ReservationsPage() {
           !phoneError
         )
       }
-
       case 4:
         return Boolean(formData.occasion)
-
       case 5:
         return (
-          !isDailyLimitReached &&
           !isNaN(Number(formData.reservation_fee)) &&
           Number(formData.reservation_fee) >= 0 &&
           Boolean(formData.payment_method) &&
           Boolean(formData.payment_reference) &&
           Boolean(formData.payment_receipt)
         )
-
       default:
         return false
     }
-  }, [
-    step,
-    formData,
-    emailError,
-    phoneError,
-    isDailyLimitReached,
-    selectedPackage,
-    isCustom
-  ])
+  }, [step, formData, emailError, phoneError])
 
   const handleSubmit = async () => {
-    if (isDailyLimitReached) {
-      toast({
-        title: "Daily limit reached",
-        description: "You have reached the maximum of 2 reservations per day. Please choose a different date.",
-        variant: "destructive",
-      })
-      return
-    }
-
     setLoading(true)
 
     try {
       const reservationNumber = generateReservationNumber()
       const payload = new FormData()
+
+      const fee = Number(computedReservationFee) || 0
+      const { serviceCharge, total } = calculateTotalBill(fee)
+
       payload.append("reservation_number", reservationNumber)
 
       for (const key in formData) {
         const value = formData[key as keyof FormData]
         if (key === "payment_receipt" && value instanceof File) {
           payload.append("payment_receipt", value)
-        } else if (value !== undefined) {
+        } else if (value !== undefined && value !== null) {
           payload.append(key, value.toString())
         }
       }
+
+      payload.set("reservation_fee", fee.toString())
+      payload.set("service_charge", serviceCharge.toFixed(2))
+      payload.set("total_fee", total.toFixed(2))
 
       const res = await fetch("/api/reservations", {
         method: "POST",
         body: payload,
       })
 
-      let data: { data?: { reservation_number?: string }; message?: string; error?: string }
+      let data
       try {
         data = await res.json()
       } catch {
-        toast({ title: "Server Error", description: "Invalid response from server.", variant: "destructive" })
+        toast({
+          title: "Server Error",
+          description: "Invalid response from server.",
+          variant: "destructive",
+        })
         return
       }
 
@@ -500,24 +455,9 @@ export default function ReservationsPage() {
       }
 
       const confirmedNumber = data?.data?.reservation_number ?? reservationNumber
-      toast({
-        title: "Reservation Successful",
-        description: `Reservation #${confirmedNumber} has been created.`,
-      })
+      setConfirmedReservationNumber(confirmedNumber)
+      setStep(7)
 
-      setTimeout(() => {
-        setStep(1)
-        setSelectedPackage(null)
-        setIsCustom(false)
-        setDailyBookingsCount(0)
-        setFormData({
-          ...DEFAULT_FORM,
-          name: user?.name ?? "",
-          email: user?.email ?? "",
-          phone: user?.phone ?? "",
-        })
-        window.location.href = "/reservation-history"
-      }, 1500)
     } catch (err) {
       console.error("Reservation error:", err)
       toast({
@@ -531,32 +471,29 @@ export default function ReservationsPage() {
   }
 
   const computedReservationFee = useMemo(() => {
-    if (selectedPackage) {
-      return selectedPackage.price ?? 0
-    }
-
+    if (selectedPackage) return selectedPackage.price ?? 0
     return calculateReservationFee(
       formData.occasion,
       Number(formData.guests) || 1,
       formData.dining_preference
     )
-  }, [
-    selectedPackage,
-    formData.occasion,
-    formData.guests,
-    formData.dining_preference
-  ])
+  }, [selectedPackage, formData.occasion, formData.guests, formData.dining_preference])
 
   const reservationFeeNum = Number(computedReservationFee) || 0
   const { serviceCharge, total } = calculateTotalBill(reservationFeeNum)
   const downPaymentNum = reservationFeeNum * 0.5 || 0
-
-  const remainingReservationFee = Math.max(
-    reservationFeeNum - downPaymentNum,
-    0
-  )
-
+  const remainingReservationFee = Math.max(reservationFeeNum - downPaymentNum, 0)
   const finalTotal = remainingReservationFee + serviceCharge
+
+  useEffect(() => {
+    const fee = Number(computedReservationFee) || 0
+    const { serviceCharge, total } = calculateTotalBill(fee)
+    setFormData((prev) => ({
+      ...prev,
+      service_charge: serviceCharge.toFixed(2),
+      total_fee: total.toFixed(2),
+    }))
+  }, [computedReservationFee])
 
   if (loading) return <LumeLoaderMinimal />
 
@@ -596,60 +533,47 @@ export default function ReservationsPage() {
               Reserve Your <span className="text-[#d4a24c] italic">Moment</span>
             </h2>
           </motion.div>
-
-          {user && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full shadow-lg"
-            >
-              <User className="w-4 h-4 text-[#d4a24c]" />
-              <span className="text-sm text-white">
-                Reserving as <span className="font-semibold">{user.name}</span>
-              </span>
-            </motion.div>
-          )}
         </div>
 
-        {/* Progress bar */}
-        <div className="mb-10">
-          <div className="relative w-full px-5 mt-10">
-            <div className="absolute top-5 left-15 right-15 h-1 bg-white/20 rounded" />
-            <div
-              className="absolute top-5 h-1 bg-white rounded transition-all duration-500"
-              style={{ width: `calc(${((step - 1) / 6) * 100}%)` }}
-            />
-            <div className="relative flex justify-between">
-              {[1, 2, 3, 4, 5, 6].map((s) => (
-                <div
-                  key={s}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${s <= step ? "bg-white text-[#0f4764] shadow-xl scale-110" : "bg-white/20 text-white/50"
-                    }`}
-                >
-                  {s}
-                </div>
-              ))}
+        {/* Progress bar — hidden on success screen */}
+        {step < 7 && (
+          <div className="mb-10">
+            <div className="relative w-full px-5 mt-10">
+              <div className="absolute top-5 left-15 right-15 h-1 bg-white/20 rounded" />
+              <div
+                className="absolute top-5 h-1 bg-white rounded transition-all duration-500"
+                style={{ width: `calc(${((step - 1) / 6) * 100}%)` }}
+              />
+              <div className="relative flex justify-between">
+                {[1, 2, 3, 4, 5, 6].map((s) => (
+                  <div
+                    key={s}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${s <= step ? "bg-white text-[#0f4764] shadow-xl scale-110" : "bg-white/20 text-white/50"}`}
+                  >
+                    {s}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-between text-center mt-2">
+              {["Package Selection", "Reservation Details", "Guest Information", "Occasion Details", "Payment Details", "Confirmation"].map(
+                (label) => (
+                  <div key={label} className="text-xs text-white/70 font-medium" style={{ width: "50px" }}>
+                    {label}
+                  </div>
+                )
+              )}
             </div>
           </div>
-
-          <div className="flex justify-between text-center mt-2">
-            {["Package Selection", "Reservation Details", "Guest Information", "Occasion Details", "Payment Details", "Confirmation"].map(
-              (label) => (
-                <div key={label} className="text-xs text-white/70 font-medium" style={{ width: "50px" }}>
-                  {label}
-                </div>
-              )
-            )}
-          </div>
-        </div>
+        )}
 
         {/* Form card */}
         <div className="mx-5 md:mx-auto bg-white/5 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden border border-white/10 animate-in fade-in zoom-in duration-500">
           <div className="bg-white h-1" />
           <div className="p-8 md:p-10">
 
-            {/* Step 1: Package Selection */}
+            {/* Step 1: Package Selection q*/}
             {step === 1 && (
               <div className="max-w-3xl mx-auto">
                 <div className="text-center mb-10">
@@ -663,13 +587,11 @@ export default function ReservationsPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Curated package cards */}
                   {PACKAGES.map((pkg) => (
                     <div
                       key={pkg.id}
                       onClick={() => setPackageDialogPreview(pkg)}
-                      className={`relative cursor-pointer bg-white/5 border rounded-2xl p-6 transition-all hover:scale-[1.02] ${pkg.badge ? "border-[#d4a24c]" : "border-white/20 hover:border-[#d4a24c]/50"
-                        }`}
+                      className={`relative cursor-pointer bg-white/5 border rounded-2xl p-6 transition-all hover:scale-[1.02] ${pkg.badge ? "border-[#d4a24c]" : "border-white/20 hover:border-[#d4a24c]/50"}`}
                     >
                       {pkg.badge && (
                         <span className="absolute -top-3 right-3 text-[10px] tracking-wider uppercase bg-[#d4a24c] text-gray-700 px-2 py-1 rounded-full font-semibold">
@@ -683,7 +605,6 @@ export default function ReservationsPage() {
                     </div>
                   ))}
 
-                  {/* Custom reservation card — goes straight to step 2, no dialog */}
                   <div
                     onClick={handleSelectCustom}
                     className="cursor-pointer bg-white/5 border border-white/20 hover:border-white/60 rounded-2xl p-6 transition-all hover:scale-[1.02]"
@@ -696,7 +617,6 @@ export default function ReservationsPage() {
                   </div>
                 </div>
 
-                {/* Package preview dialog */}
                 <Dialog
                   open={Boolean(packageDialogPreview)}
                   onOpenChange={(open) => { if (!open) setPackageDialogPreview(null) }}
@@ -715,8 +635,7 @@ export default function ReservationsPage() {
 
                         {packageDialogPreview.room && (
                           <p className="text-sm text-white/60 mb-2">
-                            Room:{" "}
-                            <span className="text-white/80 font-medium">{packageDialogPreview.room}</span>
+                            Room: <span className="text-white/80 font-medium">{packageDialogPreview.room}</span>
                           </p>
                         )}
 
@@ -755,23 +674,16 @@ export default function ReservationsPage() {
                   <h2 className="text-2xl font-bold text-white mb-2">Reservation Details</h2>
                   <p className="text-white/70">Please provide the details for your reservation</p>
 
-                  {/* Show which package/path was selected */}
                   <div className="mt-4">
                     {selectedPackage ? (
                       <div className="inline-flex items-center gap-2 bg-[#d4a24c]/10 border border-[#d4a24c]/30 px-3 py-1.5 rounded-full">
                         <span className="text-[#d4a24c] text-xs font-semibold uppercase tracking-wide">
                           {selectedPackage.name}
                         </span>
-
                         {selectedPackage.room && (
-                          <span className="text-white/50 text-xs">
-                            · {selectedPackage.room}
-                          </span>
+                          <span className="text-white/50 text-xs">· {selectedPackage.room}</span>
                         )}
-
-                        <span className="text-white/50 text-xs">
-                          · ₱{selectedPackage.price?.toLocaleString()}
-                        </span>
+                        <span className="text-white/50 text-xs">· ₱{selectedPackage.price?.toLocaleString()}</span>
                       </div>
                     ) : isCustom ? (
                       <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 px-3 py-1.5 rounded-full">
@@ -784,42 +696,59 @@ export default function ReservationsPage() {
                 </div>
 
                 <div className="space-y-6">
-                  {/* Date */}
-                  <div>
-                    <label className="block text-sm font-semibold text-white mb-3">Date *</label>
-                    <div className="relative">
-                      <Calendar className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c] pointer-events-none" />
-                      <input
-                        type="date"
-                        name="date"
-                        value={formData.date}
-                        onChange={handleChange}
-                        min={getMinDate()}
-                        required
-                        className="w-full pl-12 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white"
-                      />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-3">Date *</label>
+                      <div className="relative">
+                        <Calendar className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c] pointer-events-none" />
+                        <input
+                          type="date"
+                          name="date"
+                          value={formData.date}
+                          onChange={handleChange}
+                          min={getMinDate()}
+                          required
+                          className="w-full pl-12 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white"
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Time */}
-                  <div>
-                    <label className="block text-sm font-semibold text-white mb-3">Time *</label>
-                    <div className="relative">
-                      <Clock className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c] pointer-events-none" />
-                      <input
-                        type="time"
-                        name="time"
-                        value={formData.time}
-                        onChange={handleChange}
-                        min={getMinTime(formData.date)}
-                        required
-                        className="w-full pl-12 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white"
-                      />
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-3">Time *</label>
+                      {(() => {
+                        const day = formData.date ? new Date(formData.date).getDay() : 1
+                        const { opening, closing, isClosed, label } = getDayHours(day)
+                        const timeSlots = isClosed ? [] : generateTimeSlots(opening, closing, 30)
+
+                        return (
+                          <div className="relative">
+                            <Clock className="absolute left-4 top-3.5 w-5 h-5 text-[#d4a24c]" />
+                            <select
+                              name="time"
+                              value={formData.time}
+                              onChange={handleChange}
+                              disabled={isClosed}
+                              required
+                              className="w-full pl-12 pr-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white"
+                            >
+                              {isClosed ? (
+                                <option value="">Closed</option>
+                              ) : (
+                                <>
+                                  <option value="">Select time</option>
+                                  {timeSlots.map((t) => (
+                                    <option key={t} value={t} className="text-black">{t}</option>
+                                  ))}
+                                </>
+                              )}
+                            </select>
+                          </div>
+                        )
+                      })()}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    {/* Guests */}
                     <div>
                       <label className="block text-sm font-semibold text-white mb-3">Number of Guests *</label>
                       <div className="relative">
@@ -838,7 +767,6 @@ export default function ReservationsPage() {
                       </div>
                     </div>
 
-                    {/* Dining preference — locked when package has a room */}
                     <div>
                       <label className="block text-sm font-semibold text-white mb-3">
                         Dining Preference *
@@ -915,13 +843,9 @@ export default function ReservationsPage() {
                         }}
                         required
                         placeholder="your@email.com"
-                        className={`w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none transition-all text-lg text-white placeholder-white/40 bg-white/10 backdrop-blur-sm border ${emailError
-                          ? "border-red-400"
-                          : "border-white/20 focus:border-white focus:ring-2 focus:ring-white/30"
-                          }`}
+                        className={`w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none transition-all text-lg text-white placeholder-white/40 bg-white/10 backdrop-blur-sm border ${emailError ? "border-red-400" : "border-white/20 focus:border-white focus:ring-2 focus:ring-white/30"}`}
                       />
                     </div>
-                    {user?.email && <p className="text-xs text-white/50 mt-1">Using your account email</p>}
                     {emailError && (
                       <div className="mt-2 p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl flex items-start gap-2">
                         <AlertCircle className="w-4 h-4 text-[#d4a24c] shrink-0 mt-0.5" />
@@ -941,8 +865,7 @@ export default function ReservationsPage() {
                         onChange={handleChange}
                         required
                         placeholder="09123456789"
-                        className={`w-full pl-12 pr-4 py-3 border rounded-xl bg-white/10 backdrop-blur-sm focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white placeholder-white/40 ${phoneError ? "border-red-400" : "border-white/20"
-                          }`}
+                        className={`w-full pl-12 pr-4 py-3 border rounded-xl bg-white/10 backdrop-blur-sm focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg text-white placeholder-white/40 ${phoneError ? "border-red-400" : "border-white/20"}`}
                       />
                     </div>
                     {phoneError && <p className="mt-2 text-sm text-[#d4a24c]">{phoneError}</p>}
@@ -994,7 +917,6 @@ export default function ReservationsPage() {
                     </select>
                   </div>
 
-                  {/* For custom: show how the occasion affects the fee */}
                   {isCustom && formData.occasion && (
                     <p className="mt-3 text-white/50 text-sm">
                       Occasion fee:{" "}
@@ -1016,31 +938,25 @@ export default function ReservationsPage() {
                 </div>
 
                 <div className="space-y-6">
-                  {/* Fee breakdown card */}
+                  {/* Fee breakdown */}
                   <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-3">
                     <h3 className="text-sm font-semibold text-white/70 uppercase tracking-wide">Fee Breakdown</h3>
 
                     {selectedPackage ? (
                       <div className="flex justify-between text-white/80">
                         <span>{selectedPackage.name} Package</span>
-                        <span className="text-[#d4a24c] font-semibold">
-                          ₱{selectedPackage.price?.toLocaleString()}
-                        </span>
+                        <span className="text-[#d4a24c] font-semibold">₱{selectedPackage.price?.toLocaleString()}</span>
                       </div>
                     ) : isCustom ? (
                       <>
                         <div className="flex justify-between text-white/80">
                           <span>Custom Reservation</span>
-                          <span className="font-semibold">
-                            ₱{reservationFeeNum.toLocaleString()}
-                          </span>
+                          <span className="font-semibold">₱{reservationFeeNum.toLocaleString()}</span>
                         </div>
-
                         <div className="flex justify-between text-white/80">
                           <span>Occasion: {formData.occasion || "—"}</span>
                           <span>₱{(OCCASION_FEES[formData.occasion] ?? 0).toLocaleString()}</span>
                         </div>
-
                         <div className="flex justify-between text-white/80">
                           <span>Seating: {formData.dining_preference || "—"}</span>
                           <span>
@@ -1051,7 +967,6 @@ export default function ReservationsPage() {
                             ).toLocaleString()}
                           </span>
                         </div>
-
                         {Number(formData.guests) > 4 && (
                           <div className="flex justify-between text-white/80">
                             <span>Extra guests ({Number(formData.guests) - 4} × ₱200)</span>
@@ -1065,14 +980,10 @@ export default function ReservationsPage() {
                           <span>Occasion ({formData.occasion || "—"})</span>
                           <span>₱{(OCCASION_FEES[formData.occasion] ?? 0).toLocaleString()}</span>
                         </div>
-
                         <div className="flex justify-between text-white/80">
                           <span>Seating ({formData.dining_preference || "—"})</span>
-                          <span className="text-[#d4a24c] font-semibold">
-                            ₱{getSeatingFee(formData.dining_preference).toLocaleString()}
-                          </span>
+                          <span className="text-[#d4a24c] font-semibold">₱{getSeatingFee(formData.dining_preference).toLocaleString()}</span>
                         </div>
-
                         {Number(formData.guests) > 4 && (
                           <div className="flex justify-between text-white/80">
                             <span>Extra guests ({Number(formData.guests) - 4} × ₱200)</span>
@@ -1089,17 +1000,13 @@ export default function ReservationsPage() {
 
                     <div className="flex justify-between text-white font-semibold">
                       <span>Down Payment (50%)</span>
-                      <span className="text-[#d4a24c]">
-                        ₱{downPaymentNum.toLocaleString()}
-                      </span>
+                      <span className="text-[#d4a24c]">₱{downPaymentNum.toLocaleString()}</span>
                     </div>
                   </div>
 
                   {/* Payment method */}
                   <div>
-                    <label className="block text-sm font-semibold text-white mb-3">
-                      Payment Method *
-                    </label>
+                    <label className="block text-sm font-semibold text-white mb-3">Payment Method *</label>
                     <select
                       name="payment_method"
                       value={formData.payment_method}
@@ -1108,7 +1015,6 @@ export default function ReservationsPage() {
                       className="w-full px-4 py-3 border border-white/20 bg-white/10 backdrop-blur-sm rounded-xl focus:outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all text-lg appearance-none text-white"
                     >
                       <option value="" disabled>Select Payment Method</option>
-
                       {Object.values(PAYMENT_METHODS).map((method) => (
                         <option key={method.label} value={method.label} className="text-gray-900">
                           {method.label}
@@ -1116,40 +1022,22 @@ export default function ReservationsPage() {
                       ))}
                     </select>
 
-                    {/* Dynamic payment details */}
                     {selected?.accountNumber && (
                       <div className="mt-4 bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-md shadow-lg">
-
-                        {/* Header */}
-                        <p className="text-xs uppercase tracking-widest text-white/50 mb-3">
-                          Payment Instructions
-                        </p>
-
-                        {/* Account Name */}
+                        <p className="text-xs uppercase tracking-widest text-white/50 mb-3">Payment Instructions</p>
                         <div className="mb-2">
                           <p className="text-white/50 text-xs">Account Name</p>
-                          <p className="text-white font-semibold text-base">
-                            {selected.accountName}
-                          </p>
+                          <p className="text-white font-semibold text-base">{selected.accountName}</p>
                         </div>
-
-                        {/* Account Number */}
                         <div className="mb-3">
                           <p className="text-white/50 text-xs">Account Number</p>
-                          <p className="text-[#d4a24c] font-semibold text-lg tracking-wider">
-                            {selected.accountNumber}
-                          </p>
+                          <p className="text-[#d4a24c] font-semibold text-lg tracking-wider">{selected.accountNumber}</p>
                         </div>
-
-                        {/* Copy Button */}
                         <button
                           onClick={() => {
                             navigator.clipboard.writeText(selected.accountNumber || "")
                             setCopied(true)
-
-                            setTimeout(() => {
-                              setCopied(false)
-                            }, 1500)
+                            setTimeout(() => setCopied(false), 1500)
                           }}
                           className={`w-full mt-2 flex items-center justify-center gap-2 py-2 rounded-xl border text-sm font-medium transition-all active:scale-95 ${copied
                             ? "bg-green-500/20 border-green-400/30 text-green-300"
@@ -1205,25 +1093,15 @@ export default function ReservationsPage() {
             {/* Step 6: Confirmation */}
             {step === 6 && (
               <div className="space-y-10">
-                {/* Header */}
                 <div>
-                  <h2 className="text-3xl font-extrabold text-white tracking-tight">
-                    Review & Confirm
-                  </h2>
-                  <p className="text-white/60 mt-1">
-                    Please review your reservation details before submitting.
-                  </p>
+                  <h2 className="text-3xl font-extrabold text-white tracking-tight">Review & Confirm</h2>
+                  <p className="text-white/60 mt-1">Please review your reservation details before submitting.</p>
                 </div>
 
-                {/* Main Card */}
                 <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl p-6 md:p-8 space-y-8">
 
-                  {/* Guest Info */}
                   <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-3">
-                    <h3 className="text-sm uppercase tracking-widest text-white/60 font-semibold">
-                      Guest Information
-                    </h3>
-
+                    <h3 className="text-sm uppercase tracking-widest text-white/60 font-semibold">Guest Information</h3>
                     <div className="grid gap-2 text-white/80 text-sm">
                       <div><span className="text-white/50">Name:</span> {formData.name}</div>
                       <div><span className="text-white/50">Email:</span> {formData.email}</div>
@@ -1231,12 +1109,8 @@ export default function ReservationsPage() {
                     </div>
                   </div>
 
-                  {/* Reservation Info */}
                   <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-3">
-                    <h3 className="text-sm uppercase tracking-widest text-white/60 font-semibold">
-                      Reservation Details
-                    </h3>
-
+                    <h3 className="text-sm uppercase tracking-widest text-white/60 font-semibold">Reservation Details</h3>
                     <div className="grid grid-cols-2 gap-3 text-sm text-white/80">
                       <div><span className="text-white/50">Date:</span> {formData.date}</div>
                       <div><span className="text-white/50">Time:</span> {formData.time}</div>
@@ -1248,20 +1122,14 @@ export default function ReservationsPage() {
                         {selectedPackage ? selectedPackage.name : "Custom Reservation"}
                       </div>
                       <div className="col-span-2">
-                        <span className="text-white/50">Occasion:</span>{" "}
-                        {formData.occasion || "—"}
+                        <span className="text-white/50">Occasion:</span> {formData.occasion || "—"}
                       </div>
                     </div>
                   </div>
 
-                  {/* Payment Section */}
-                  {/* Payment Summary */}
                   <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
-                    <h3 className="text-sm uppercase tracking-widest text-white/60 font-semibold">
-                      Payment Summary
-                    </h3>
+                    <h3 className="text-sm uppercase tracking-widest text-white/60 font-semibold">Payment Summary</h3>
 
-                    {/* Payment Info */}
                     <div className="pt-4 space-y-2 text-sm text-white/80 bg-white/10 border border-white/10 rounded-xl px-4 py-3">
                       <div className="flex justify-between">
                         <span className="text-white/50">Method:</span>
@@ -1270,112 +1138,152 @@ export default function ReservationsPage() {
                       <div className="flex justify-between">
                         <span className="text-white/50">Reference:</span>
                         <span>{formData.payment_reference || "—"}</span>
-
-                      </div> {formData.payment_receipt && (<div className="flex justify-between items-center">
-                        <span className="text-white/50">Receipt:</span>
-                        <button type="button" onClick={() => setOpenReceipt(true)}
-                          className="text-[#d4a24c] underline hover:text-white transition"
-                        >
-                          View Receipt
-                        </button>
                       </div>
+                      {formData.payment_receipt && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-white/50">Receipt:</span>
+                          <button
+                            type="button"
+                            onClick={() => setOpenReceipt(true)}
+                            className="text-[#d4a24c] underline hover:text-white transition"
+                          >
+                            View Receipt
+                          </button>
+                        </div>
                       )}
                     </div>
 
-                    {/* Fee breakdown */}
                     <div className="space-y-3 text-sm bg-white/10 border border-white/10 rounded-xl px-4 py-3">
-                      {/* Original Reservation Fee */}
                       <div className="flex justify-between text-white/70">
                         <span>Reservation Fee</span>
-                        <span className="text-white">
-                          ₱{reservationFeeNum.toLocaleString()}
-                        </span>
+                        <span className="text-white">₱{reservationFeeNum.toLocaleString()}</span>
                       </div>
-
-                      {/* Down Payment */}
                       <div className="flex justify-between text-white/70">
                         <span>Down Payment (50%)</span>
-                        <span className="text-red-400">
-                          - ₱{downPaymentNum.toLocaleString()}
-                        </span>
+                        <span className="text-red-400">- ₱{downPaymentNum.toLocaleString()}</span>
                       </div>
-
-                      {/* Remaining Reservation Fee */}
                       <div className="flex justify-between text-white/70">
                         <span>Remaining Reservation Fee</span>
-                        <span className="text-white">
-                          ₱{remainingReservationFee.toLocaleString()}
-                        </span>
+                        <span className="text-white">₱{remainingReservationFee.toLocaleString()}</span>
                       </div>
-
-                      {/* Service Charge */}
                       <div className="flex justify-between text-white/70">
                         <span>Service Charge (10%)</span>
-                        <span className="text-white">
-                          ₱{serviceCharge.toFixed(2)}
-                        </span>
+                        <span className="text-white">₱{serviceCharge.toFixed(2)}</span>
                       </div>
-
-                      {/* Final Total */}
                       <div className="flex justify-between items-center pt-3 border-t border-white/10">
-                        <span className="text-white font-semibold">
-                          Final Total
-                        </span>
-                        <span className="text-[#d4a24c] font-bold text-lg">
-                          ₱{Math.round(finalTotal).toLocaleString()}
-                        </span>
+                        <span className="text-white font-semibold">Final Total</span>
+                        <span className="text-[#d4a24c] font-bold text-lg">₱{Math.round(finalTotal).toLocaleString()}</span>
                       </div>
-
                     </div>
                   </div>
 
-                  {/* Special Requests */}
                   {formData.special_requests && (
                     <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-                      <h3 className="text-sm uppercase tracking-widest text-white/60 font-semibold mb-2">
-                        Special Requests
-                      </h3>
-                      <p className="text-white/80 text-sm leading-relaxed">
-                        {formData.special_requests}
-                      </p>
+                      <h3 className="text-sm uppercase tracking-widest text-white/60 font-semibold mb-2">Special Requests</h3>
+                      <p className="text-white/80 text-sm leading-relaxed">{formData.special_requests}</p>
                     </div>
                   )}
                 </div>
               </div>
             )}
 
-            <div className="flex gap-4 mt-8">
-              {step > 1 && (
-                <button
-                  onClick={() => setStep((s) => s - 1)}
-                  className="flex-1 px-6 py-3 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all hover:scale-105"
-                >
-                  Back
-                </button>
-              )}
+            {/* Step 7: Success */}
+            {step === 7 && (
+              <div className="flex flex-col items-center text-center space-y-6 py-4">
+                <div className="w-20 h-20 rounded-full bg-[#d4a24c]/10 border border-[#d4a24c]/30 flex items-center justify-center">
+                  <CheckCircle className="w-10 h-10 text-[#d4a24c]" />
+                </div>
 
-              {/* Step 1 has no Continue — selection happens via card click or dialog confirm */}
-              {step > 1 && step < 6 && (
-                <button
-                  onClick={() => setStep((s) => s + 1)}
-                  disabled={!isStepValid()}
-                  className="flex-1 px-6 py-3 bg-white hover:bg-white/90 disabled:bg-white/20 text-[#0b1d26] disabled:text-white/50 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg disabled:shadow-none hover:scale-105 disabled:hover:scale-100"
-                >
-                  Continue
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              )}
+                <div>
+                  <h2 className={`${playfair.className} text-3xl font-bold text-white`}>
+                    You&apos;re all set!
+                  </h2>
+                  <p className="text-white/60 mt-2 text-sm">
+                    Your reservation has been received and is pending confirmation.
+                  </p>
+                </div>
 
-              {step === 6 && (
+                <div className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 space-y-1 text-sm">
+                  <p className="text-white/50 text-xs uppercase tracking-widest mb-2">Reservation number</p>
+                  <p className="text-[#d4a24c] font-bold text-lg tracking-wide">{confirmedReservationNumber}</p>
+                </div>
+
+                <div className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 space-y-2 text-sm text-left">
+                  <p className="text-white/50 text-xs uppercase tracking-widest mb-3">Summary</p>
+                  <div className="flex justify-between text-white/70">
+                    <span>Name</span>
+                    <span className="text-white">{formData.name}</span>
+                  </div>
+                  <div className="flex justify-between text-white/70">
+                    <span>Date & time</span>
+                    <span className="text-white">{formData.date} · {formData.time}</span>
+                  </div>
+                  <div className="flex justify-between text-white/70">
+                    <span>Package</span>
+                    <span className="text-white">{selectedPackage ? selectedPackage.name : "Custom Reservation"}</span>
+                  </div>
+                  <div className="flex justify-between text-white/70">
+                    <span>Guests</span>
+                    <span className="text-white">{formData.guests}</span>
+                  </div>
+                  <div className="flex justify-between text-white/70 pt-2 border-t border-white/10">
+                    <span>Down payment due</span>
+                    <span className="text-[#d4a24c] font-semibold">₱{downPaymentNum.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <p className="text-white/40 text-xs max-w-xs">
+                  A confirmation will be sent to <span className="text-white/60">{formData.email}</span>. Please keep your reservation number for your records.
+                </p>
+
                 <button
-                  onClick={handleSubmit}
-                  disabled={loading || isDailyLimitReached}
-                  className="flex-1 px-6 py-3 bg-white hover:bg-white/90 disabled:bg-white/20 text-[#0b1d26] disabled:text-white/50 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg disabled:shadow-none hover:scale-105 disabled:hover:scale-100"
+                  onClick={() => {
+                    setStep(1)
+                    setSelectedPackage(null)
+                    setIsCustom(false)
+                    setConfirmedReservationNumber(null)
+                    setFormData(DEFAULT_FORM)
+                  }}
+                  className="mt-2 px-8 py-3 border border-white/20 text-white/70 hover:text-white hover:border-white/40 font-medium rounded-xl transition-all text-sm"
                 >
-                  {loading ? "Confirming…" : "Confirm Reservation"}
+                  Make another reservation
                 </button>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* Navigation buttons */}
+            {step < 7 && (
+              <div className="flex gap-4 mt-8">
+                {step > 1 && (
+                  <button
+                    onClick={() => setStep((s) => s - 1)}
+                    className="flex-1 px-6 py-3 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all hover:scale-105"
+                  >
+                    Back
+                  </button>
+                )}
+
+                {step > 1 && step < 6 && (
+                  <button
+                    onClick={() => setStep((s) => s + 1)}
+                    disabled={!isStepValid()}
+                    className="flex-1 px-6 py-3 bg-white hover:bg-white/90 disabled:bg-white/20 text-[#0b1d26] disabled:text-white/50 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg disabled:shadow-none hover:scale-105 disabled:hover:scale-100"
+                  >
+                    Continue
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                )}
+
+                {step === 6 && (
+                  <button
+                    onClick={handleSubmit}
+                    className="flex-1 px-6 py-3 bg-white hover:bg-white/90 disabled:bg-white/20 text-[#0b1d26] disabled:text-white/50 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg disabled:shadow-none hover:scale-105 disabled:hover:scale-100"
+                  >
+                    {loading ? "Confirming…" : "Confirm Reservation"}
+                  </button>
+                )}
+              </div>
+            )}
 
           </div>
         </div>
@@ -1393,9 +1301,7 @@ export default function ReservationsPage() {
           >
             <div className="flex justify-between items-center px-5 py-4 border-b border-white/20">
               <h2 className="text-white font-semibold">Receipt Preview</h2>
-              <button onClick={() => setOpenReceipt(false)} className="text-white text-xl hover:text-white/70">
-                ✕
-              </button>
+              <button onClick={() => setOpenReceipt(false)} className="text-white text-xl hover:text-white/70">✕</button>
             </div>
             <div className="p-4 flex justify-center bg-[#08141a]">
               <img src={receiptPreview} alt="Receipt" className="max-h-[75vh] object-contain rounded-lg" />

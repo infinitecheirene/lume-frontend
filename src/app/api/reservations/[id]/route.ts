@@ -9,21 +9,22 @@ if (!apiUrl) {
 // GET single reservation by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params
+
     const authHeader = request.headers.get("authorization")
 
     const headers: Record<string, string> = {
       Accept: "application/json",
     }
 
-    // optional auth (no longer required)
     if (authHeader) {
       headers["Authorization"] = authHeader
     }
 
-    const response = await fetch(`${apiUrl}/api/reservations/${params.id}`, {
+    const response = await fetch(`${apiUrl}/api/reservations/${id}`, {
       method: "GET",
       headers,
     })
@@ -41,7 +42,7 @@ export async function GET(
     }
 
     return NextResponse.json(data)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         success: false,
@@ -55,8 +56,10 @@ export async function GET(
 // UPDATE reservation by ID
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params
+
   try {
     const authHeader = request.headers.get("authorization")
 
@@ -67,12 +70,11 @@ export async function PUT(
       Accept: "application/json",
     }
 
-    // optional auth (no longer required)
     if (authHeader) {
       headers["Authorization"] = authHeader
     }
 
-    const response = await fetch(`${apiUrl}/api/reservations/${params.id}`, {
+    const response = await fetch(`${apiUrl}/api/reservations/${id}`, {
       method: "POST",
       headers,
       body: formData,
@@ -85,10 +87,7 @@ export async function PUT(
       data = JSON.parse(text)
     } catch {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Invalid server response",
-        },
+        { success: false, error: "Invalid server response" },
         { status: 502 }
       )
     }
@@ -107,7 +106,7 @@ export async function PUT(
       success: true,
       data,
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         success: false,
@@ -121,21 +120,22 @@ export async function PUT(
 // DELETE reservation by ID
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params
+
     const authHeader = request.headers.get("authorization")
 
     const headers: Record<string, string> = {
       Accept: "application/json",
     }
 
-    // optional auth (no longer required)
     if (authHeader) {
       headers["Authorization"] = authHeader
     }
 
-    const response = await fetch(`${apiUrl}/api/reservations/${params.id}`, {
+    const response = await fetch(`${apiUrl}/api/reservations/${id}`, {
       method: "DELETE",
       headers,
     })
@@ -155,7 +155,7 @@ export async function DELETE(
     return NextResponse.json(
       data || { success: true, message: "Reservation deleted successfully" }
     )
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         success: false,

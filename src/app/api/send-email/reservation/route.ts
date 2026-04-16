@@ -12,12 +12,23 @@ export async function POST(request: NextRequest) {
     const subject = body.subject || `Reservation Confirmation for ${name}`
     const message =
       body.message ||
-      `Hello ${name},\n\nYour reservation for ${guests} guest(s) on ${rawDate} at ${time} has been received. We will follow up with confirmation details shortly.`
+      `Thank you for choosing Lumè Bean & Bar. We look forward to welcoming you!`
 
-    const date = rawDate !== "Unknown date" ? new Date(rawDate).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : rawDate
+    const date =
+      rawDate !== "Unknown date"
+        ? new Date(rawDate).toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })
+        : rawDate
 
     if (!to) {
-      return NextResponse.json({ success: false, message: "Missing recipient email address" }, { status: 400 })
+      return NextResponse.json(
+        { success: false, message: "Missing recipient email address" },
+        { status: 400 }
+      )
     }
 
     const transporter = nodemailer.createTransport({
@@ -31,130 +42,114 @@ export async function POST(request: NextRequest) {
     })
 
     const htmlContent = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>${subject}</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${subject}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f0f0ed;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
 
-      <style>
-        @media screen and (max-width: 600px) {
-          .container {
-            width: 100% !important;
-            border-radius: 0 !important;
-          }
+<table role="presentation" width="100%" style="border-collapse:collapse;">
+  <tr>
+    <td style="padding:32px 16px;">
 
-          .padding {
-            padding: 20px !important;
-          }
+      <table role="presentation" width="100%" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:14px;border:1px solid #e0dfd9;overflow:hidden;border-collapse:collapse;">
 
-          .header {
-            padding: 30px 20px !important;
-          }
-
-          .title {
-            font-size: 22px !important;
-          }
-
-          .subtitle {
-            font-size: 13px !important;
-          }
-
-          .content h2 {
-            font-size: 18px !important;
-          }
-
-          .content p {
-            font-size: 14px !important;
-          }
-
-          .stack td {
-            display: block !important;
-            width: 100% !important;
-            text-align: left !important;
-          }
-
-          .stack td.label {
-            font-weight: bold;
-            padding-bottom: 4px !important;
-          }
-
-          .stack td.value {
-            padding-bottom: 12px !important;
-          }
-        }
-      </style>
-    </head>
-
-    <body style="margin:0; padding:0; background-color:#f5f5f5; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-
-      <table role="presentation" width="100%" style="border-collapse:collapse;">
+        <!-- Header navbar -->
         <tr>
-          <td style="padding:20px;">
-
-            <!-- Container -->
-            <table role="presentation" width="100%" class="container" style="max-width:600px; margin:0 auto; background:#ffffff; border-radius:12px; overflow:hidden;">
-
-              <!-- Header -->
+          <td style="background:#1c2b3a;padding:0 28px;">
+            <table role="presentation" width="100%" style="border-collapse:collapse;min-height:72px;">
               <tr>
-                <td class="header" style="background:#162a3a; padding:40px 30px; text-align:center;">
-                  <h1 class="title" style="margin:0; color:#e5a834; font-size:28px;">Reservation Confirmation</h1>
-                  <p class="subtitle" style="margin:10px 0 0; color:#e5a834; font-size:14px;">
-                    Thank you for choosing Lumè Bean and Bar.
-                  </p>
+                <td style="padding:20px 0;vertical-align:middle;">
+                  <table role="presentation" style="border-collapse:collapse;">
+                    <tr>
+                      <td style="vertical-align:middle;padding-right:12px;">
+                        <div style="width:34px;height:34px;border-radius:8px;background:#e05c30;display:inline-block;text-align:center;line-height:34px;">
+                          <span style="color:#ffffff;font-size:15px;font-weight:700;">L</span>
+                        </div>
+                      </td>
+                      <td style="vertical-align:middle;">
+                        <p style="margin:0;color:#ffffff;font-size:15px;font-weight:500;line-height:1.2;">Lumè Bean & Bar</p>
+                        <p style="margin:0;color:#7a8fa0;font-size:12px;">Reservation Confirmation</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td style="text-align:right;vertical-align:middle;padding:20px 0;">
+                  <span style="font-size:11px;color:#7a8fa0;letter-spacing:1px;">lumèbeanandbar.com</span>
                 </td>
               </tr>
+            </table>
+          </td>
+        </tr>
 
-              <!-- Content -->
+        <!-- Orange accent bar -->
+        <tr>
+          <td style="background:#e05c30;height:3px;font-size:0;line-height:0;">&nbsp;</td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="padding:32px 28px 24px;">
+
+            <h2 style="margin:0 0 6px;font-size:19px;font-weight:500;color:#111827;">${subject}</h2>
+            <p style="margin:0 0 24px;font-size:13px;color:#9ca3af;">Sent to ${to}</p>
+
+            <p style="margin:0 0 20px;font-size:14px;color:#374151;line-height:1.7;">
+              ${message}
+            </p>
+
+            <!-- Details block with left border accent -->
+            <table role="presentation" width="100%" style="border-collapse:collapse;border-radius:0 8px 8px 0;overflow:hidden;margin-bottom:24px;">
               <tr>
-                <td class="padding content" style="padding:40px 30px;">
-                  <h2 style="margin:0 0 20px; color:#111827; font-size:22px;">
-                    Hello ${name},
-                  </h2>
-
-                  <p style="color:#4b5563; font-size:16px; line-height:1.6;">
-                    ${message}
-                  </p>
-
-                  <!-- Reservation Details -->
-                  <table role="presentation" width="100%" class="stack" style="margin-top:25px; border-collapse:collapse;">
+                <td width="4" style="background:#e05c30;border-radius:4px 0 0 4px;">&nbsp;</td>
+                <td style="background:#fdf2ee;padding:16px 18px;">
+                  <table role="presentation" width="100%" style="border-collapse:collapse;font-size:14px;">
                     <tr>
-                      <td class="label" style="padding:10px 0; font-weight:700; color:#374151; width:40%;">Reservation Date</td>
-                      <td class="value" style="padding:10px 0; color:#111827;">${date}</td>
+                      <td style="padding:6px 0;color:#6b7280;width:45%;">Reservation date</td>
+                      <td style="padding:6px 0;color:#111827;font-weight:500;">${date}</td>
                     </tr>
                     <tr>
-                      <td class="label" style="padding:10px 0; font-weight:700; color:#374151;">Reservation Time</td>
-                      <td class="value" style="padding:10px 0; color:#111827;">${time}</td>
+                      <td style="padding:6px 0;color:#6b7280;">Reservation time</td>
+                      <td style="padding:6px 0;color:#111827;font-weight:500;">${time}</td>
                     </tr>
                     <tr>
-                      <td class="label" style="padding:10px 0; font-weight:700; color:#374151;">Guests</td>
-                      <td class="value" style="padding:10px 0; color:#111827;">${guests}</td>
+                      <td style="padding:6px 0;color:#6b7280;">Guests</td>
+                      <td style="padding:6px 0;color:#111827;font-weight:500;">${guests}</td>
                     </tr>
                   </table>
                 </td>
               </tr>
-
-              <!-- Footer -->
-              <tr>
-                <td style="background:#f9fafb; padding:25px 20px; text-align:center; border-top:1px solid #e5e7eb;">
-                  <p style="margin:0 0 10px; color:#6b7280; font-size:13px;">
-                    If you need to make changes, just reply to this email.
-                  </p>
-                  <p style="margin:0; color:#9ca3af; font-size:12px;">
-                    © ${new Date().getFullYear()} Lumè Bean and Bar
-                  </p>
-                </td>
-              </tr>
-
             </table>
+
+            <p style="margin:0;font-size:13px;color:#9ca3af;line-height:1.6;">
+              If you have questions or need to make changes, simply reply to this email.
+            </p>
 
           </td>
         </tr>
-      </table>
 
-    </body>
-    </html>
+        <!-- Footer -->
+        <tr>
+          <td style="border-top:1px solid #e5e7eb;background:#f9fafb;padding:16px 28px;">
+            <table role="presentation" width="100%" style="border-collapse:collapse;">
+              <tr>
+                <td style="font-size:12px;color:#9ca3af;">This email was sent from Lumè Bean & Bar</td>
+                <td style="text-align:right;font-size:12px;color:#c5c9ce;">© ${new Date().getFullYear()} Lumè Bean & Bar</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>
     `
 
     await transporter.sendMail({
@@ -169,8 +164,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("[API] Error sending email:", error)
     return NextResponse.json(
-      { success: false, message: error instanceof Error ? error.message : "Failed to send email" },
-      { status: 500 },
+      {
+        success: false,
+        message: error instanceof Error ? error.message : "Failed to send email",
+      },
+      { status: 500 }
     )
   }
 }

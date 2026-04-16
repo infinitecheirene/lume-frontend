@@ -203,7 +203,7 @@ interface Reservation {
   remaining_balance?: string | number
   service_charge?: string | number
   total_fee?: string | number
-  payment_status?: "pending" | "paid" | "failed"
+  payment_status?: "pending" | "partially_paid" | "paid" | "failed" | "refunded"
   payment_method?: string
   payment_reference?: string
   payment_receipt?: string
@@ -306,7 +306,7 @@ export default function ReservationsAdmin() {
     remaining_balance: number
     payment_method: string
     payment_reference: string
-    payment_status: "pending" | "paid" | "failed"
+    payment_status: "pending" | "partially_paid" | "paid" | "failed" | "refunded"
     payment_receipt: string | null
     special_requests: string
     is_walkin: boolean
@@ -548,10 +548,18 @@ export default function ReservationsAdmin() {
   const guestCount = monthRes.filter((r) => !["cancelled", "noshow"].includes(r.reservation_status)).reduce((s, r) => s + r.guests, 0)
   const walkInCount = monthRes.filter((r) => r.is_walkin && !["cancelled", "noshow"].includes(r.reservation_status)).length
 
+  const [refreshing, setRefreshing] = useState(false)
+
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    await fetchReservations()
+    setRefreshing(false)
+  }
+
   if (loading) {
     return (
       <SidebarProvider defaultOpen={!isDesktop}>
-        <div className="flex min-h-screen w-full bg-[#f5f0e8]">
+        <div className="flex min-h-screen w-full bg-amber-50">
           <AppSidebar />
           <div className="flex-1 flex items-center justify-center">
             <div className="bg-[#162A3A] rounded-2xl px-10 py-8 flex flex-col items-center gap-4 shadow-2xl border border-[#d4a24c]/30">
@@ -576,7 +584,7 @@ export default function ReservationsAdmin() {
           {/* Total fee only */}
           <div>
             <FieldLabel>Total Fee</FieldLabel>
-            <div className="relative max-w-[200px]">
+            <div className="relative max-w-[200px] text-gray-800">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₱</span>
               <Input
                 type="number" min={0} step={0.01}
@@ -624,7 +632,7 @@ export default function ReservationsAdmin() {
     return (
       <FormSection title="Payment Details" icon={<TrendingUp className="w-4 h-4" />}>
         {/* Fee breakdown */}
-        <div className="rounded-xl bg-[#162A3A]/5 border border-[#162A3A]/10 p-4 space-y-3">
+        <div className="rounded-xl bg-[#162A3A]/5 border border-[#162A3A]/10 p-4 space-y-3 text-gray-800">
           <h4 className="text-xs font-semibold text-[#162A3A] uppercase tracking-wider">Fee Breakdown</h4>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -678,7 +686,7 @@ export default function ReservationsAdmin() {
         </div>
 
         {/* Payment method */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-gray-800">
           <div>
             <FieldLabel>Payment Method <span className="text-red-500 ml-0.5">*</span></FieldLabel>
             <Select value={formData.payment_method} onValueChange={(v) => setFormData({ ...formData, payment_method: v })}>
@@ -729,18 +737,39 @@ export default function ReservationsAdmin() {
             <p className="text-xs text-amber-700">Online reservations default to <strong>Pending</strong>. Mark as <strong>Paid</strong> only after verifying the payment screenshot above.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {(["pending", "paid", "failed"] as const).map((s) => (
-              <button key={s} type="button"
-                onClick={() => setFormData({ ...formData, payment_status: s })}
-                disabled={s === "paid" && !paymentFile && !formData.payment_receipt}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all capitalize disabled:opacity-40 disabled:cursor-not-allowed
-                  ${formData.payment_status === s
-                    ? s === "paid" ? "bg-emerald-600 text-white border-emerald-600"
-                      : s === "pending" ? "bg-amber-500 text-white border-amber-500"
-                        : "bg-red-500 text-white border-red-500"
-                    : "bg-white text-gray-600 border-gray-300 hover:border-gray-400"}`}
-              >{s}</button>
-            ))}
+            {/* Payment status */}
+            <div>
+              <FieldLabel>Payment Status</FieldLabel>
+
+              <div className="flex flex-wrap gap-2">
+                {(
+                  ["pending", "partially_paid", "paid", "failed", "refunded"] as const
+                ).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() =>
+                      setFormData({ ...formData, payment_status: s })
+                    }
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all capitalize
+                        ${formData.payment_status === s
+                        ? s === "paid"
+                          ? "bg-emerald-600 text-white border-emerald-600"
+                          : s === "pending"
+                            ? "bg-amber-500 text-white border-amber-500"
+                            : s === "partially_paid"
+                              ? "bg-blue-500 text-white border-blue-500"
+                              : s === "failed"
+                                ? "bg-red-500 text-white border-red-500"
+                                : "bg-purple-600 text-white border-purple-600"
+                        : "bg-white text-gray-600 border-gray-300 hover:border-gray-400"
+                      }`}
+                  >
+                    {s.replace("_", " ")}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </FormSection>
@@ -748,7 +777,6 @@ export default function ReservationsAdmin() {
   }
 
   // Schedule section 
-
   const ScheduleSection = ({ slots }: { slots: ReturnType<typeof getDateSlots> }) => {
     const isWalkIn = formData.is_walkin
     const selectedDateInfo = formData.date ? getDayHours(new Date(formData.date).getDay()) : null
@@ -756,7 +784,7 @@ export default function ReservationsAdmin() {
     return (
       <FormSection title="Schedule" icon={<Clock className="w-4 h-4" />}>
         {isWalkIn ? (
-          <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 flex items-center gap-3">
+          <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 flex items-center gap-3 text-gray-800">
             <Footprints className="w-5 h-5 text-blue-600 flex-shrink-0" />
             <div>
               <p className="text-sm font-semibold text-blue-800">Walk-In Guest</p>
@@ -764,7 +792,7 @@ export default function ReservationsAdmin() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-gray-800">
             <div>
               <FieldLabel required>Date</FieldLabel>
               <Input type="date" value={formData.date}
@@ -844,8 +872,11 @@ export default function ReservationsAdmin() {
                 <h1 className="text-3xl md:text-4xl font-bold text-[#162A3A]">Reservations</h1>
                 <p className="text-gray-500 mt-1 text-sm">Manage tables, walk-ins, and guest scheduling</p>
               </div>
-              <Button onClick={() => setIsAddingReservation(true)}
-                className="self-start md:self-auto h-10 px-5 font-semibold bg-[#162A3A] text-white hover:bg-[#1e3a50] rounded-xl shadow-md">
+
+              <Button
+                onClick={() => setIsAddingReservation(true)}
+                className="h-10 px-5 font-semibold bg-[#162A3A] text-white hover:bg-[#1e3a50] rounded-xl shadow-md"
+              >
                 <Plus className="w-4 h-4 mr-2" /> New Reservation
               </Button>
             </div>
@@ -872,7 +903,7 @@ export default function ReservationsAdmin() {
             <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
 
               {/* Panel header */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-5 py-4 bg-[#162A3A]">
+              <div className="flex flex-row items-start sm:items-center justify-between gap-3 px-5 py-4 bg-[#162A3A]">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-lg font-bold text-white">
                     {viewMode === "list" ? "All Reservations" : viewMode === "week" ? formatWeekRange(currentDate) : formatMonthYear(currentDate)}
@@ -887,6 +918,16 @@ export default function ReservationsAdmin() {
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
+
+                {/* Refresh Button */}
+                <Button
+                  onClick={handleRefresh}
+                  variant="outline"
+                  disabled={refreshing}
+                  className="h-10 px-4 rounded-xl border-gray-200"
+                >
+                  {refreshing ? "Refreshing..." : "Refresh"}
+                </Button>
               </div>
 
               <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as typeof viewMode)}>
@@ -898,7 +939,7 @@ export default function ReservationsAdmin() {
                   </TabsList>
                 </div>
 
-                {/* ─── List View ────────────────────────────────────────────── */}
+                {/* List View */}
                 <TabsContent value="list" className="p-5 bg-white">
                   <div className="overflow-x-auto rounded-3xl border border-gray-100 shadow-sm">
                     <table className="w-full text-sm min-w-[960px]">
@@ -942,7 +983,7 @@ export default function ReservationsAdmin() {
                   </div>
                 </TabsContent>
 
-                {/* ─── Week View ────────────────────────────────────────────── */}
+                {/* Week View */}
                 <TabsContent value="week" className="p-4 bg-white rounded-b-3xl">
                   <div className="overflow-x-auto">
                     <div className="min-w-[720px]">
@@ -982,7 +1023,7 @@ export default function ReservationsAdmin() {
                   </div>
                 </TabsContent>
 
-                {/* ─── Month View ───────────────────────────────────────────── */}
+                {/* Month View */}
                 <TabsContent value="month" className="p-4 bg-white rounded-b-3xl">
                   <div className="grid grid-cols-7 gap-2">
                     {weekDays.map((d) => (
@@ -1223,11 +1264,11 @@ export default function ReservationsAdmin() {
             <FormSection title="Guest Information" icon={<Users className="w-4 h-4" />}>
               <div>
                 <FieldLabel required>Full Name</FieldLabel>
-                <Input placeholder="Guest name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="h-9 bg-white border-gray-200" />
+                <Input placeholder="Guest name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="h-9 bg-white border-gray-200 text-gray-800" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><FieldLabel>Email</FieldLabel><Input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="h-9 bg-white border-gray-200" /></div>
-                <div><FieldLabel>Phone</FieldLabel><Input value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="h-9 bg-white border-gray-200" /></div>
+              <div className="grid grid-cols-2 gap-3 text-gray-800">
+                <div><FieldLabel>Email</FieldLabel><Input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="h-9 bg-white border-gray-200 text-gray-800" /></div>
+                <div><FieldLabel>Phone</FieldLabel><Input value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="h-9 bg-white border-gray-200 text-gray-800" /></div>
               </div>
             </FormSection>
 
@@ -1236,7 +1277,7 @@ export default function ReservationsAdmin() {
 
             {/* Preferences */}
             <FormSection title="Preferences">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 text-gray-800">
                 <div>
                   <FieldLabel>Dining Preference</FieldLabel>
                   <Select
@@ -1252,8 +1293,10 @@ export default function ReservationsAdmin() {
                       })
                     }}
                   >
-                    <SelectTrigger className="h-9 bg-white border-gray-200"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
+                    <SelectTrigger className="h-9 bg-white border-gray-200 text-gray-800">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent className="text-gray-800">
                       <SelectItem value="Main Dining">Main Dining</SelectItem>
                       <SelectItem value="Lounge Seating">Lounge Seating</SelectItem>
                       <SelectItem value="High Table">High Table</SelectItem>
@@ -1268,8 +1311,10 @@ export default function ReservationsAdmin() {
                 <div>
                   <FieldLabel>Occasion</FieldLabel>
                   <Select value={formData.occasion} onValueChange={(v: OccasionType) => setFormData({ ...formData, occasion: v })}>
-                    <SelectTrigger className="h-9 bg-white border-gray-200"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
+                    <SelectTrigger className="h-9 bg-white border-gray-200 text-gray-800">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent className="text-gray-800">
                       {["Celebration", "Romantic", "Night Life", "Professional", "Casual", "Other"].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
                     </SelectContent>
                   </Select>
@@ -1284,8 +1329,10 @@ export default function ReservationsAdmin() {
                     setFormData({ ...formData, package: v, ...(pkg ? { total_fee: pkg.price } : {}) })
                   }}
                 >
-                  <SelectTrigger className="h-9 bg-white border-gray-200"><SelectValue placeholder="Select a package" /></SelectTrigger>
-                  <SelectContent>
+                  <SelectTrigger className="h-9 bg-white border-gray-200 text-gray-800">
+                    <SelectValue placeholder="Select a package" />
+                  </SelectTrigger>
+                  <SelectContent className="text-gray-800">
                     {PACKAGES.map((p) => (
                       <SelectItem key={p.id} value={p.name}>
                         {p.name} — {p.room} (₱{p.price.toLocaleString()})
